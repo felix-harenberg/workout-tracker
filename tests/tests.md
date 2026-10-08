@@ -1,0 +1,2 @@
+#Tests
+pytest, testet core/
