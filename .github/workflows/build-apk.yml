@@ -1,0 +1,38 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "pyproject.toml"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+env:
+  PYTHONUTF8: 1
+  FLET_CLI_NO_RICH_OUTPUT: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Flet CLI
+        run: pip install "flet[all]>=1.0,<2"
+
+      # flet build downloads the matching Flutter SDK, JDK and Android SDK itself.
+      - name: Build APK
+        run: flet build apk --verbose --yes
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workout-tracker-apk
+          path: build/apk/*.apk
+          if-no-files-found: error

@@ -18,6 +18,14 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.flet]
+# Android package id is org + project name. Changing it later installs a separate app.
+org = "io.github.felixharenberg"
+product = "Workout Tracker"
+
+[tool.flet.app]
+path = "src"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
