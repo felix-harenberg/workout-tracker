@@ -9,7 +9,7 @@ license = "MIT"
 dependencies = ["flet>=1.0,<2"]
 
 [project.optional-dependencies]
-dev = ["pytest>=9", "ruff>=0.17"]
+dev = ["flet[all]>=1.0,<2", "pytest>=9", "ruff>=0.17"]
 
 [build-system]
 requires = ["setuptools>=77"]

@@ -52,7 +52,7 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 ### Phase 1: Setup und Machbarkeitstest (Woche 2 bis 3)
 
 - [x] Python-Umgebung mit `venv`, Flet installieren, Repo-Struktur anlegen (siehe unten)
-- [ ] Mini-App: ein Button speichert einen Eintrag in SQLite, eine Liste zeigt ihn an
+- [x] Mini-App: ein Button speichert einen Eintrag in SQLite, eine Liste zeigt ihn an
 - [ ] Mit `flet build apk` bauen und auf dem Handy installieren
 - [ ] **Gate:** Läuft die Mini-App auf dem Handy und überlebt der Eintrag einen Neustart der App? Nein → Stack überdenken, bevor es weitergeht
 - [ ] pytest und ruff einrichten, GitHub Actions Workflow für Tests

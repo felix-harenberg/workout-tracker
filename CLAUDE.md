@@ -26,14 +26,17 @@ Felix tends to add features mid-project. Your job is to protect the scope:
 
 ## Commands
 
+Felix develops locally on Windows in VS Code (Python 3.12 via `py -3.12`). The devcontainer stays for anyone who prefers Codespaces.
+
 ```bash
-source .venv/bin/activate        # venv is created by the devcontainer
+py -3.12 -m venv .venv && .venv\Scripts\activate && pip install -e ".[dev]"   # one-time setup
 pytest                           # run tests
 ruff check . && ruff format .    # lint + format
-flet run --web --port 8550 src/main.py   # preview UI in browser (Codespaces forwards port 8550)
+flet run src/main.py             # run as desktop window
+flet run --web --port 8550 src/main.py   # preview UI in browser
 ```
 
-APK builds run in GitHub Actions, not in the Codespace (Flutter + Android SDK are too heavy here). Phase 1 sets up that workflow.
+APK builds run in GitHub Actions, not locally (Flutter + Android SDK are too heavy). Phase 1 sets up that workflow.
 
 ## Working style
 
