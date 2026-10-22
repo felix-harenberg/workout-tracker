@@ -5,7 +5,8 @@ from pathlib import Path
 
 import flet as ft
 
-from core.storage import EntryStore
+from core.db import connect
+from ui.app import App
 
 
 def db_path() -> Path:
@@ -18,29 +19,7 @@ def db_path() -> Path:
 
 def main(page: ft.Page) -> None:
     page.title = "Workout Tracker"
-    store = EntryStore(db_path())
-
-    text_field = ft.TextField(label="Entry", expand=True)
-    entries = ft.ListView(expand=True, spacing=4)
-
-    def refresh() -> None:
-        entries.controls = [ft.Text(f"{e.created_at}  {e.text}") for e in store.list_all()]
-        page.update()
-
-    def save(_: ft.Event) -> None:
-        text = (text_field.value or "").strip()
-        if not text:
-            return
-        store.add(text)
-        text_field.value = ""
-        refresh()
-
-    page.add(
-        ft.Row([text_field, ft.Button(content="Save", on_click=save)]),
-        ft.Text(f"DB: {store.db_path}", size=10),
-        entries,
-    )
-    refresh()
+    App(page, connect(db_path())).start()
 
 
 if __name__ == "__main__":
