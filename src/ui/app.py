@@ -11,6 +11,7 @@ class App:
     def __init__(self, page: ft.Page, conn: sqlite3.Connection) -> None:
         self.page = page
         self.conn = conn
+        self.share = ft.Share()
 
     def start(self) -> None:
         self.page.on_route_change = lambda _: self.render()
