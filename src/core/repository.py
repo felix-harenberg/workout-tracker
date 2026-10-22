@@ -25,6 +25,11 @@ def get_or_create_exercise(conn: sqlite3.Connection, name: str) -> Exercise:
     return Exercise(id=cursor.lastrowid, name=name)
 
 
+def get_exercise(conn: sqlite3.Connection, exercise_id: int) -> Exercise | None:
+    row = conn.execute("SELECT id, name FROM exercise WHERE id = ?", (exercise_id,)).fetchone()
+    return Exercise(*row) if row else None
+
+
 def list_exercises(conn: sqlite3.Connection) -> list[Exercise]:
     rows = conn.execute("SELECT id, name FROM exercise ORDER BY name COLLATE NOCASE").fetchall()
     return [Exercise(*row) for row in rows]
@@ -112,3 +117,24 @@ def list_sets(conn: sqlite3.Connection, workout_id: int) -> list[WorkoutSet]:
         (workout_id,),
     ).fetchall()
     return [WorkoutSet(*row) for row in rows]
+
+
+def last_sets_for_exercise(
+    conn: sqlite3.Connection, exercise_id: int, before: Workout
+) -> tuple[Workout, list[WorkoutSet]] | None:
+    """The most recent workout before `before` that includes this exercise, with its sets.
+
+    Workouts on the same date count as earlier if they were created earlier.
+    """
+    row = conn.execute(
+        "SELECT id, name, date, notes FROM workout"
+        " WHERE (date < :date OR (date = :date AND id < :id))"
+        " AND id IN (SELECT workout_id FROM workout_set WHERE exercise_id = :exercise_id)"
+        " ORDER BY date DESC, id DESC LIMIT 1",
+        {"date": before.date.isoformat(), "id": before.id, "exercise_id": exercise_id},
+    ).fetchone()
+    if row is None:
+        return None
+    workout = _workout_from_row(row)
+    sets = [s for s in list_sets(conn, workout.id) if s.exercise_id == exercise_id]
+    return workout, sets

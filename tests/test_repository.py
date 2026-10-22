@@ -179,3 +179,68 @@ def test_list_sets_only_returns_sets_of_that_workout(conn: sqlite3.Connection) -
     b = repo.create_workout(conn, "B", date(2026, 10, 22))
     repo.add_set(conn, a.id, bench.id, reps=8, weight_kg=80)
     assert repo.list_sets(conn, b.id) == []
+
+
+def test_get_exercise(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    assert repo.get_exercise(conn, bench.id) == bench
+    assert repo.get_exercise(conn, 999) is None
+
+
+# --- Last time ---
+
+
+def test_last_sets_for_exercise_finds_most_recent_earlier_workout(
+    conn: sqlite3.Connection,
+) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    older = repo.create_workout(conn, "Chest", date(2026, 10, 8))
+    last = repo.create_workout(conn, "Chest", date(2026, 10, 15))
+    today = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    repo.add_set(conn, older.id, bench.id, reps=8, weight_kg=75)
+    repo.add_set(conn, last.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, last.id, bench.id, reps=6, weight_kg=85)
+    repo.add_set(conn, today.id, bench.id, reps=8, weight_kg=82.5)
+
+    result = repo.last_sets_for_exercise(conn, bench.id, before=today)
+    assert result is not None
+    workout, sets = result
+    assert workout == last
+    assert [(s.weight_kg, s.reps) for s in sets] == [(80, 8), (85, 6)]
+
+
+def test_last_sets_for_exercise_skips_workouts_without_that_exercise(
+    conn: sqlite3.Connection,
+) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    squat = repo.get_or_create_exercise(conn, "Squat")
+    chest = repo.create_workout(conn, "Chest", date(2026, 10, 15))
+    legs = repo.create_workout(conn, "Legs", date(2026, 10, 18))
+    today = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    repo.add_set(conn, chest.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, legs.id, squat.id, reps=5, weight_kg=100)
+
+    result = repo.last_sets_for_exercise(conn, bench.id, before=today)
+    assert result is not None
+    assert result[0] == chest
+
+
+def test_last_sets_for_exercise_same_day_uses_earlier_workout(
+    conn: sqlite3.Connection,
+) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    morning = repo.create_workout(conn, "AM", date(2026, 10, 22))
+    evening = repo.create_workout(conn, "PM", date(2026, 10, 22))
+    repo.add_set(conn, morning.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, evening.id, bench.id, reps=8, weight_kg=60)
+
+    result = repo.last_sets_for_exercise(conn, bench.id, before=evening)
+    assert result is not None
+    assert result[0] == morning
+    assert repo.last_sets_for_exercise(conn, bench.id, before=morning) is None
+
+
+def test_last_sets_for_exercise_none_when_never_done(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    today = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    assert repo.last_sets_for_exercise(conn, bench.id, before=today) is None
