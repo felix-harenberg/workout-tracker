@@ -60,8 +60,8 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 ### Phase 2: Kraft-MVP, v0.1 (Woche 3 bis 5)
 
 - [x] `core/`: Datenbank-Schema, Funktionen zum Speichern und Laden von Workouts und Sätzen, mit Tests
-- [ ] Screen: Workout starten, Übung wählen oder neu anlegen, Sätze eintragen
-- [ ] Screen: Liste vergangener Workouts, Tippen öffnet Details
+- [x] Screen: Workout starten, Übung wählen oder neu anlegen, Sätze eintragen
+- [x] Screen: Liste vergangener Workouts, Tippen öffnet Details
 - [ ] Workout bearbeiten und löschen
 - [ ] Export aller Daten als CSV (Backup, weil alles nur auf dem Handy liegt, und Grundlage für spätere ML-Auswertung)
 - [ ] Release v0.1 auf GitHub, APK installiert
