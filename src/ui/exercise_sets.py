@@ -43,7 +43,12 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         value=str(reps_value) if reps_value is not None else "",
         keyboard_type=ft.KeyboardType.NUMBER,
         expand=True,
+        # After the first set, keep the keyboard up so the next set is one tap on ✓.
+        autofocus=bool(current),
     )
+
+    async def focus_reps(_: ft.Event) -> None:
+        await reps_field.focus()
 
     def add(_: ft.Event) -> None:
         try:
@@ -58,6 +63,9 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             return
         repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
         app.render()
+
+    weight_field.on_submit = focus_reps
+    reps_field.on_submit = add
 
     set_rows: list[ft.Control] = [
         ft.Text(f"Satz {s.set_number}:  {format_set(s)}", size=18) for s in current
