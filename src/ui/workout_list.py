@@ -1,6 +1,9 @@
+from datetime import date
+
 import flet as ft
 
 from core import repository as repo
+from core.export import export_csv, export_filename
 from core.training import format_date, workout_title
 from ui.app import App
 
@@ -25,9 +28,21 @@ def workout_list_view(app: App) -> ft.View:
     else:
         content = [ft.Text("Noch keine Workouts. Tippe auf +, um zu starten.")]
 
+    async def export(_: ft.Event) -> None:
+        data = export_csv(app.conn).encode("utf-8")
+        csv_file = ft.ShareFile.from_bytes(
+            data, mime_type="text/csv", name=export_filename(date.today())
+        )
+        await app.share.share_files([csv_file], subject="Workout Tracker Backup")
+
     return ft.View(
         route="/",
-        appbar=ft.AppBar(title=ft.Text("Workouts")),
+        appbar=ft.AppBar(
+            title=ft.Text("Workouts"),
+            actions=[
+                ft.IconButton(icon=ft.Icons.SHARE, tooltip="Als CSV exportieren", on_click=export)
+            ],
+        ),
         controls=content,
         scroll=ft.ScrollMode.AUTO,
         floating_action_button=ft.FloatingActionButton(
