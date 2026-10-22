@@ -13,7 +13,8 @@ Stand: 22. Oktober 2026
 ## Themen
 
 1. [x] **Restliche Screens im neuen Stil:** Workout-Liste, Neues Workout, Workout-Details, Übung wählen → [design/screens.html](design/screens.html). Entwurf gefällt. Ausdrücklich gewünscht: letzter Satz unter jeder Übung in der Auswahl. Offen: Wochen-Leiste, Namens-Chips, PR-Rand.
-2. [ ] **Lauf- und Hyrox-Screens:** Zeiteingabe, 16 Hyrox-Abschnitte auf einem Handy-Bildschirm, Splits danach
+2. [ ] **Lauf-Screens** → [design/laufen.html](design/laufen.html). Felix macht kein Hyrox-Training, sondern läuft: Intervalle, Long Run (Zone 2), kurzer schneller Lauf. Details trackt Strava, die App braucht nur das Wesentliche: Distanz, Dauer oder Pace (der dritte Wert wird berechnet), optional Zone. Bei Intervallen zählen Anzahl, Intervall-Distanz und Pausen-Distanz.
+   - **Offene Frage für die Haupt-Session:** Phase 4 (Hyrox) in `PLAN.md` passt nicht zum eigenen Training. Ersetzen oder streichen?
 3. [ ] **Statistik-Screen:** welche Graphen motivieren (PRs, Wochenvolumen, Pace-Verlauf)
 4. [ ] **Kleine Momente:** Animation beim Abhaken, neuer PR, Abschluss-Screen nach dem Training
 5. [ ] **Leere Zustände:** keine Workouts, Übung zum ersten Mal
@@ -23,4 +24,4 @@ Stand: 22. Oktober 2026
 
 ## Wo wir stehen
 
-Thema 1 erledigt. Als Nächstes: Thema 2 (Lauf- und Hyrox-Screens).
+Thema 2 läuft: Entwurf der Lauf-Screens liegt vor, Feedback steht aus.
