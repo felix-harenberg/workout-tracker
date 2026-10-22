@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fortschritt im Stil B</title>
+<!-- Draft of the progress screen (bodyweight + goal line) in style B. See design.md and ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --text: #f3eefc;
+    --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff;
+    --violet-light: #d27bff;
+    --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06);
+    --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  header { max-width: 1200px; margin: 0 auto 28px; }
+  header h1 { font-size: 26px; font-weight: 800; }
+  header p { color: #aaa; margin-top: 6px; max-width: 75ch; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .col h2 { font-size: 16px; font-weight: 800; }
+  .col p.desc { font-size: 13px; color: #aaa; max-width: 320px; line-height: 1.5; }
+  .col p.desc b { color: #eee; }
+
+  .phone { width: 320px; height: 680px; border-radius: 40px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text);
+           box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 250px; height: 250px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 210px; height: 210px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
+
+  .status { font-size: 11px; opacity: .7; }
+  .icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 15px;
+          background: var(--glass); border: 1px solid var(--glass-border); }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 54px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+
+  .hero { display: flex; align-items: baseline; gap: 8px; }
+  .hero .n { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .hero .u { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+  .hero .delta { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--violet-light); }
+
+  .chart { padding: 10px 8px 6px; position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tip { position: absolute; pointer-events: none; padding: 6px 9px; border-radius: 10px; font-size: 12px; font-weight: 600;
+         background: rgba(20, 16, 28, .92); border: 1px solid var(--glass-border); white-space: nowrap;
+         transform: translate(-50%, -120%); opacity: 0; transition: opacity .1s; font-variant-numeric: tabular-nums; }
+  .tip span { color: var(--text-muted); font-weight: 400; }
+
+  .ranges { display: flex; gap: 4px; padding: 4px; }
+  .ranges span { flex: 1; text-align: center; font-size: 11px; font-weight: 600; padding: 6px 0; border-radius: 12px; color: var(--text-muted); }
+  .ranges span.on { background: rgba(255,255,255,.12); color: var(--text); }
+
+  .list { padding: 4px 14px; }
+  .list .r { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0;
+             border-top: 1px solid rgba(255,255,255,.07); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .list .r:first-child { border-top: 0; }
+  .list .r .v { color: var(--text); }
+  .list .r .v b { color: var(--violet-light); }
+  .list .r .s { font-size: 11px; color: var(--text-muted); font-weight: 400; display: block; }
+
+  .fab { position: absolute; right: 18px; bottom: 22px; height: 56px; padding: 0 20px; border-radius: 28px;
+         background: var(--violet); color: #fff; display: grid; place-items: center; font-size: 14px; font-weight: 800;
+         letter-spacing: 1px; box-shadow: 0 0 28px rgba(176, 38, 255, .7); z-index: 2; }
+
+  .bigfield { padding: 18px 14px; text-align: center; }
+  .bigfield .v { font-size: 64px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+  .bigfield .u { font-size: 16px; color: var(--text-muted); font-weight: 600; }
+  .caret { display: inline-block; width: 3px; height: 50px; background: var(--violet-light); vertical-align: -4px; margin-left: 2px; }
+  .steps { display: flex; gap: 6px; }
+  .steps span { flex: 1; text-align: center; font-size: 14px; font-weight: 600; padding: 10px 0; border-radius: 12px;
+                background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+  .line { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-size: 15px; font-weight: 600; }
+  .line .s { color: var(--text-muted); font-weight: 400; font-size: 13px; }
+  .goal-dot { display: inline-block; width: 18px; height: 3px; background: var(--violet); box-shadow: 0 0 8px var(--violet);
+              vertical-align: middle; margin-right: 8px; border-radius: 2px; }
+  .btn { margin-top: auto; height: 56px; border-radius: 18px; background: var(--violet); color: #fff;
+         display: grid; place-items: center; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+         box-shadow: 0 0 28px rgba(176, 38, 255, .6); }
+  .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(transparent, var(--bg)); z-index: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Thema 3: Fortschritt</h1>
+  <p>Körpergewicht 1× pro Woche, violette Ziel-Linie, Messpunkte laufen darauf zu. Darunter Kraft als einfache Zeilen statt Graphen. Fahr mit der Maus über die Punkte.</p>
+</header>
+
+<div class="row">
+
+  <!-- 1. Fortschritt -->
+  <div class="col">
+    <h2>1 · Fortschritt</h2>
+    <div class="phone"><div class="screen">
+      <div class="status">20:05</div>
+      <div class="title">Fort<span class="accent">schritt</span></div>
+      <div class="label" style="margin-top:6px">Körpergewicht</div>
+      <div class="hero"><span class="n">78.4</span><span class="u">kg</span><span class="delta">noch 3.4 kg bis Ziel</span></div>
+      <div class="glass chart" id="chart"><div class="tip" id="tip"></div></div>
+      <div class="glass ranges"><span>1 M</span><span class="on">3 M</span><span>1 J</span><span>Alles</span></div>
+      <div class="label" style="margin-top:6px">Kraft · seit September</div>
+      <div class="glass list">
+        <div class="r"><span>Bankdrücken</span><span class="v">75 → <b>82.5 kg</b></span></div>
+        <div class="r"><span>Kniebeugen</span><span class="v">90 → <b>100 kg</b></span></div>
+        <div class="r"><span>Klimmzüge</span><span class="v">BW × 6 → <b>BW × 9</b></span></div>
+      </div>
+    </div><div class="fade"></div><div class="fab">+ GEWICHT</div></div>
+    <p class="desc">Weisse Punkte = deine Messungen, <b>violette Linie = Ziel</b>. Egal ob du ab- oder zunimmst: die Punkte laufen auf die Linie zu.<br>Kraft ohne Graph: erster und bester Wert seit Beginn des Zeitraums.</p>
+  </div>
+
+  <!-- 2. Gewicht eintragen -->
+  <div class="col">
+    <h2>2 · Gewicht eintragen</h2>
+    <div class="phone"><div class="screen">
+      <div class="status">07:02</div>
+      <div class="icon">←</div>
+      <div class="title">Wiegen<span class="accent">.</span></div>
+      <div class="label" style="margin-top:10px">Heute · Mi 22. Okt</div>
+      <div class="glass bigfield"><div class="v">78.4<span class="caret"></span></div><div class="u">kg</div></div>
+      <div class="steps"><span>−0.1</span><span>+0.1</span><span>−0.5</span><span>+0.5</span></div>
+      <div class="label" style="margin-top:4px">Letztes Mal: 78.7 kg · 15. Okt</div>
+      <div class="glass line"><span><span class="goal-dot"></span>Ziel</span><span>75.0 kg <span class="s">ändern ›</span></span></div>
+      <div class="btn">Speichern</div>
+    </div></div>
+    <p class="desc">Vorbefüllt mit dem letzten Wert, also meistens nur ±0.1 tippen und speichern. Das Ziel stellst du hier einmal ein und änderst es nur selten.</p>
+  </div>
+
+</div>
+
+<script>
+  // Weekly bodyweight readings (kg), oldest first.
+  const data = [
+    ["3. Aug", 81.8], ["10. Aug", 81.5], ["17. Aug", 81.6], ["24. Aug", 80.9], ["31. Aug", 80.7], ["7. Sep", 80.8],
+    ["14. Sep", 80.1], ["21. Sep", 79.6], ["28. Sep", 79.8], ["5. Okt", 79.0], ["12. Okt", 78.7], ["19. Okt", 78.4],
+  ];
+  const goal = 75;
+  const W = 280, H = 170, L = 30, R = 10, T = 12, B = 22;
+  const yMin = 74, yMax = 83;
+  const x = i => L + i * (W - L - R) / (data.length - 1);
+  const y = v => T + (yMax - v) / (yMax - yMin) * (H - T - B);
+  const muted = "rgba(243,238,252,.55)", grid = "rgba(255,255,255,.07)";
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Körpergewicht der letzten 3 Monate mit Ziel-Linie bei 75 kg">`;
+  svg += `<defs><filter id="glow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
+  for (const v of [76, 78, 80, 82]) {
+    svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}"/>`;
+    svg += `<text x="${L - 6}" y="${y(v) + 3}" fill="${muted}" font-size="9" text-anchor="end">${v}</text>`;
+  }
+  for (const i of [0, 4, 8, 11]) {
+    svg += `<text x="${x(i)}" y="${H - 6}" fill="${muted}" font-size="9" text-anchor="middle">${data[i][0]}</text>`;
+  }
+  // Goal line with glow and direct label.
+  svg += `<line x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}" stroke="#b026ff" stroke-width="4" filter="url(#glow)"/>`;
+  svg += `<line x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}" stroke="#d27bff" stroke-width="2" stroke-linecap="round"/>`;
+  svg += `<text x="${W - R}" y="${y(goal) - 6}" fill="#d27bff" font-size="10" font-weight="700" text-anchor="end">Ziel 75 kg</text>`;
+  // Measurements: 2px line + 8px markers with a surface ring.
+  svg += `<polyline fill="none" stroke="rgba(243,238,252,.55)" stroke-width="2" stroke-linejoin="round" points="${data.map((d, i) => `${x(i)},${y(d[1])}`).join(" ")}"/>`;
+  data.forEach((d, i) => {
+    const last = i === data.length - 1;
+    svg += `<circle cx="${x(i)}" cy="${y(d[1])}" r="${last ? 5 : 4}" fill="${last ? "#fff" : "#f3eefc"}" stroke="#07060a" stroke-width="2"/>`;
+    svg += `<circle class="hit" data-i="${i}" cx="${x(i)}" cy="${y(d[1])}" r="12" fill="transparent"/>`;
+  });
+  svg += `<text x="${x(11)}" y="${y(78.4) - 10}" fill="#f3eefc" font-size="10" font-weight="700" text-anchor="middle">78.4</text>`;
+  svg += `</svg>`;
+
+  const chart = document.getElementById("chart");
+  const tip = document.getElementById("tip");
+  chart.insertAdjacentHTML("beforeend", svg);
+  chart.querySelectorAll(".hit").forEach(el => {
+    el.addEventListener("mouseenter", () => {
+      const [date, kg] = data[+el.dataset.i];
+      const svgEl = chart.querySelector("svg");
+      const scale = svgEl.getBoundingClientRect().width / W;
+      tip.innerHTML = `${kg.toFixed(1)} kg <span>· ${date}</span>`;
+      tip.style.left = (8 + x(+el.dataset.i) * scale) + "px";
+      tip.style.top = (10 + y(kg) * scale) + "px";
+      tip.style.opacity = 1;
+    });
+    el.addEventListener("mouseleave", () => { tip.style.opacity = 0; });
+  });
+</script>
+</body>
+</html>
