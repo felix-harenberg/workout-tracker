@@ -12,7 +12,7 @@ Stand: 22. Oktober 2026
 
 ## Themen
 
-1. [ ] **Restliche Screens im neuen Stil:** Workout-Liste, Neues Workout, Workout-Details, Übung wählen → [design/screens.html](design/screens.html)
+1. [x] **Restliche Screens im neuen Stil:** Workout-Liste, Neues Workout, Workout-Details, Übung wählen → [design/screens.html](design/screens.html). Entwurf gefällt. Ausdrücklich gewünscht: letzter Satz unter jeder Übung in der Auswahl. Offen: Wochen-Leiste, Namens-Chips, PR-Rand.
 2. [ ] **Lauf- und Hyrox-Screens:** Zeiteingabe, 16 Hyrox-Abschnitte auf einem Handy-Bildschirm, Splits danach
 3. [ ] **Statistik-Screen:** welche Graphen motivieren (PRs, Wochenvolumen, Pace-Verlauf)
 4. [ ] **Kleine Momente:** Animation beim Abhaken, neuer PR, Abschluss-Screen nach dem Training
@@ -23,4 +23,4 @@ Stand: 22. Oktober 2026
 
 ## Wo wir stehen
 
-Thema 1 läuft: Entwurf der vier Screens liegt vor, Feedback steht aus.
+Thema 1 erledigt. Als Nächstes: Thema 2 (Lauf- und Hyrox-Screens).
