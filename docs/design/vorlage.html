@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design-Vorlage</title>
+<!-- Design template for the app (direction B: dark, neon violet, frosted glass). See design.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --text: #f3eefc;
+    --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff;
+    --violet-light: #d27bff;
+    --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06);
+    --glass-field: rgba(255, 255, 255, .08);
+    --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; min-height: 100vh;
+         display: grid; place-items: center; padding: 32px 16px; }
+
+  .phone { width: 340px; height: 700px; border-radius: 42px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text);
+           box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 260px; height: 260px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 220px; height: 220px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+
+  .screen { position: absolute; inset: 0; padding: 22px 18px; display: flex; flex-direction: column; z-index: 1; }
+  .status { font-size: 11px; display: flex; justify-content: space-between; opacity: .7; margin-bottom: 16px; }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9;
+           letter-spacing: .5px; font-size: 64px; margin: 4px 0 2px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+
+  .glass { background: var(--glass); border: 1px solid var(--glass-border);
+           backdrop-filter: blur(18px); border-radius: 22px; padding: 6px 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+       padding: 6px 4px; color: var(--text-muted); }
+  td { padding: 10px 4px; font-size: 17px; font-weight: 600; border-top: 1px solid rgba(255,255,255,.08); }
+  td.prev { font-size: 13px; font-weight: 400; opacity: .55; }
+  .ghost { opacity: .35; }
+  .check { width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 15px; }
+  .check.done { background: var(--violet); color: #fff; box-shadow: 0 0 14px var(--violet); }
+  .check.todo { border: 2px solid rgba(255,255,255,.4); }
+
+  .sheet { margin-top: auto; padding: 14px; }
+  .inputs { display: flex; gap: 10px; align-items: stretch; }
+  .field { flex: 1; border-radius: 14px; padding: 8px 12px; background: var(--glass-field);
+           border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px); }
+  .field .v { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .btn { border: 0; border-radius: 14px; width: 64px; font-size: 28px; font-weight: 800;
+         background: var(--violet); color: #fff; box-shadow: 0 0 24px rgba(176, 38, 255, .6); }
+  .steps { display: flex; gap: 6px; margin-top: 8px; }
+  .steps span { flex: 1; text-align: center; font-size: 13px; font-weight: 600; padding: 6px 0; border-radius: 10px;
+                background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>17:42</span><span>Push Day · 32 min</span></div>
+    <div class="label">Übung 2 von 4</div>
+    <div class="title">Bank<br><span class="accent">drücken</span></div>
+    <div class="label" style="margin:10px 0 14px">Letztes Mal · 15. Okt</div>
+    <div class="glass">
+      <table>
+        <tr><th>Satz</th><th>Vorher</th><th>kg</th><th>Wdh</th><th></th></tr>
+        <tr><td>1</td><td class="prev">80 × 8</td><td>82.5</td><td>8</td><td><span class="check done">✓</span></td></tr>
+        <tr><td>2</td><td class="prev">80 × 8</td><td>82.5</td><td>7</td><td><span class="check done">✓</span></td></tr>
+        <tr><td>3</td><td class="prev">80 × 6</td><td class="ghost">82.5</td><td class="ghost">7</td><td><span class="check todo"></span></td></tr>
+      </table>
+    </div>
+    <div class="sheet glass">
+      <div class="label" style="margin-bottom:8px">Satz 3</div>
+      <div class="inputs">
+        <div class="field"><div class="label">kg</div><div class="v">82.5</div></div>
+        <div class="field"><div class="label">Wdh</div><div class="v">7</div></div>
+        <button class="btn">✓</button>
+      </div>
+      <div class="steps"><span>−2.5</span><span>+2.5</span><span>−1</span><span>+1</span></div>
+    </div>
+  </div></div>
+</body>
+</html>
