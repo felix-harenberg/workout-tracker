@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
 from core.models import Workout, WorkoutSet
 from core.training import (
+    date_from_picker,
     format_date,
     format_set,
     format_weight,
@@ -135,3 +136,22 @@ def test_suggest_without_history_uses_previous_set() -> None:
 
 def test_suggest_nothing_known() -> None:
     assert suggest_next_set([], []) is None
+
+
+# --- date_from_picker ---
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        # Local midnight on 22.10. as sent by the phone, normalized to UTC:
+        datetime(2026, 10, 21, 22, 0, tzinfo=UTC),  # Zurich summer time (UTC+2)
+        datetime(2026, 10, 21, 23, 0, tzinfo=UTC),  # Zurich winter time (UTC+1)
+        datetime(2026, 10, 22, 5, 0, tzinfo=UTC),  # New York (UTC-5)
+        datetime(2026, 10, 22, 0, 0, tzinfo=UTC),  # UTC
+        datetime(2026, 10, 22, 0, 0),  # naive
+        date(2026, 10, 22),
+    ],
+)
+def test_date_from_picker_returns_picked_day(value: datetime | date) -> None:
+    assert date_from_picker(value) == date(2026, 10, 22)

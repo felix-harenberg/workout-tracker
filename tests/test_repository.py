@@ -327,3 +327,20 @@ def test_add_set_after_delete_continues_numbering(conn: sqlite3.Connection) -> N
     repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
     repo.delete_set(conn, first.id)
     assert repo.add_set(conn, workout.id, bench.id, reps=5, weight_kg=85).set_number == 2
+
+
+def test_delete_exercise_from_workout(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    dips = repo.get_or_create_exercise(conn, "Dips")
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    other = repo.create_workout(conn, "Push", date(2026, 10, 15))
+    repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+    repo.add_set(conn, workout.id, dips.id, reps=12)
+    repo.add_set(conn, other.id, bench.id, reps=8, weight_kg=75)
+
+    repo.delete_exercise_from_workout(conn, workout.id, bench.id)
+
+    assert [s.exercise_id for s in repo.list_sets(conn, workout.id)] == [dips.id]
+    assert len(repo.list_sets(conn, other.id)) == 1
+    assert bench in repo.list_exercises(conn)

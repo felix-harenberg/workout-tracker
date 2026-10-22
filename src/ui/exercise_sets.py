@@ -70,9 +70,33 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         for s in current
     ]
 
+    def delete_exercise(_: ft.Event) -> None:
+        app.page.pop_dialog()
+        repo.delete_exercise_from_workout(app.conn, workout.id, exercise.id)
+        app.go(f"/workout/{workout.id}")
+
+    confirm_delete = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Übung entfernen?"),
+        content=ft.Text(f"Alle Sätze von „{exercise.name}“ in diesem Workout werden gelöscht."),
+        actions=[
+            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
+            ft.TextButton(content="Löschen", on_click=delete_exercise),
+        ],
+    )
+
     return ft.View(
         route=route,
-        appbar=ft.AppBar(title=ft.Text(exercise.name)),
+        appbar=ft.AppBar(
+            title=ft.Text(exercise.name),
+            actions=[
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    tooltip="Übung entfernen",
+                    on_click=lambda _: app.page.show_dialog(confirm_delete),
+                )
+            ],
+        ),
         controls=[
             history,
             ft.Divider(),
