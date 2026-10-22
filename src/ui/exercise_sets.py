@@ -1,7 +1,7 @@
 import flet as ft
 
 from core import repository as repo
-from core.models import Exercise, Workout
+from core.models import Exercise, Workout, WorkoutSet
 from core.training import (
     format_date,
     format_set,
@@ -51,16 +51,10 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         await reps_field.focus()
 
     def add(_: ft.Event) -> None:
-        try:
-            weight_kg = parse_weight(weight_field.value)
-        except ValueError:
-            app.show_error("Ungültiges Gewicht.")
+        values = _read_inputs(app, weight_field, reps_field)
+        if values is None:
             return
-        try:
-            reps = parse_reps(reps_field.value)
-        except ValueError:
-            app.show_error("Bitte Wiederholungen eingeben.")
-            return
+        weight_kg, reps = values
         repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
         app.render()
 
@@ -68,7 +62,12 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     reps_field.on_submit = add
 
     set_rows: list[ft.Control] = [
-        ft.Text(f"Satz {s.set_number}:  {format_set(s)}", size=18) for s in current
+        ft.ListTile(
+            title=ft.Text(f"Satz {s.set_number}:  {format_set(s)}", size=18),
+            trailing=ft.Icon(ft.Icons.EDIT, size=18),
+            on_click=lambda _, s=s: app.page.show_dialog(_edit_set_dialog(app, s)),
+        )
+        for s in current
     ]
 
     return ft.View(
@@ -88,4 +87,57 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             ),
         ],
         scroll=ft.ScrollMode.AUTO,
+    )
+
+
+def _read_inputs(
+    app: App, weight_field: ft.TextField, reps_field: ft.TextField
+) -> tuple[float | None, int] | None:
+    """Parse the weight and reps fields, showing an error and returning None if invalid."""
+    try:
+        weight_kg = parse_weight(weight_field.value)
+    except ValueError:
+        app.show_error("Ungültiges Gewicht.")
+        return None
+    try:
+        reps = parse_reps(reps_field.value)
+    except ValueError:
+        app.show_error("Bitte Wiederholungen eingeben.")
+        return None
+    return weight_kg, reps
+
+
+def _edit_set_dialog(app: App, workout_set: WorkoutSet) -> ft.AlertDialog:
+    weight_field = ft.TextField(
+        label="kg",
+        hint_text="leer = BW",
+        value=format_weight(workout_set.weight_kg) if workout_set.weight_kg is not None else "",
+        keyboard_type=ft.KeyboardType.NUMBER,
+    )
+    reps_field = ft.TextField(
+        label="Wdh.", value=str(workout_set.reps), keyboard_type=ft.KeyboardType.NUMBER
+    )
+
+    def save(_: ft.Event) -> None:
+        values = _read_inputs(app, weight_field, reps_field)
+        if values is None:
+            return
+        weight_kg, reps = values
+        repo.update_set(app.conn, workout_set.id, reps=reps, weight_kg=weight_kg)
+        app.page.pop_dialog()
+        app.render()
+
+    def delete(_: ft.Event) -> None:
+        repo.delete_set(app.conn, workout_set.id)
+        app.page.pop_dialog()
+        app.render()
+
+    return ft.AlertDialog(
+        title=ft.Text(f"Satz {workout_set.set_number} bearbeiten"),
+        content=ft.Column([weight_field, reps_field], tight=True),
+        actions=[
+            ft.TextButton(content="Löschen", on_click=delete),
+            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
+            ft.TextButton(content="Speichern", on_click=save),
+        ],
     )

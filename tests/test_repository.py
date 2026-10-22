@@ -244,3 +244,86 @@ def test_last_sets_for_exercise_none_when_never_done(conn: sqlite3.Connection) -
     bench = repo.get_or_create_exercise(conn, "Bench Press")
     today = repo.create_workout(conn, "Chest", date(2026, 10, 22))
     assert repo.last_sets_for_exercise(conn, bench.id, before=today) is None
+
+
+# --- Editing and deleting ---
+
+
+def test_update_workout(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    updated = repo.update_workout(
+        conn, workout.id, name="Chestday", workout_date=date(2026, 10, 21), notes="tired"
+    )
+    assert updated == repo.get_workout(conn, workout.id)
+    assert (updated.name, updated.date, updated.notes) == ("Chestday", date(2026, 10, 21), "tired")
+
+
+def test_update_unknown_workout_raises(conn: sqlite3.Connection) -> None:
+    with pytest.raises(LookupError):
+        repo.update_workout(conn, 999, name="x", workout_date=date(2026, 10, 22), notes="")
+
+
+def test_delete_workout_removes_its_sets_but_keeps_exercises(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    workout = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    other = repo.create_workout(conn, "Chest", date(2026, 10, 15))
+    repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, other.id, bench.id, reps=8, weight_kg=75)
+
+    repo.delete_workout(conn, workout.id)
+
+    assert repo.get_workout(conn, workout.id) is None
+    assert conn.execute("SELECT COUNT(*) FROM workout_set").fetchone()[0] == 1
+    assert repo.list_exercises(conn) == [bench]
+
+
+def test_update_set(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    original = repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+
+    updated = repo.update_set(conn, original.id, reps=6, weight_kg=None)
+
+    assert updated == repo.list_sets(conn, workout.id)[0]
+    assert (updated.set_number, updated.reps, updated.weight_kg) == (1, 6, None)
+
+
+def test_update_set_rejects_invalid_values(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    original = repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    with pytest.raises(ValueError):
+        repo.update_set(conn, original.id, reps=0, weight_kg=80)
+
+
+def test_update_unknown_set_raises(conn: sqlite3.Connection) -> None:
+    with pytest.raises(LookupError):
+        repo.update_set(conn, 999, reps=8, weight_kg=80)
+
+
+def test_delete_set_renumbers_later_sets_of_same_exercise(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    dips = repo.get_or_create_exercise(conn, "Dips")
+    repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    second = repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+    repo.add_set(conn, workout.id, dips.id, reps=12)
+    repo.add_set(conn, workout.id, bench.id, reps=5, weight_kg=85)
+
+    repo.delete_set(conn, second.id)
+
+    sets = repo.list_sets(conn, workout.id)
+    assert [(s.exercise_id, s.set_number, s.reps) for s in sets] == [
+        (bench.id, 1, 8),
+        (dips.id, 1, 12),
+        (bench.id, 2, 5),
+    ]
+
+
+def test_add_set_after_delete_continues_numbering(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    first = repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+    repo.delete_set(conn, first.id)
+    assert repo.add_set(conn, workout.id, bench.id, reps=5, weight_kg=85).set_number == 2

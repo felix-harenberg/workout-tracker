@@ -32,9 +32,38 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
     if not groups:
         controls.append(ft.Text("Noch keine Übungen. Tippe auf +, um eine hinzuzufügen."))
 
+    def delete(_: ft.Event) -> None:
+        app.page.pop_dialog()
+        repo.delete_workout(app.conn, workout.id)
+        app.go("/")
+
+    confirm_delete = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Workout löschen?"),
+        content=ft.Text(f"„{workout_title(workout)}“ und alle Sätze werden gelöscht."),
+        actions=[
+            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
+            ft.TextButton(content="Löschen", on_click=delete),
+        ],
+    )
+
     return ft.View(
         route=route,
-        appbar=ft.AppBar(title=ft.Text(workout_title(workout))),
+        appbar=ft.AppBar(
+            title=ft.Text(workout_title(workout)),
+            actions=[
+                ft.IconButton(
+                    icon=ft.Icons.EDIT,
+                    tooltip="Bearbeiten",
+                    on_click=lambda _: app.go(f"{route}/edit"),
+                ),
+                ft.IconButton(
+                    icon=ft.Icons.DELETE_OUTLINE,
+                    tooltip="Löschen",
+                    on_click=lambda _: app.page.show_dialog(confirm_delete),
+                ),
+            ],
+        ),
         controls=controls,
         scroll=ft.ScrollMode.AUTO,
         floating_action_button=ft.FloatingActionButton(

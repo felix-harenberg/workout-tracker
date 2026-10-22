@@ -25,6 +25,7 @@ class App:
 
     def render(self) -> None:
         # Imported here to avoid a cycle: screens receive the App instance.
+        from ui.edit_workout import edit_workout_view
         from ui.exercise_picker import exercise_picker_view
         from ui.exercise_sets import exercise_sets_view
         from ui.new_workout import new_workout_view
@@ -43,6 +44,8 @@ class App:
                         raise LookupError
                     views.append(workout_detail_view(self, workout))
                     match rest:
+                        case ["edit"]:
+                            views.append(edit_workout_view(self, workout))
                         case ["add-exercise"]:
                             views.append(exercise_picker_view(self, workout))
                         case ["exercise", exercise_id]:
