@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screens im Stil B</title>
+<!-- Draft of the remaining screens in style B. See design.md and ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --text: #f3eefc;
+    --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff;
+    --violet-light: #d27bff;
+    --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06);
+    --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  header { max-width: 1500px; margin: 0 auto 28px; }
+  header h1 { font-size: 26px; font-weight: 800; }
+  header p { color: #aaa; margin-top: 6px; max-width: 75ch; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; max-width: 1500px; margin: 0 auto; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .col h2 { font-size: 16px; font-weight: 800; }
+  .col p.desc { font-size: 13px; color: #aaa; max-width: 320px; line-height: 1.5; }
+  .col p.desc b { color: #eee; }
+
+  .phone { width: 320px; height: 680px; border-radius: 40px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text);
+           box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 250px; height: 250px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 210px; height: 210px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
+
+  .status { font-size: 11px; display: flex; justify-content: space-between; opacity: .7; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; height: 28px; }
+  .icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 15px;
+          background: var(--glass); border: 1px solid var(--glass-border); }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 58px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+  .card { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .card .name { font-family: Anton, Impact, sans-serif; text-transform: uppercase; font-size: 24px; letter-spacing: .5px; line-height: 1; }
+  .card .meta { font-size: 12px; color: var(--text-muted); }
+  .card.today { border-color: rgba(176, 38, 255, .6); box-shadow: 0 0 22px rgba(176, 38, 255, .25); }
+
+  .stats { display: flex; padding: 10px 6px; }
+  .stats div { flex: 1; text-align: center; }
+  .stats .n { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+          background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); font-variant-numeric: tabular-nums; }
+  .chip.pr { border-color: var(--violet); color: var(--violet-light); }
+
+  .fab { position: absolute; right: 18px; bottom: 22px; width: 60px; height: 60px; border-radius: 50%;
+         background: var(--violet); color: #fff; display: grid; place-items: center; font-size: 32px; font-weight: 400;
+         box-shadow: 0 0 28px rgba(176, 38, 255, .7); z-index: 2; }
+  .fab.wide { width: auto; padding: 0 22px; border-radius: 30px; font-size: 15px; font-weight: 800; letter-spacing: 1px; }
+  .btn { margin-top: auto; height: 58px; border-radius: 18px; background: var(--violet); color: #fff;
+         display: grid; place-items: center; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+         box-shadow: 0 0 28px rgba(176, 38, 255, .6); }
+  .field { padding: 12px 14px; font-size: 18px; font-weight: 600; }
+  .field .ph { color: var(--text-muted); font-weight: 400; }
+  .caret { display: inline-block; width: 2px; height: 20px; background: var(--violet-light); vertical-align: -3px; margin-left: 1px; }
+  .list .item { padding: 13px 14px; display: flex; justify-content: space-between; align-items: center;
+                border-top: 1px solid rgba(255,255,255,.07); font-size: 16px; font-weight: 600; }
+  .list .item:first-child { border-top: 0; }
+  .list .item .sub { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+  .list .new { color: var(--violet-light); }
+  .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(transparent, var(--bg)); z-index: 1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Thema 1: die restlichen Screens im Stil B</h1>
+  <p>Gleicher Inhalt wie in der App heute, nur im neuen Look. Was als <b>Idee</b> markiert ist, gibt es in der App noch nicht.</p>
+</header>
+
+<div class="row">
+
+  <!-- 1. Workout-Liste -->
+  <div class="col">
+    <h2>1 · Workout-Liste (Start)</h2>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>17:40</span><span></span></div>
+      <div class="title">Work<span class="accent">outs</span></div>
+      <div class="glass stats">
+        <div><div class="n">3</div><div class="label">Diese Woche</div></div>
+        <div><div class="n">41</div><div class="label">Sätze</div></div>
+        <div><div class="n">12</div><div class="label">Streak Wo.</div></div>
+      </div>
+      <div class="label" style="margin-top:6px">Oktober</div>
+      <div class="glass card today">
+        <div class="label" style="color:var(--violet-light)">Heute · läuft</div>
+        <div class="name">Push Day</div>
+        <div class="meta">2 Übungen · 5 Sätze</div>
+      </div>
+      <div class="glass card">
+        <div class="label">Mo · 20. Okt</div>
+        <div class="name">Pull Day</div>
+        <div class="meta">4 Übungen · 15 Sätze</div>
+      </div>
+      <div class="glass card">
+        <div class="label">Sa · 18. Okt</div>
+        <div class="name">Legs</div>
+        <div class="meta">5 Übungen · 18 Sätze</div>
+      </div>
+      <div class="glass card">
+        <div class="label">Mi · 15. Okt</div>
+        <div class="name">Push Day</div>
+        <div class="meta">4 Übungen · 16 Sätze</div>
+      </div>
+    </div><div class="fade"></div><div class="fab">+</div></div>
+    <p class="desc">Grosser Titel, darunter Karten pro Workout mit Datum, Name und Umfang. Das laufende Workout von heute leuchtet violett.<br><b>Idee:</b> Wochen-Leiste oben (Trainings, Sätze, Streak) als Motivation.</p>
+  </div>
+
+  <!-- 2. Neues Workout -->
+  <div class="col">
+    <h2>2 · Neues Workout</h2>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>17:41</span><span></span></div>
+      <div class="topbar"><div class="icon">←</div></div>
+      <div class="title">Neues<br><span class="accent">Workout</span></div>
+      <div class="label" style="margin-top:14px">Name (optional)</div>
+      <div class="glass field">Push Day<span class="caret"></span></div>
+      <div class="label" style="margin-top:8px">Zuletzt</div>
+      <div class="chips">
+        <span class="chip">Push Day</span><span class="chip">Pull Day</span><span class="chip">Legs</span><span class="chip">Hyrox Sim</span>
+      </div>
+      <div class="btn">Starten</div>
+    </div></div>
+    <p class="desc">Ein Feld und ein grosser Start-Button, den man mit dem Daumen trifft.<br><b>Idee:</b> Chips mit den letzten Workout-Namen, ein Tap übernimmt den Namen.</p>
+  </div>
+
+  <!-- 3. Workout-Details -->
+  <div class="col">
+    <h2>3 · Workout-Details</h2>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>17:58</span><span></span></div>
+      <div class="topbar"><div class="icon">←</div><div style="display:flex;gap:8px"><div class="icon">✎</div><div class="icon">🗑</div></div></div>
+      <div class="label">Mi · 22. Okt</div>
+      <div class="title">Push<br><span class="accent">Day</span></div>
+      <div class="meta" style="font-size:13px;color:var(--text-muted)">Schulter etwas müde, trotzdem gut.</div>
+      <div class="glass card">
+        <div class="name">Bankdrücken</div>
+        <div class="chips"><span class="chip pr">82.5 × 8</span><span class="chip">82.5 × 7</span><span class="chip">82.5 × 6</span></div>
+      </div>
+      <div class="glass card">
+        <div class="name">Schulterdrücken</div>
+        <div class="chips"><span class="chip">40 × 10</span><span class="chip">40 × 9</span></div>
+      </div>
+      <div class="glass card">
+        <div class="name">Dips</div>
+        <div class="chips"><span class="chip">BW × 12</span><span class="chip">BW × 10</span></div>
+      </div>
+    </div><div class="fade"></div><div class="fab wide">+ ÜBUNG</div></div>
+    <p class="desc">Wie deine Skizze: Übungen untereinander, Sätze als kompakte Chips. Tippen auf eine Karte öffnet den Satz-Screen.<br><b>Idee:</b> neuer Rekord mit violettem Rand markiert (passt zu Thema 3 und 4).</p>
+  </div>
+
+  <!-- 4. Übung wählen -->
+  <div class="col">
+    <h2>4 · Übung wählen</h2>
+    <div class="phone"><div class="screen">
+      <div class="status"><span>17:59</span><span></span></div>
+      <div class="topbar"><div class="icon">←</div></div>
+      <div class="title">Übung<br><span class="accent">wählen</span></div>
+      <div class="glass field" style="margin-top:8px">⌕ <span>Dr</span><span class="caret"></span></div>
+      <div class="glass list">
+        <div class="item"><div>Bankdrücken<div class="sub">Zuletzt 82.5 × 8 · heute</div></div><span>›</span></div>
+        <div class="item"><div>Schulterdrücken<div class="sub">Zuletzt 40 × 10 · heute</div></div><span>›</span></div>
+        <div class="item"><div>Beindrücken<div class="sub">Zuletzt 140 × 10 · 18. Okt</div></div><span>›</span></div>
+        <div class="item new"><div>+ „Dr“ neu anlegen</div></div>
+      </div>
+    </div></div>
+    <p class="desc">Suchfeld oben, Liste filtert beim Tippen. Gibt es keinen Treffer, steht „neu anlegen“ direkt in der Liste.<br><b>Idee:</b> Unter jeder Übung der letzte Satz, damit man sieht, was ansteht.</p>
+  </div>
+
+</div>
+</body>
+</html>
