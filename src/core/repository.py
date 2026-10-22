@@ -64,6 +64,25 @@ def list_workouts(conn: sqlite3.Connection) -> list[Workout]:
     return [_workout_from_row(row) for row in rows]
 
 
+def update_workout(
+    conn: sqlite3.Connection, workout_id: int, name: str, workout_date: date, notes: str
+) -> Workout:
+    with conn:
+        cursor = conn.execute(
+            "UPDATE workout SET name = ?, date = ?, notes = ? WHERE id = ?",
+            (name, workout_date.isoformat(), notes, workout_id),
+        )
+    if cursor.rowcount == 0:
+        raise LookupError(f"No workout with id {workout_id}")
+    return Workout(id=workout_id, name=name, date=workout_date, notes=notes)
+
+
+def delete_workout(conn: sqlite3.Connection, workout_id: int) -> None:
+    """Delete a workout and its sets. Exercises are kept for other workouts."""
+    with conn:
+        conn.execute("DELETE FROM workout WHERE id = ?", (workout_id,))
+
+
 def _workout_from_row(row: tuple) -> Workout:
     workout_id, name, iso_date, notes = row
     return Workout(id=workout_id, name=name, date=date.fromisoformat(iso_date), notes=notes)
@@ -83,10 +102,7 @@ def add_set(
 
     The set number counts up per exercise within the workout.
     """
-    if reps <= 0:
-        raise ValueError("Reps must be positive")
-    if weight_kg is not None and weight_kg < 0:
-        raise ValueError("Weight must not be negative")
+    _validate_set(reps, weight_kg)
 
     with conn:
         (set_number,) = conn.execute(
@@ -107,6 +123,54 @@ def add_set(
         reps=reps,
         weight_kg=weight_kg,
     )
+
+
+def update_set(
+    conn: sqlite3.Connection, set_id: int, reps: int, weight_kg: float | None
+) -> WorkoutSet:
+    _validate_set(reps, weight_kg)
+    with conn:
+        cursor = conn.execute(
+            "UPDATE workout_set SET reps = ?, weight_kg = ? WHERE id = ?",
+            (reps, weight_kg, set_id),
+        )
+    if cursor.rowcount == 0:
+        raise LookupError(f"No set with id {set_id}")
+    return _get_set(conn, set_id)
+
+
+def delete_set(conn: sqlite3.Connection, set_id: int) -> None:
+    """Delete a set and close the gap in the numbering of that exercise's sets."""
+    with conn:
+        row = conn.execute(
+            "SELECT workout_id, exercise_id, set_number FROM workout_set WHERE id = ?",
+            (set_id,),
+        ).fetchone()
+        if row is None:
+            return
+        workout_id, exercise_id, set_number = row
+        conn.execute("DELETE FROM workout_set WHERE id = ?", (set_id,))
+        conn.execute(
+            "UPDATE workout_set SET set_number = set_number - 1"
+            " WHERE workout_id = ? AND exercise_id = ? AND set_number > ?",
+            (workout_id, exercise_id, set_number),
+        )
+
+
+def _validate_set(reps: int, weight_kg: float | None) -> None:
+    if reps <= 0:
+        raise ValueError("Reps must be positive")
+    if weight_kg is not None and weight_kg < 0:
+        raise ValueError("Weight must not be negative")
+
+
+def _get_set(conn: sqlite3.Connection, set_id: int) -> WorkoutSet:
+    row = conn.execute(
+        "SELECT id, workout_id, exercise_id, set_number, reps, weight_kg"
+        " FROM workout_set WHERE id = ?",
+        (set_id,),
+    ).fetchone()
+    return WorkoutSet(*row)
 
 
 def list_sets(conn: sqlite3.Connection, workout_id: int) -> list[WorkoutSet]:
