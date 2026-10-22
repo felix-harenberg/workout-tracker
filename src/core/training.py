@@ -1,6 +1,6 @@
 """Input parsing, formatting and suggestions for logging strength training."""
 
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from core.models import Workout, WorkoutSet
 
@@ -36,6 +36,18 @@ def format_set(workout_set: WorkoutSet) -> str:
 
 def format_date(value: date) -> str:
     return value.strftime("%d.%m.%Y")
+
+
+def date_from_picker(value: datetime | date) -> date:
+    """The day picked in a date picker.
+
+    The phone sends local midnight converted to UTC (e.g. 22.10. 00:00 in Zurich
+    arrives as 21.10. 22:00 UTC). Rounding to the nearest day recovers the picked
+    day without knowing the phone's time zone.
+    """
+    if not isinstance(value, datetime):
+        return value
+    return (value + timedelta(hours=12)).date()
 
 
 def workout_title(workout: Workout) -> str:

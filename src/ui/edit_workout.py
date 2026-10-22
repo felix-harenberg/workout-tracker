@@ -1,10 +1,10 @@
-from datetime import date, datetime
+from datetime import date
 
 import flet as ft
 
 from core import repository as repo
 from core.models import Workout
-from core.training import format_date
+from core.training import date_from_picker, format_date
 from ui.app import App
 
 
@@ -22,7 +22,7 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
         value = e.control.value
         if value is None:
             return
-        selected_date = value.date() if isinstance(value, datetime) else value
+        selected_date = date_from_picker(value)
         date_button.content = format_date(selected_date)
         date_button.update()
 

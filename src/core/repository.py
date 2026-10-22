@@ -157,6 +157,17 @@ def delete_set(conn: sqlite3.Connection, set_id: int) -> None:
         )
 
 
+def delete_exercise_from_workout(
+    conn: sqlite3.Connection, workout_id: int, exercise_id: int
+) -> None:
+    """Delete all sets of one exercise in a workout. The exercise itself is kept."""
+    with conn:
+        conn.execute(
+            "DELETE FROM workout_set WHERE workout_id = ? AND exercise_id = ?",
+            (workout_id, exercise_id),
+        )
+
+
 def _validate_set(reps: int, weight_kg: float | None) -> None:
     if reps <= 0:
         raise ValueError("Reps must be positive")
