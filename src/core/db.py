@@ -38,7 +38,8 @@ SCHEMA_VERSION = len(MIGRATIONS)
 def connect(db_path: Path) -> sqlite3.Connection:
     """Open the database, creating or upgrading the schema as needed."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
+    # Flet runs event handlers on worker threads; the app only ever does one thing at a time.
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.execute("PRAGMA foreign_keys = ON")
     _migrate(conn)
     return conn
