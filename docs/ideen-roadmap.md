@@ -15,8 +15,8 @@ Stand: 22. Oktober 2026
 1. [x] **Restliche Screens im neuen Stil:** Workout-Liste, Neues Workout, Workout-Details, Übung wählen → [design/screens.html](design/screens.html). Entwurf gefällt. Ausdrücklich gewünscht: letzter Satz unter jeder Übung in der Auswahl. Offen: Wochen-Leiste, Namens-Chips, PR-Rand.
 2. [x] **Lauf-Screens** (Entwurf passt so, Pause bewusst in Metern) → [design/laufen.html](design/laufen.html). Felix macht kein Hyrox-Training, sondern läuft: Intervalle, Long Run (Zone 2), kurzer schneller Lauf. Details trackt Strava, die App braucht nur das Wesentliche: Distanz, Dauer oder Pace (der dritte Wert wird berechnet), optional Zone. Bei Intervallen zählen Anzahl, Intervall-Distanz und Pausen-Distanz.
    - **Offene Frage für die Haupt-Session:** Phase 4 (Hyrox) in `PLAN.md` passt nicht zum eigenen Training. Ersetzen oder streichen?
-3. [ ] **Fortschritt-Screen** → [design/fortschritt.html](design/fortschritt.html). Kein Graph pro Übung nötig, Kraft als einfache Zeilen („Bankdrücken 75 → 82.5 kg“).
-   - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. Als `later`-Issue anlegen.
+3. [x] **Fortschritt-Screen** (Graph passt so; Wunsch: Ziel-Linie nie am Rand, y-Achse oben und unten mit Luft) → [design/fortschritt.html](design/fortschritt.html). Kein Graph pro Übung nötig, Kraft als einfache Zeilen („Bankdrücken 75 → 82.5 kg“).
+   - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. → Issue #18.
 4. [ ] **Kleine Momente:** Animation beim Abhaken, neuer PR, Abschluss-Screen nach dem Training
 5. [ ] **Leere Zustände:** keine Workouts, Übung zum ersten Mal
 6. [ ] **App-Icon und Name**
@@ -25,4 +25,4 @@ Stand: 22. Oktober 2026
 
 ## Wo wir stehen
 
-Themen 1 und 2 erledigt. Thema 3 läuft: Entwurf Fortschritt-Screen liegt vor, Feedback steht aus.
+Themen 1 bis 3 erledigt. Als Nächstes: Thema 4 (kleine Momente).

@@ -144,14 +144,17 @@
   ];
   const goal = 75;
   const W = 280, H = 170, L = 30, R = 10, T = 12, B = 22;
-  const yMin = 74, yMax = 83;
+  // Pad the y-range on both sides so the goal line never sits at the chart edge.
+  const values = data.map(d => d[1]).concat(goal);
+  const span = Math.max(...values) - Math.min(...values);
+  const yMin = Math.min(...values) - span * 0.35, yMax = Math.max(...values) + span * 0.2;
   const x = i => L + i * (W - L - R) / (data.length - 1);
   const y = v => T + (yMax - v) / (yMax - yMin) * (H - T - B);
   const muted = "rgba(243,238,252,.55)", grid = "rgba(255,255,255,.07)";
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Körpergewicht der letzten 3 Monate mit Ziel-Linie bei 75 kg">`;
   svg += `<defs><filter id="glow" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
-  for (const v of [76, 78, 80, 82]) {
+  for (const v of [74, 76, 78, 80, 82, 84].filter(v => v > yMin && v < yMax)) {
     svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}"/>`;
     svg += `<text x="${L - 6}" y="${y(v) + 3}" fill="${muted}" font-size="9" text-anchor="end">${v}</text>`;
   }
