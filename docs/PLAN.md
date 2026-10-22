@@ -59,7 +59,7 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 
 ### Phase 2: Kraft-MVP, v0.1 (Woche 3 bis 5)
 
-- [ ] `core/`: Datenbank-Schema, Funktionen zum Speichern und Laden von Workouts und Sätzen, mit Tests
+- [x] `core/`: Datenbank-Schema, Funktionen zum Speichern und Laden von Workouts und Sätzen, mit Tests
 - [ ] Screen: Workout starten, Übung wählen oder neu anlegen, Sätze eintragen
 - [ ] Screen: Liste vergangener Workouts, Tippen öffnet Details
 - [ ] Workout bearbeiten und löschen

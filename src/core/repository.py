@@ -1,0 +1,114 @@
+"""Save and load exercises, workouts and sets."""
+
+import sqlite3
+from datetime import date
+
+from core.models import Exercise, Workout, WorkoutSet
+
+# --- Exercises ---
+
+
+def get_or_create_exercise(conn: sqlite3.Connection, name: str) -> Exercise:
+    """Return the exercise with this name (ignoring case), creating it if needed."""
+    name = name.strip()
+    if not name:
+        raise ValueError("Exercise name must not be empty")
+
+    # Compared in Python because SQLite's NOCASE only folds ASCII (not "Ü").
+    key = name.casefold()
+    for exercise in list_exercises(conn):
+        if exercise.name.casefold() == key:
+            return exercise
+
+    with conn:
+        cursor = conn.execute("INSERT INTO exercise (name) VALUES (?)", (name,))
+    return Exercise(id=cursor.lastrowid, name=name)
+
+
+def list_exercises(conn: sqlite3.Connection) -> list[Exercise]:
+    rows = conn.execute("SELECT id, name FROM exercise ORDER BY name COLLATE NOCASE").fetchall()
+    return [Exercise(*row) for row in rows]
+
+
+# --- Workouts ---
+
+
+def create_workout(
+    conn: sqlite3.Connection, name: str, workout_date: date, notes: str = ""
+) -> Workout:
+    with conn:
+        cursor = conn.execute(
+            "INSERT INTO workout (name, date, notes) VALUES (?, ?, ?)",
+            (name, workout_date.isoformat(), notes),
+        )
+    return Workout(id=cursor.lastrowid, name=name, date=workout_date, notes=notes)
+
+
+def get_workout(conn: sqlite3.Connection, workout_id: int) -> Workout | None:
+    row = conn.execute(
+        "SELECT id, name, date, notes FROM workout WHERE id = ?", (workout_id,)
+    ).fetchone()
+    return _workout_from_row(row) if row else None
+
+
+def list_workouts(conn: sqlite3.Connection) -> list[Workout]:
+    """All workouts, newest first."""
+    rows = conn.execute(
+        "SELECT id, name, date, notes FROM workout ORDER BY date DESC, id DESC"
+    ).fetchall()
+    return [_workout_from_row(row) for row in rows]
+
+
+def _workout_from_row(row: tuple) -> Workout:
+    workout_id, name, iso_date, notes = row
+    return Workout(id=workout_id, name=name, date=date.fromisoformat(iso_date), notes=notes)
+
+
+# --- Sets ---
+
+
+def add_set(
+    conn: sqlite3.Connection,
+    workout_id: int,
+    exercise_id: int,
+    reps: int,
+    weight_kg: float | None = None,
+) -> WorkoutSet:
+    """Log a set. Leave weight_kg as None for bodyweight exercises.
+
+    The set number counts up per exercise within the workout.
+    """
+    if reps <= 0:
+        raise ValueError("Reps must be positive")
+    if weight_kg is not None and weight_kg < 0:
+        raise ValueError("Weight must not be negative")
+
+    with conn:
+        (set_number,) = conn.execute(
+            "SELECT COALESCE(MAX(set_number), 0) + 1 FROM workout_set"
+            " WHERE workout_id = ? AND exercise_id = ?",
+            (workout_id, exercise_id),
+        ).fetchone()
+        cursor = conn.execute(
+            "INSERT INTO workout_set (workout_id, exercise_id, set_number, reps, weight_kg)"
+            " VALUES (?, ?, ?, ?, ?)",
+            (workout_id, exercise_id, set_number, reps, weight_kg),
+        )
+    return WorkoutSet(
+        id=cursor.lastrowid,
+        workout_id=workout_id,
+        exercise_id=exercise_id,
+        set_number=set_number,
+        reps=reps,
+        weight_kg=weight_kg,
+    )
+
+
+def list_sets(conn: sqlite3.Connection, workout_id: int) -> list[WorkoutSet]:
+    """All sets of a workout, in the order they were logged."""
+    rows = conn.execute(
+        "SELECT id, workout_id, exercise_id, set_number, reps, weight_kg"
+        " FROM workout_set WHERE workout_id = ? ORDER BY id",
+        (workout_id,),
+    ).fetchall()
+    return [WorkoutSet(*row) for row in rows]

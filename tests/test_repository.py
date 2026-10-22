@@ -1,0 +1,181 @@
+import sqlite3
+from collections.abc import Iterator
+from datetime import date
+from pathlib import Path
+
+import pytest
+
+from core import repository as repo
+from core.db import SCHEMA_VERSION, connect
+
+
+@pytest.fixture
+def conn(tmp_path: Path) -> Iterator[sqlite3.Connection]:
+    connection = connect(tmp_path / "test.db")
+    yield connection
+    connection.close()
+
+
+# --- Schema ---
+
+
+def test_connect_sets_schema_version(conn: sqlite3.Connection) -> None:
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+
+
+def test_connect_twice_keeps_data(tmp_path: Path) -> None:
+    db_path = tmp_path / "test.db"
+    first = connect(db_path)
+    repo.get_or_create_exercise(first, "Squat")
+    first.close()
+
+    second = connect(db_path)
+    assert [e.name for e in repo.list_exercises(second)] == ["Squat"]
+    second.close()
+
+
+def test_connect_creates_missing_parent_directory(tmp_path: Path) -> None:
+    connection = connect(tmp_path / "nested" / "test.db")
+    assert repo.list_exercises(connection) == []
+    connection.close()
+
+
+# --- Exercises ---
+
+
+def test_get_or_create_exercise_creates_new(conn: sqlite3.Connection) -> None:
+    exercise = repo.get_or_create_exercise(conn, "Bench Press")
+    assert exercise.id is not None
+    assert exercise.name == "Bench Press"
+
+
+def test_get_or_create_exercise_strips_whitespace(conn: sqlite3.Connection) -> None:
+    assert repo.get_or_create_exercise(conn, "  Deadlift ").name == "Deadlift"
+
+
+def test_get_or_create_exercise_ignores_case(conn: sqlite3.Connection) -> None:
+    first = repo.get_or_create_exercise(conn, "Bankdrücken")
+    second = repo.get_or_create_exercise(conn, "BANKDRÜCKEN")
+    assert second == first
+    assert len(repo.list_exercises(conn)) == 1
+
+
+def test_get_or_create_exercise_rejects_empty_name(conn: sqlite3.Connection) -> None:
+    with pytest.raises(ValueError):
+        repo.get_or_create_exercise(conn, "   ")
+
+
+def test_list_exercises_sorted_by_name(conn: sqlite3.Connection) -> None:
+    for name in ["squat", "Bench Press", "Deadlift"]:
+        repo.get_or_create_exercise(conn, name)
+    assert [e.name for e in repo.list_exercises(conn)] == ["Bench Press", "Deadlift", "squat"]
+
+
+# --- Workouts ---
+
+
+def test_create_and_get_workout(conn: sqlite3.Connection) -> None:
+    created = repo.create_workout(conn, "Chest Day", date(2026, 10, 22), notes="felt strong")
+    loaded = repo.get_workout(conn, created.id)
+    assert loaded == created
+    assert loaded.date == date(2026, 10, 22)
+    assert loaded.notes == "felt strong"
+
+
+def test_create_workout_defaults_to_empty_notes(conn: sqlite3.Connection) -> None:
+    assert repo.create_workout(conn, "Leg Day", date(2026, 10, 22)).notes == ""
+
+
+def test_get_workout_returns_none_for_unknown_id(conn: sqlite3.Connection) -> None:
+    assert repo.get_workout(conn, 999) is None
+
+
+def test_list_workouts_newest_first(conn: sqlite3.Connection) -> None:
+    repo.create_workout(conn, "old", date(2026, 10, 1))
+    repo.create_workout(conn, "new", date(2026, 10, 20))
+    repo.create_workout(conn, "same day, later", date(2026, 10, 20))
+    assert [w.name for w in repo.list_workouts(conn)] == ["same day, later", "new", "old"]
+
+
+# --- Sets ---
+
+
+def test_add_set_numbers_sets_per_exercise(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    dips = repo.get_or_create_exercise(conn, "Dips")
+
+    first = repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    second = repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+    other = repo.add_set(conn, workout.id, dips.id, reps=12)
+
+    assert (first.set_number, second.set_number, other.set_number) == (1, 2, 1)
+
+
+def test_set_numbers_restart_in_new_workout(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    monday = repo.create_workout(conn, "Mon", date(2026, 10, 19))
+    thursday = repo.create_workout(conn, "Thu", date(2026, 10, 22))
+    repo.add_set(conn, monday.id, bench.id, reps=8, weight_kg=80)
+    assert repo.add_set(conn, thursday.id, bench.id, reps=8, weight_kg=80).set_number == 1
+
+
+def test_add_set_stores_decimal_weight(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    repo.add_set(conn, workout.id, bench.id, reps=5, weight_kg=82.5)
+    assert repo.list_sets(conn, workout.id)[0].weight_kg == 82.5
+
+
+def test_set_without_weight_is_bodyweight(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Pull", date(2026, 10, 22))
+    pullups = repo.get_or_create_exercise(conn, "Pull-ups")
+    loaded = repo.add_set(conn, workout.id, pullups.id, reps=10)
+    assert loaded.weight_kg is None
+    assert loaded.is_bodyweight
+
+
+def test_set_with_weight_is_not_bodyweight(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    assert not repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80).is_bodyweight
+
+
+@pytest.mark.parametrize(("reps", "weight_kg"), [(0, 80), (-1, 80), (8, -5)])
+def test_add_set_rejects_invalid_values(
+    conn: sqlite3.Connection, reps: int, weight_kg: float
+) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    with pytest.raises(ValueError):
+        repo.add_set(conn, workout.id, bench.id, reps=reps, weight_kg=weight_kg)
+
+
+def test_add_set_rejects_unknown_workout(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    with pytest.raises(sqlite3.IntegrityError):
+        repo.add_set(conn, 999, bench.id, reps=8, weight_kg=80)
+
+
+def test_list_sets_in_logged_order(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    dips = repo.get_or_create_exercise(conn, "Dips")
+    repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, workout.id, dips.id, reps=12)
+    repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+
+    sets = repo.list_sets(conn, workout.id)
+    assert [(s.exercise_id, s.set_number) for s in sets] == [
+        (bench.id, 1),
+        (dips.id, 1),
+        (bench.id, 2),
+    ]
+
+
+def test_list_sets_only_returns_sets_of_that_workout(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    a = repo.create_workout(conn, "A", date(2026, 10, 19))
+    b = repo.create_workout(conn, "B", date(2026, 10, 22))
+    repo.add_set(conn, a.id, bench.id, reps=8, weight_kg=80)
+    assert repo.list_sets(conn, b.id) == []
