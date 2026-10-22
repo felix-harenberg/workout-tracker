@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laufen im Stil B</title>
+<!-- Draft of run logging screens in style B. See design.md and ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --text: #f3eefc;
+    --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff;
+    --violet-light: #d27bff;
+    --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06);
+    --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  header { max-width: 1200px; margin: 0 auto 28px; }
+  header h1 { font-size: 26px; font-weight: 800; }
+  header p { color: #aaa; margin-top: 6px; max-width: 75ch; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .col h2 { font-size: 16px; font-weight: 800; }
+  .col p.desc { font-size: 13px; color: #aaa; max-width: 320px; line-height: 1.5; }
+  .col p.desc b { color: #eee; }
+
+  .phone { width: 320px; height: 680px; border-radius: 40px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text);
+           box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 250px; height: 250px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 210px; height: 210px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
+
+  .status { font-size: 11px; opacity: .7; }
+  .icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 15px;
+          background: var(--glass); border: 1px solid var(--glass-border); }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 54px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+
+  .seg { display: flex; gap: 4px; padding: 4px; }
+  .seg span { flex: 1; text-align: center; font-size: 12px; font-weight: 600; padding: 8px 0; border-radius: 14px; color: var(--text-muted); }
+  .seg span.on { background: var(--violet); color: #fff; box-shadow: 0 0 16px rgba(176,38,255,.6); }
+
+  .fields { display: flex; gap: 8px; }
+  .field { flex: 1; padding: 10px 12px; }
+  .field .v { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .field .u { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+  .field.calc { border-style: dashed; }
+  .field.calc .v { color: var(--violet-light); text-shadow: 0 0 14px rgba(176,38,255,.6); }
+  .caret { display: inline-block; width: 2px; height: 22px; background: var(--violet-light); vertical-align: -3px; margin-left: 1px; }
+
+  .zones { display: flex; gap: 6px; }
+  .zones span { flex: 1; text-align: center; padding: 9px 0; border-radius: 12px; font-weight: 800; font-size: 14px;
+                background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+  .zones span.on { background: var(--violet); border-color: var(--violet); box-shadow: 0 0 16px rgba(176,38,255,.6); }
+
+  .formula { padding: 14px; text-align: center; }
+  .formula .big { font-family: Anton, Impact, sans-serif; font-size: 40px; letter-spacing: 1px; }
+  .formula .big .x { color: var(--violet-light); }
+  .reps { padding: 4px 12px; }
+  .reps .r { display: flex; justify-content: space-between; padding: 9px 2px; border-top: 1px solid rgba(255,255,255,.07);
+             font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .reps .r:first-child { border-top: 0; }
+  .reps .r .t { color: var(--text-muted); font-weight: 400; }
+
+  .btn { margin-top: auto; height: 56px; border-radius: 18px; background: var(--violet); color: #fff;
+         display: grid; place-items: center; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+         box-shadow: 0 0 28px rgba(176, 38, 255, .6); }
+
+  .card { padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .card .name { font-family: Anton, Impact, sans-serif; text-transform: uppercase; font-size: 24px; letter-spacing: .5px; line-height: 1; }
+  .card .meta { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .card .meta b { color: var(--text); }
+  .tag { align-self: flex-start; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800;
+         padding: 3px 8px; border-radius: 999px; border: 1px solid var(--violet); color: var(--violet-light); }
+  .tag.gym { border-color: rgba(255,255,255,.3); color: var(--text-muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Thema 2: Laufen</h1>
+  <p>Kein Hyrox, dafür drei Lauf-Arten: Long Run (Zone 2), kurzer schneller Lauf, Intervalle. Ziel: in unter 15 Sekunden eingetragen, weil Strava die Details sowieso hat.</p>
+</header>
+
+<div class="row">
+
+  <!-- 1. Lauf eintragen -->
+  <div class="col">
+    <h2>1 · Lauf eintragen</h2>
+    <div class="phone"><div class="screen">
+      <div class="status">07:12</div>
+      <div class="icon">←</div>
+      <div class="title">Neuer<br><span class="accent">Lauf</span></div>
+      <div class="glass seg"><span class="on">Long Run</span><span>Schnell</span><span>Intervall</span></div>
+      <div class="fields">
+        <div class="glass field"><div class="label">Distanz</div><div class="v">12.4<span class="caret"></span></div><div class="u">km</div></div>
+        <div class="glass field"><div class="label">Dauer</div><div class="v">1:10:42</div><div class="u">h:mm:ss</div></div>
+      </div>
+      <div class="glass field calc"><div class="label">Pace · berechnet</div><div class="v">5:42</div><div class="u">min/km</div></div>
+      <div class="label" style="margin-top:6px">Zone (optional)</div>
+      <div class="zones"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div>
+      <div class="btn">Speichern</div>
+    </div></div>
+    <p class="desc">Zwei von drei Werten eintragen, der dritte wird berechnet und leuchtet violett. Dauer als ein Ziffernfeld: <b>11042</b> wird zu <b>1:10:42</b>.<br>Bei „Long Run“ ist Zone 2 vorausgewählt, bei „Schnell“ keine.</p>
+  </div>
+
+  <!-- 2. Intervall eintragen -->
+  <div class="col">
+    <h2>2 · Intervalle eintragen</h2>
+    <div class="phone"><div class="screen">
+      <div class="status">18:30</div>
+      <div class="icon">←</div>
+      <div class="title">Inter<span class="accent">valle</span></div>
+      <div class="glass seg"><span>Long Run</span><span>Schnell</span><span class="on">Intervall</span></div>
+      <div class="fields">
+        <div class="glass field"><div class="label">Anzahl</div><div class="v">6</div></div>
+        <div class="glass field"><div class="label">Intervall</div><div class="v">800</div><div class="u">m</div></div>
+        <div class="glass field"><div class="label">Pause</div><div class="v">200<span class="caret"></span></div><div class="u">m</div></div>
+      </div>
+      <div class="glass formula"><div class="big">6 <span class="x">×</span> 800 m</div><div class="label">Pause 200 m · gesamt 6.0 km</div></div>
+      <div class="label" style="margin-top:4px">Zeiten pro Intervall (optional)</div>
+      <div class="glass reps">
+        <div class="r"><span>1 · 800 m</span><span>3:12</span></div>
+        <div class="r"><span>2 · 800 m</span><span>3:10</span></div>
+        <div class="r"><span>3 · 800 m</span><span class="t">— antippen</span></div>
+      </div>
+      <div class="btn">Speichern</div>
+    </div></div>
+    <p class="desc">Das Wichtigste sind drei Zahlen: wie oft, wie lang, wie lang die Pause. Daraus entsteht die Kurzform <b>6 × 800 m</b>.<br><b>Idee:</b> Zeiten pro Intervall nur optional, für wenn du sie vergleichen willst.</p>
+  </div>
+
+  <!-- 3. In der Workout-Liste -->
+  <div class="col">
+    <h2>3 · In der Workout-Liste</h2>
+    <div class="phone"><div class="screen">
+      <div class="status">18:55</div>
+      <div class="title">Work<span class="accent">outs</span></div>
+      <div class="label" style="margin-top:6px">Oktober</div>
+      <div class="glass card">
+        <span class="tag">Intervall</span>
+        <div class="name">6 × 800 m</div>
+        <div class="meta">Pause 200 m · Ø <b>3:11</b> pro 800 m</div>
+      </div>
+      <div class="glass card">
+        <span class="tag gym">Gym</span>
+        <div class="name">Push Day</div>
+        <div class="meta">4 Übungen · 16 Sätze</div>
+      </div>
+      <div class="glass card">
+        <span class="tag">Long Run · Z2</span>
+        <div class="name">12.4 km</div>
+        <div class="meta"><b>1:10:42</b> · 5:42 min/km</div>
+      </div>
+      <div class="glass card">
+        <span class="tag">Schnell</span>
+        <div class="name">5.0 km</div>
+        <div class="meta"><b>23:05</b> · 4:37 min/km</div>
+      </div>
+    </div></div>
+    <p class="desc">Läufe und Gym in einer Liste, unterscheidbar am Tag oben links. Der grosse Titel ist bei Läufen die Distanz bzw. die Intervall-Kurzform.</p>
+  </div>
+
+</div>
+</body>
+</html>
