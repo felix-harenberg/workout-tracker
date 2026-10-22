@@ -27,6 +27,22 @@ jobs:
       - name: Install Flet CLI
         run: pip install "flet[all]>=1.0,<2"
 
+      # A fixed signing key lets new versions install over old ones without losing data.
+      # Without the secrets (e.g. in forks) flet falls back to a throwaway debug key.
+      - name: Set up signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload-keystore.jks"
+          {
+            echo "FLET_ANDROID_SIGNING_KEY_STORE=$RUNNER_TEMP/upload-keystore.jks"
+            echo "FLET_ANDROID_SIGNING_KEY_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "FLET_ANDROID_SIGNING_KEY_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "FLET_ANDROID_SIGNING_KEY_ALIAS=upload"
+          } >> "$GITHUB_ENV"
+
       # flet build downloads the matching Flutter SDK, JDK and Android SDK itself.
       - name: Build APK
         run: flet build apk --verbose --yes
