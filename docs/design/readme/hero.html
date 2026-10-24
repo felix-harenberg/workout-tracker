@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>README-Titelbild</title>
+<!-- Source for hero.png in the README draft: three concept screens side by side. Render at 1280x720. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a; --text: #f3eefc; --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff; --violet-light: #d27bff; --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06); --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; }
+  body { font-family: Inter, system-ui, sans-serif; background: #07060a; position: relative;
+         display: flex; align-items: center; justify-content: center; gap: 44px; }
+  body::before, body::after { content: ""; position: absolute; border-radius: 50%; filter: blur(110px); }
+  body::before { width: 620px; height: 620px; background: var(--violet); top: -260px; right: -140px; opacity: .5; }
+  body::after { width: 560px; height: 560px; background: var(--violet-deep); bottom: -260px; left: -160px; opacity: .45; }
+
+  .phone { width: 300px; height: 620px; border-radius: 40px; overflow: hidden; position: relative; z-index: 1;
+           background: var(--bg); color: var(--text); box-shadow: 0 30px 70px rgba(0,0,0,.6), 0 0 0 9px #16141c; }
+  .phone.mid { transform: translateY(-14px) scale(1.04); }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 240px; height: 240px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 200px; height: 200px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 9px; z-index: 1; }
+
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 52px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+
+  .card { padding: 11px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .card .name { font-family: Anton, Impact, sans-serif; text-transform: uppercase; font-size: 22px; letter-spacing: .5px; line-height: 1; }
+  .card .meta { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .card.today { border-color: rgba(176, 38, 255, .6); box-shadow: 0 0 22px rgba(176, 38, 255, .25); }
+  .tag { align-self: flex-start; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800;
+         padding: 3px 8px; border-radius: 999px; border: 1px solid var(--violet); color: var(--violet-light); }
+  .tag.gym { border-color: rgba(255,255,255,.3); color: var(--text-muted); }
+  .fab { position: absolute; right: 18px; bottom: 22px; width: 56px; height: 56px; border-radius: 50%; z-index: 2;
+         background: var(--violet); color: #fff; display: grid; place-items: center; font-size: 30px; box-shadow: 0 0 28px rgba(176, 38, 255, .7); }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; padding: 6px 4px; color: var(--text-muted); }
+  td { padding: 9px 4px; font-size: 16px; font-weight: 600; border-top: 1px solid rgba(255,255,255,.08); }
+  td.prev { font-size: 12px; font-weight: 400; opacity: .55; }
+  .ghost { opacity: .35; }
+  .check { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 14px; }
+  .check.done { background: var(--violet); color: #fff; box-shadow: 0 0 14px var(--violet); }
+  .check.todo { border: 2px solid rgba(255,255,255,.4); }
+  .sheet { margin-top: auto; padding: 13px; }
+  .inputs { display: flex; gap: 9px; }
+  .field { flex: 1; border-radius: 14px; padding: 7px 11px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
+  .field .v { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .btn { border: 0; border-radius: 14px; width: 60px; font-size: 26px; font-weight: 800; background: var(--violet); color: #fff; box-shadow: 0 0 24px rgba(176, 38, 255, .6); }
+  .steps { display: flex; gap: 6px; margin-top: 8px; }
+  .steps span { flex: 1; text-align: center; font-size: 12px; font-weight: 600; padding: 6px 0; border-radius: 10px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+
+  .hero { display: flex; align-items: baseline; gap: 8px; }
+  .hero .n { font-size: 38px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .hero .u { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+  .hero .delta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--violet-light); }
+  .chart { padding: 10px 8px 6px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .list { padding: 4px 14px; }
+  .list .r { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.07); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .list .r:first-child { border-top: 0; }
+  .list .r b { color: var(--violet-light); }
+</style>
+</head>
+<body>
+
+  <div class="phone"><div class="screen">
+    <div class="title">Work<span class="accent">outs</span></div>
+    <div class="label" style="margin-top:6px">Oktober</div>
+    <div class="glass card today"><span class="tag gym">Gym · heute</span><div class="name">Push Day</div><div class="meta">2 Übungen · 5 Sätze</div></div>
+    <div class="glass card"><span class="tag">Intervall</span><div class="name">6 × 800 m</div><div class="meta">Pause 200 m · Ø 3:11 pro 800 m</div></div>
+    <div class="glass card"><span class="tag gym">Gym</span><div class="name">Pull Day</div><div class="meta">4 Übungen · 15 Sätze</div></div>
+    <div class="glass card"><span class="tag">Long Run · Z2</span><div class="name">12.4 km</div><div class="meta">1:10:42 · 5:42 min/km</div></div>
+  </div><div class="fab">+</div></div>
+
+  <div class="phone mid"><div class="screen">
+    <div class="label">Übung 2 von 4</div>
+    <div class="title">Bank<br><span class="accent">drücken</span></div>
+    <div class="label" style="margin:8px 0 10px">Letztes Mal · 15. Okt</div>
+    <div class="glass" style="padding:6px 12px">
+      <table>
+        <tr><th>Satz</th><th>Vorher</th><th>kg</th><th>Wdh</th><th></th></tr>
+        <tr><td>1</td><td class="prev">80 × 8</td><td>82.5</td><td>8</td><td><span class="check done">✓</span></td></tr>
+        <tr><td>2</td><td class="prev">80 × 8</td><td>82.5</td><td>7</td><td><span class="check done">✓</span></td></tr>
+        <tr><td>3</td><td class="prev">80 × 6</td><td class="ghost">82.5</td><td class="ghost">7</td><td><span class="check todo"></span></td></tr>
+      </table>
+    </div>
+    <div class="sheet glass">
+      <div class="label" style="margin-bottom:8px">Satz 3</div>
+      <div class="inputs">
+        <div class="field"><div class="label">kg</div><div class="v">82.5</div></div>
+        <div class="field"><div class="label">Wdh</div><div class="v">7</div></div>
+        <button class="btn">✓</button>
+      </div>
+      <div class="steps"><span>−2.5</span><span>+2.5</span><span>−1</span><span>+1</span></div>
+    </div>
+  </div></div>
+
+  <div class="phone"><div class="screen">
+    <div class="title">Fort<span class="accent">schritt</span></div>
+    <div class="label" style="margin-top:6px">Körpergewicht</div>
+    <div class="hero"><span class="n">78.4</span><span class="u">kg</span><span class="delta">noch 3.4 kg bis Ziel</span></div>
+    <div class="glass chart" id="chart"></div>
+    <div class="label" style="margin-top:6px">Kraft · seit September</div>
+    <div class="glass list">
+      <div class="r"><span>Bankdrücken</span><span>75 → <b>82.5 kg</b></span></div>
+      <div class="r"><span>Kniebeugen</span><span>90 → <b>100 kg</b></span></div>
+      <div class="r"><span>Klimmzüge</span><span>BW × 6 → <b>BW × 9</b></span></div>
+    </div>
+  </div></div>
+
+<script>
+  // Same chart as fortschritt.html, without hover.
+  const data = [81.8, 81.5, 81.6, 80.9, 80.7, 80.8, 80.1, 79.6, 79.8, 79.0, 78.7, 78.4];
+  const goal = 75, W = 280, H = 160, L = 26, R = 10, T = 12, B = 12;
+  const values = data.concat(goal), span = Math.max(...values) - Math.min(...values);
+  const yMin = Math.min(...values) - span * .35, yMax = Math.max(...values) + span * .2;
+  const x = i => L + i * (W - L - R) / (data.length - 1), y = v => T + (yMax - v) / (yMax - yMin) * (H - T - B);
+  let s = `<svg viewBox="0 0 ${W} ${H}"><defs><filter id="g" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
+  for (const v of [74, 76, 78, 80, 82].filter(v => v > yMin && v < yMax)) {
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(255,255,255,.07)"/><text x="${L - 6}" y="${y(v) + 3}" fill="rgba(243,238,252,.55)" font-size="9" text-anchor="end">${v}</text>`;
+  }
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}" stroke="#b026ff" stroke-width="4" filter="url(#g)"/>`;
+  s += `<line x1="${L}" x2="${W - R}" y1="${y(goal)}" y2="${y(goal)}" stroke="#d27bff" stroke-width="2"/>`;
+  s += `<text x="${W - R}" y="${y(goal) - 6}" fill="#d27bff" font-size="10" font-weight="700" text-anchor="end">Ziel 75 kg</text>`;
+  s += `<polyline fill="none" stroke="rgba(243,238,252,.55)" stroke-width="2" points="${data.map((v, i) => `${x(i)},${y(v)}`).join(" ")}"/>`;
+  data.forEach((v, i) => { s += `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="#f3eefc" stroke="#07060a" stroke-width="2"/>`; });
+  document.getElementById("chart").innerHTML = s + "</svg>";
+</script>
+</body>
+</html>
