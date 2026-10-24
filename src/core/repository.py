@@ -1,9 +1,9 @@
-"""Save and load exercises, workouts and sets."""
+"""Save and load exercises, workouts, sets and runs."""
 
 import sqlite3
 from datetime import date
 
-from core.models import Exercise, Workout, WorkoutSet
+from core.models import Exercise, Run, Workout, WorkoutSet, WorkoutType
 
 # --- Exercises ---
 
@@ -37,21 +37,37 @@ def list_exercises(conn: sqlite3.Connection) -> list[Exercise]:
 
 # --- Workouts ---
 
+_WORKOUT_COLUMNS = "id, name, date, notes, type"
+
 
 def create_workout(
-    conn: sqlite3.Connection, name: str, workout_date: date, notes: str = ""
+    conn: sqlite3.Connection,
+    name: str,
+    workout_date: date,
+    notes: str = "",
+    workout_type: WorkoutType = WorkoutType.STRENGTH,
 ) -> Workout:
     with conn:
-        cursor = conn.execute(
-            "INSERT INTO workout (name, date, notes) VALUES (?, ?, ?)",
-            (name, workout_date.isoformat(), notes),
-        )
-    return Workout(id=cursor.lastrowid, name=name, date=workout_date, notes=notes)
+        workout = _insert_workout(conn, name, workout_date, notes, workout_type)
+    return workout
+
+
+def _insert_workout(
+    conn: sqlite3.Connection, name: str, workout_date: date, notes: str, workout_type: WorkoutType
+) -> Workout:
+    """Insert without committing, so callers can add related rows in the same transaction."""
+    cursor = conn.execute(
+        "INSERT INTO workout (name, date, notes, type) VALUES (?, ?, ?, ?)",
+        (name, workout_date.isoformat(), notes, workout_type),
+    )
+    return Workout(
+        id=cursor.lastrowid, name=name, date=workout_date, notes=notes, type=workout_type
+    )
 
 
 def get_workout(conn: sqlite3.Connection, workout_id: int) -> Workout | None:
     row = conn.execute(
-        "SELECT id, name, date, notes FROM workout WHERE id = ?", (workout_id,)
+        f"SELECT {_WORKOUT_COLUMNS} FROM workout WHERE id = ?", (workout_id,)
     ).fetchone()
     return _workout_from_row(row) if row else None
 
@@ -59,7 +75,7 @@ def get_workout(conn: sqlite3.Connection, workout_id: int) -> Workout | None:
 def list_workouts(conn: sqlite3.Connection) -> list[Workout]:
     """All workouts, newest first."""
     rows = conn.execute(
-        "SELECT id, name, date, notes FROM workout ORDER BY date DESC, id DESC"
+        f"SELECT {_WORKOUT_COLUMNS} FROM workout ORDER BY date DESC, id DESC"
     ).fetchall()
     return [_workout_from_row(row) for row in rows]
 
@@ -74,18 +90,26 @@ def update_workout(
         )
     if cursor.rowcount == 0:
         raise LookupError(f"No workout with id {workout_id}")
-    return Workout(id=workout_id, name=name, date=workout_date, notes=notes)
+    workout = get_workout(conn, workout_id)
+    assert workout is not None
+    return workout
 
 
 def delete_workout(conn: sqlite3.Connection, workout_id: int) -> None:
-    """Delete a workout and its sets. Exercises are kept for other workouts."""
+    """Delete a workout with its sets or run. Exercises are kept for other workouts."""
     with conn:
         conn.execute("DELETE FROM workout WHERE id = ?", (workout_id,))
 
 
 def _workout_from_row(row: tuple) -> Workout:
-    workout_id, name, iso_date, notes = row
-    return Workout(id=workout_id, name=name, date=date.fromisoformat(iso_date), notes=notes)
+    workout_id, name, iso_date, notes, workout_type = row
+    return Workout(
+        id=workout_id,
+        name=name,
+        date=date.fromisoformat(iso_date),
+        notes=notes,
+        type=WorkoutType(workout_type),
+    )
 
 
 # --- Sets ---
@@ -202,7 +226,7 @@ def last_sets_for_exercise(
     Workouts on the same date count as earlier if they were created earlier.
     """
     row = conn.execute(
-        "SELECT id, name, date, notes FROM workout"
+        f"SELECT {_WORKOUT_COLUMNS} FROM workout"
         " WHERE (date < :date OR (date = :date AND id < :id))"
         " AND id IN (SELECT workout_id FROM workout_set WHERE exercise_id = :exercise_id)"
         " ORDER BY date DESC, id DESC LIMIT 1",
@@ -213,3 +237,52 @@ def last_sets_for_exercise(
     workout = _workout_from_row(row)
     sets = [s for s in list_sets(conn, workout.id) if s.exercise_id == exercise_id]
     return workout, sets
+
+
+# --- Runs ---
+
+
+def create_run(
+    conn: sqlite3.Connection,
+    name: str,
+    workout_date: date,
+    distance_km: float,
+    duration_s: int,
+    notes: str = "",
+) -> tuple[Workout, Run]:
+    _validate_run(distance_km, duration_s)
+    with conn:
+        workout = _insert_workout(conn, name, workout_date, notes, WorkoutType.RUN)
+        conn.execute(
+            "INSERT INTO run (workout_id, distance_km, duration_s) VALUES (?, ?, ?)",
+            (workout.id, distance_km, duration_s),
+        )
+    return workout, Run(workout_id=workout.id, distance_km=distance_km, duration_s=duration_s)
+
+
+def get_run(conn: sqlite3.Connection, workout_id: int) -> Run | None:
+    row = conn.execute(
+        "SELECT workout_id, distance_km, duration_s FROM run WHERE workout_id = ?", (workout_id,)
+    ).fetchone()
+    return Run(*row) if row else None
+
+
+def update_run(
+    conn: sqlite3.Connection, workout_id: int, distance_km: float, duration_s: int
+) -> Run:
+    _validate_run(distance_km, duration_s)
+    with conn:
+        cursor = conn.execute(
+            "UPDATE run SET distance_km = ?, duration_s = ? WHERE workout_id = ?",
+            (distance_km, duration_s, workout_id),
+        )
+    if cursor.rowcount == 0:
+        raise LookupError(f"No run for workout {workout_id}")
+    return Run(workout_id=workout_id, distance_km=distance_km, duration_s=duration_s)
+
+
+def _validate_run(distance_km: float, duration_s: int) -> None:
+    if distance_km <= 0:
+        raise ValueError("Distance must be positive")
+    if duration_s <= 0:
+        raise ValueError("Duration must be positive")

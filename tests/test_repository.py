@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 from core import repository as repo
-from core.db import SCHEMA_VERSION, connect
+from core.db import MIGRATIONS, SCHEMA_VERSION, connect
+from core.models import WorkoutType
 
 
 @pytest.fixture
@@ -344,3 +345,80 @@ def test_delete_exercise_from_workout(conn: sqlite3.Connection) -> None:
     assert [s.exercise_id for s in repo.list_sets(conn, workout.id)] == [dips.id]
     assert len(repo.list_sets(conn, other.id)) == 1
     assert bench in repo.list_exercises(conn)
+
+
+# --- Migrations ---
+
+
+def test_v1_database_is_upgraded_without_data_loss(tmp_path: Path) -> None:
+    """A database from v0.1 (schema version 1) on the phone must survive the update."""
+    db_path = tmp_path / "v1.db"
+    old = sqlite3.connect(db_path)
+    old.executescript(MIGRATIONS[0])
+    old.executescript(
+        """
+        INSERT INTO exercise (id, name) VALUES (1, 'Benchpress');
+        INSERT INTO workout (id, name, date, notes) VALUES (1, 'Bench focus', '2026-10-22', 'ok');
+        INSERT INTO workout_set (workout_id, exercise_id, set_number, reps, weight_kg)
+            VALUES (1, 1, 1, 8, 80);
+        PRAGMA user_version = 1;
+        """
+    )
+    old.close()
+
+    conn = connect(db_path)
+
+    assert conn.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
+    workout = repo.get_workout(conn, 1)
+    assert workout is not None
+    assert (workout.name, workout.date, workout.notes) == ("Bench focus", date(2026, 10, 22), "ok")
+    assert workout.type == WorkoutType.STRENGTH
+    assert [(s.reps, s.weight_kg) for s in repo.list_sets(conn, 1)] == [(8, 80)]
+    conn.close()
+
+
+# --- Runs ---
+
+
+def test_create_workout_defaults_to_strength(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    assert workout.type == WorkoutType.STRENGTH
+    assert repo.get_run(conn, workout.id) is None
+
+
+def test_create_and_get_run(conn: sqlite3.Connection) -> None:
+    workout, run = repo.create_run(
+        conn, "Easy run", date(2026, 10, 24), distance_km=10.5, duration_s=3150
+    )
+    assert workout.type == WorkoutType.RUN
+    assert repo.get_workout(conn, workout.id) == workout
+    assert repo.get_run(conn, workout.id) == run
+    assert (run.distance_km, run.duration_s) == (10.5, 3150)
+
+
+def test_create_run_rejects_invalid_values(conn: sqlite3.Connection) -> None:
+    with pytest.raises(ValueError):
+        repo.create_run(conn, "x", date(2026, 10, 24), distance_km=0, duration_s=600)
+    with pytest.raises(ValueError):
+        repo.create_run(conn, "x", date(2026, 10, 24), distance_km=5, duration_s=0)
+    assert repo.list_workouts(conn) == []
+
+
+def test_update_run(conn: sqlite3.Connection) -> None:
+    workout, _ = repo.create_run(conn, "", date(2026, 10, 24), distance_km=5, duration_s=1500)
+    updated = repo.update_run(conn, workout.id, distance_km=5.2, duration_s=1490)
+    assert updated == repo.get_run(conn, workout.id)
+    assert (updated.distance_km, updated.duration_s) == (5.2, 1490)
+
+
+def test_delete_run_workout_removes_run(conn: sqlite3.Connection) -> None:
+    workout, _ = repo.create_run(conn, "", date(2026, 10, 24), distance_km=5, duration_s=1500)
+    repo.delete_workout(conn, workout.id)
+    assert repo.get_run(conn, workout.id) is None
+    assert conn.execute("SELECT COUNT(*) FROM run").fetchone()[0] == 0
+
+
+def test_list_workouts_mixes_types(conn: sqlite3.Connection) -> None:
+    repo.create_workout(conn, "Chest", date(2026, 10, 22))
+    repo.create_run(conn, "Run", date(2026, 10, 24), distance_km=5, duration_s=1500)
+    assert [w.type for w in repo.list_workouts(conn)] == [WorkoutType.RUN, WorkoutType.STRENGTH]

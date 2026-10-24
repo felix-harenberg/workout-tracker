@@ -30,6 +30,17 @@ MIGRATIONS: list[str] = [
 
     CREATE INDEX idx_workout_set_workout ON workout_set(workout_id);
     """,
+    # v0.2: runs
+    """
+    ALTER TABLE workout ADD COLUMN type TEXT NOT NULL DEFAULT 'strength'
+        CHECK (type IN ('strength', 'run'));
+
+    CREATE TABLE run (
+        workout_id INTEGER PRIMARY KEY REFERENCES workout(id) ON DELETE CASCADE,
+        distance_km REAL NOT NULL CHECK (distance_km > 0),
+        duration_s INTEGER NOT NULL CHECK (duration_s > 0)
+    );
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)
