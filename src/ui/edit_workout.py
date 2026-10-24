@@ -3,9 +3,10 @@ from datetime import date
 import flet as ft
 
 from core import repository as repo
-from core.models import Workout
+from core.models import Workout, WorkoutType
 from core.training import date_from_picker, format_date
 from ui.app import App
+from ui.run_fields import RunFields
 
 
 def edit_workout_view(app: App, workout: Workout) -> ft.View:
@@ -34,7 +35,19 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
     )
     date_button.on_click = lambda _: app.page.show_dialog(date_picker)
 
+    run_fields = (
+        RunFields(app, repo.get_run(app.conn, workout.id))
+        if workout.type == WorkoutType.RUN
+        else None
+    )
+
     def save(_: ft.Event) -> None:
+        if run_fields is not None:
+            values = run_fields.read()
+            if values is None:
+                return
+            distance_km, duration_s = values
+            repo.update_run(app.conn, workout.id, distance_km=distance_km, duration_s=duration_s)
         repo.update_workout(
             app.conn,
             workout.id,
@@ -50,6 +63,7 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
         controls=[
             name_field,
             ft.Row([ft.Text("Datum"), date_button]),
+            *(run_fields.controls if run_fields else []),
             notes_field,
             ft.Button(content="Speichern", on_click=save),
         ],
