@@ -64,8 +64,8 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 - [x] Screen: Liste vergangener Workouts, Tippen öffnet Details
 - [x] Workout bearbeiten und löschen
 - [x] Export aller Daten als CSV (Backup, weil alles nur auf dem Handy liegt, und Grundlage für spätere ML-Auswertung)
-- [ ] Release v0.1 auf GitHub, APK installiert
-- [ ] **Ab jetzt jedes Training in der App loggen.** Was im Gym nervt, wird ein Issue
+- [x] Release v0.1 auf GitHub, APK installiert
+- [x] **Ab jetzt jedes Training in der App loggen.** Was im Gym nervt, wird ein Issue
 
 ### Phase 3: Laufen, v0.2 (Woche 6 bis 7)
 
