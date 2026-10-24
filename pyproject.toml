@@ -21,7 +21,9 @@ where = ["src"]
 [tool.flet]
 # Android package id is org + project name. Changing it later installs a separate app.
 org = "io.github.felixharenberg"
-product = "Workout Tracker"
+product = "Glas-Test"
+# Spike only: own package id so it installs next to the real app.
+bundle_id = "io.github.felixharenberg.glastest"
 
 [tool.flet.app]
 path = "src"
