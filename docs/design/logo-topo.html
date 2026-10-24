@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topo-Bizeps</title>
+<!-- Logo idea: flexed biceps drawn as topographic contour lines. See ../ideen-roadmap.md. -->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  section { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 800; }
+  section > p { color: #aaa; margin: 6px 0 30px; max-width: 75ch; line-height: 1.5; }
+  .hero { display: flex; justify-content: center; margin-bottom: 40px; }
+  .hero svg { width: 420px; max-width: 100%; height: auto; border-radius: 28px; }
+  .icons { display: flex; flex-wrap: wrap; gap: 36px; justify-content: center; }
+  .ic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ic svg { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+  .ic h3 { font-size: 15px; font-weight: 800; }
+  .ic p { font-size: 12px; color: #aaa; max-width: 190px; text-align: center; line-height: 1.45; }
+  .home { margin: 40px auto 0; width: 320px; padding: 24px 20px; border-radius: 34px; background: linear-gradient(160deg, #2b2340, #120f1a);
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #ddd; }
+  .home svg, .home .ph { width: 54px; height: 54px; border-radius: 14px; }
+  .home .ph { background: rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+<section>
+  <h1>Logo-Idee: Bizeps als Topografie</h1>
+  <p>Ein angespannter Arm wie 💪, gezeichnet aus Höhenlinien. Die höchste Stelle der „Landkarte“ ist der Bizeps-Peak, dort liegen die Ringe am dichtesten. Wie in deinem Beispielbild: einige Linien dick, die dazwischen dünn.</p>
+  <div class="hero" id="hero"></div>
+  <div class="icons" id="icons"></div>
+  <div class="home" id="home"></div>
+</section>
+
+<script>
+  // Silhouette of a flexed arm (like 💪): shoulder left, elbow bottom right, fist on top.
+  let outline = [
+    [16, 124], [60, 128], [96, 126], [118, 119], [129, 104], [129, 80], [127, 58], [129, 44], [123, 28],
+    [108, 19], [91, 21], [80, 30], [79, 43], [88, 51], [99, 55], [103, 67], [101, 84], [94, 93], [84, 91],
+    [78, 80], [68, 67], [53, 62], [38, 69], [28, 84], [18, 98],
+  ];
+  // Chaikin smoothing turns the polygon into soft curves.
+  for (let it = 0; it < 3; it++) {
+    outline = outline.flatMap((p, i) => {
+      const q = outline[(i + 1) % outline.length];
+      return [[.75 * p[0] + .25 * q[0], .75 * p[1] + .25 * q[1]], [.25 * p[0] + .75 * q[0], .25 * p[1] + .75 * q[1]]];
+    });
+  }
+  function segDist(px, py, [ax, ay], [bx, by]) {
+    const dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy;
+    const t = len ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len)) : 0;
+    return Math.hypot(px - ax - t * dx, py - ay - t * dy);
+  }
+  function inside(px, py) {
+    let hit = false;
+    for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
+      const [xi, yi] = outline[i], [xj, yj] = outline[j];
+      if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  }
+  // Height = distance to the outline inside the arm, plus an extra hill on the biceps.
+  function height(x, y) {
+    let d = Infinity;
+    for (let i = 0; i < outline.length; i++) d = Math.min(d, segDist(x, y, outline[i], outline[(i + 1) % outline.length]));
+    const hill = 16 * Math.exp(-((x - 55) ** 2 + (y - 86) ** 2) / (2 * 15 ** 2));
+    return inside(x, y) ? d + hill : -d;
+  }
+
+  // Marching squares over a 150x150 box: returns an SVG path for one contour level.
+  const STEP = 1, N = Math.round(150 / STEP);
+  const grid = [];
+  for (let j = 0; j <= N; j++) { grid.push([]); for (let i = 0; i <= N; i++) grid[j].push(height(i * STEP, j * STEP)); }
+  function contour(level) {
+    let d = "";
+    const lerp = (a, b) => (level - a) / (b - a);
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+      const tl = grid[j][i], tr = grid[j][i + 1], br = grid[j + 1][i + 1], bl = grid[j + 1][i];
+      const c = (tl > level) << 3 | (tr > level) << 2 | (br > level) << 1 | (bl > level);
+      if (c === 0 || c === 15) continue;
+      const x = i * STEP, y = j * STEP;
+      const T = [x + lerp(tl, tr) * STEP, y], R = [x + STEP, y + lerp(tr, br) * STEP];
+      const B = [x + lerp(bl, br) * STEP, y + STEP], L = [x, y + lerp(tl, bl) * STEP];
+      const segs = { 1: [L, B], 2: [B, R], 3: [L, R], 4: [T, R], 5: [L, T, B, R], 6: [T, B], 7: [L, T],
+                     8: [L, T], 9: [T, B], 10: [T, R, L, B], 11: [T, R], 12: [L, R], 13: [B, R], 14: [L, B] }[c];
+      for (let k = 0; k < segs.length; k += 2) {
+        d += `M${segs[k][0].toFixed(2)} ${segs[k][1].toFixed(2)}L${segs[k + 1][0].toFixed(2)} ${segs[k + 1][1].toFixed(2)}`;
+      }
+    }
+    return d;
+  }
+  const levels = [];
+  // Evenly spaced levels from the silhouette up to just below the highest peak.
+  const peak = Math.max(...grid.flat()), COUNT = 10, LOW = 0.3;
+  for (let k = 0; k < COUNT; k++) levels.push({ d: contour(LOW + k * (peak - 0.06 - LOW) / (COUNT - 1)), thick: k % 3 === 0 });
+
+  function topo({ bg, defs = "", line, thin = 0.7, thick = 1.8, glow = false, id }) {
+    const g = glow ? `<filter id="glow${id}"><feGaussianBlur stdDeviation="2.2"/></filter>` : "";
+    const paths = levels.map(l => `<path d="${l.d}" stroke-width="${l.thick ? thick : thin}"/>`).join("");
+    const glowLayer = glow ? `<g stroke="#b026ff" fill="none" stroke-linecap="round" filter="url(#glow${id})" opacity=".9">${paths}</g>` : "";
+    return `<svg viewBox="0 0 150 150"><defs>${defs}${g}</defs>${bg}${glowLayer}` +
+           `<g stroke="${line}" fill="none" stroke-linecap="round">${paths}</g></svg>`;
+  }
+
+  const bgF = id => ({
+    defs: `<radialGradient id="f1${id}" cx="85%" cy="10%" r="75%"><stop offset="0" stop-color="#b026ff"/><stop offset=".55" stop-color="#b026ff" stop-opacity=".25"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>` +
+          `<radialGradient id="f2${id}" cx="5%" cy="95%" r="65%"><stop offset="0" stop-color="#5a1bff" stop-opacity=".9"/><stop offset="1" stop-color="#5a1bff" stop-opacity="0"/></radialGradient>`,
+    bg: `<rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#f1${id})"/><rect width="150" height="150" fill="url(#f2${id})"/>`,
+  });
+  const variants = [
+    { name: "I · Weiss auf Schwarz", text: "Wie dein Beispielbild: helle Linien auf dunklem Grund.",
+      opts: id => ({ id, bg: `<rect width="150" height="150" fill="#07060a"/>`, line: "#f3eefc" }) },
+    { name: "J · Neon-Linien", text: "Violette Höhenlinien mit Leuchten auf Schwarz.",
+      opts: id => ({ id, bg: `<rect width="150" height="150" fill="#07060a"/>`, line: "#e2b3ff", glow: true }) },
+    { name: "K · Auf Icon F", text: "Dein Favorit F als Hintergrund, Linien zart darüber.",
+      opts: id => ({ id, ...bgF(id), line: "rgba(243,238,252,.85)" }) },
+    { name: "L · Auf Icon E", text: "Reines Violett, schwarze Linien. Sehr grafisch.",
+      opts: id => ({ id, bg: `<rect width="150" height="150" fill="#b026ff"/>`, line: "#07060a", thin: .8, thick: 2 }) },
+  ];
+
+  document.getElementById("hero").innerHTML = topo(variants[1].opts("hero"));
+  document.getElementById("icons").innerHTML = variants.map((v, k) =>
+    `<div class="ic">${topo(v.opts("i" + k))}<h3>${v.name}</h3><p>${v.text}</p></div>`).join("");
+  const cells = [];
+  for (let i = 0; i < 12; i++) cells.push(`<div><span class="ph"></span>App</div>`);
+  [1, 4, 6, 11].forEach((pos, k) => { cells[pos] = `<div>${topo({ ...variants[k].opts("h" + k), thin: 1, thick: 2.4 })}${variants[k].name[0]}</div>`; });
+  document.getElementById("home").innerHTML = cells.join("");
+</script>
+</body>
+</html>
