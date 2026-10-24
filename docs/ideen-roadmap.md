@@ -26,8 +26,8 @@ Stand: 22. Oktober 2026
    - **Runde 2** → [design/logo-ideen.html](design/logo-ideen.html): M Bizeps aus Dreiecken gefüllt (Low-Poly wie Elefant-Beispiel), N Sternbild (nur Linien + Punkte, Neon), O „68“ Neon, P „68“ als Kontur auf Violett. 68 = F (6.) + H (8.) Buchstabe. Verworfen: 247 und 1441 (bestehende Marken), „Do it“ (zu nah an Nike). Felix: Dreiecke gefallen nicht.
    - **Runde 3** → [design/logo-eckig.html](design/logo-eckig.html): eckiger Bizeps nach Felix' Skizze, weiss gefüllt, simpel. Formen Q (wie Skizze), R (nur rechte Winkel), S (mit Bizeps-Spitze), jeweils auf Schwarz, F und E.
 7. [x] **README-Auftritt** (Aufbau passt so) → [design/readme/README-entwurf.md](design/readme/README-entwurf.md), Titelbild [design/readme/hero.png](design/readme/hero.png). Zielgruppe: Nutzer und Recruiter gleichermassen. Aufbau: Icon, Name, Einzeiler, Badges, Titelbild, Sprungmarken; danach Why, Features, Install (für Nutzer), dann How it's built, Run from source, What I learned (für Recruiter/Entwickler). Sprache Englisch. Titelbild zeigt Konzept-Entwürfe, vor 1.0 durch echte Screenshots ersetzen.
-8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
+8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy? Test-App auf Wegwerf-Branch `spike/glas-test` (eigene Paket-ID `io.github.felixharenberg.glastest`, installiert sich neben der echten App). 24 Glas-Karten zum Scrollen, Schalter für Unschärfe an/aus. APK per GitHub Actions.
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Themen 1 bis 6 erledigt (App-Name noch offen). Themen 1 bis 7 erledigt (App-Name noch offen). Als Nächstes: Thema 8 (Glas-Effekt-Test). Danach 7, 8.
+Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Themen 1 bis 6 erledigt (App-Name noch offen). Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8 läuft: Test-APK wird gebaut, Ergebnis vom Handy steht aus. Danach 7, 8.
