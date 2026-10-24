@@ -1,6 +1,7 @@
 import flet as ft
 
 from core import repository as repo
+from core import stats
 from core.models import Exercise, Workout, WorkoutSet
 from core.training import (
     format_date,
@@ -28,6 +29,13 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         )
     else:
         history = ft.Text("Zum ersten Mal dabei.", color=ft.Colors.GREY)
+
+    pr = stats.exercise_pr(app.conn, exercise.id)
+    pr_line: list[ft.Control] = (
+        [ft.Text(f"🏆 PR: {stats.format_1rm(pr.best_1rm)} (1RM geschätzt)", color=ft.Colors.GREY)]
+        if pr
+        else []
+    )
 
     suggestion = suggest_next_set(last_sets, current)
     weight_value, reps_value = suggestion if suggestion else (None, None)
@@ -99,6 +107,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         ),
         controls=[
             history,
+            *pr_line,
             ft.Divider(),
             *set_rows,
             ft.Text(f"Satz {len(current) + 1}", weight=ft.FontWeight.BOLD),

@@ -47,7 +47,10 @@ def workout_list_view(app: App) -> ft.View:
         appbar=ft.AppBar(
             title=ft.Text("Workouts"),
             actions=[
-                ft.IconButton(icon=ft.Icons.SHARE, tooltip="Als CSV exportieren", on_click=export)
+                ft.IconButton(
+                    icon=ft.Icons.INSIGHTS, tooltip="Statistik", on_click=lambda _: app.go("/stats")
+                ),
+                ft.IconButton(icon=ft.Icons.SHARE, tooltip="Als CSV exportieren", on_click=export),
             ],
         ),
         controls=content,

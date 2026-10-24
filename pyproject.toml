@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 authors = [{ name = "Felix Harenberg" }]
 license = "MIT"
-dependencies = ["flet>=1.0,<2"]
+dependencies = ["flet>=1.0,<2", "flet-charts>=1.0,<2"]
 
 [project.optional-dependencies]
 dev = ["flet[all]>=1.0,<2", "pytest>=9", "ruff>=0.17"]

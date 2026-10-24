@@ -68,6 +68,11 @@ def exercise_1rm_history(conn: sqlite3.Connection, exercise_id: int) -> list[tup
     return sorted(best_per_day.items())
 
 
+def format_tonnage(kg: float) -> str:
+    """Total lifted weight with Swiss thousands separator, e.g. "12'500 kg"."""
+    return f"{kg:,.0f} kg".replace(",", "'")
+
+
 @dataclass(frozen=True)
 class WeekVolume:
     week_start: date  # Monday

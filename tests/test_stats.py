@@ -146,3 +146,10 @@ def test_pace_history_oldest_first(conn: sqlite3.Connection) -> None:
     repo.create_workout(conn, "Chest", date(2026, 10, 15))
 
     assert stats.pace_history(conn) == [(date(2026, 10, 10), 330), (date(2026, 10, 20), 300)]
+
+
+@pytest.mark.parametrize(
+    ("kg", "text"), [(0, "0 kg"), (640, "640 kg"), (12500, "12'500 kg"), (12499.6, "12'500 kg")]
+)
+def test_format_tonnage(kg: float, text: str) -> None:
+    assert stats.format_tonnage(kg) == text

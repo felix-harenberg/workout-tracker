@@ -29,7 +29,9 @@ class App:
         from ui.edit_workout import edit_workout_view
         from ui.exercise_picker import exercise_picker_view
         from ui.exercise_sets import exercise_sets_view
+        from ui.exercise_stats import exercise_stats_view
         from ui.new_workout import new_workout_view
+        from ui.stats import stats_view
         from ui.workout_detail import workout_detail_view
         from ui.workout_list import workout_list_view
 
@@ -39,6 +41,13 @@ class App:
             match parts:
                 case ["workout", "new"]:
                     views.append(new_workout_view(self))
+                case ["stats"]:
+                    views.append(stats_view(self))
+                case ["stats", "exercise", exercise_id]:
+                    exercise = repo.get_exercise(self.conn, int(exercise_id))
+                    if exercise is None:
+                        raise LookupError
+                    views += [stats_view(self), exercise_stats_view(self, exercise)]
                 case ["workout", workout_id, *rest]:
                     workout = repo.get_workout(self.conn, int(workout_id))
                     if workout is None:
