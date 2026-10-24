@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App-Icon ohne Logo</title>
+<!-- App icon options v2: pure color / background pattern, no logo or text. See ../ideen-roadmap.md. -->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  section { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 800; }
+  section > p { color: #aaa; margin: 6px 0 30px; max-width: 75ch; line-height: 1.5; }
+  .icons { display: flex; flex-wrap: wrap; gap: 36px; justify-content: center; }
+  .ic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ic svg { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+  .ic h3 { font-size: 15px; font-weight: 800; }
+  .ic p { font-size: 12px; color: #aaa; max-width: 190px; text-align: center; line-height: 1.45; }
+  .homes { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin-top: 40px; }
+  .home { width: 320px; padding: 24px 20px; border-radius: 34px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; }
+  .home.dark { background: linear-gradient(160deg, #2b2340, #120f1a); }
+  .home.light { background: linear-gradient(160deg, #dfe6ee, #b9c6d6); }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; }
+  .home.dark div { color: #ddd; } .home.light div { color: #222; }
+  .home svg, .home .ph { width: 54px; height: 54px; border-radius: 14px; }
+  .home.dark .ph { background: rgba(255,255,255,.12); } .home.light .ph { background: rgba(255,255,255,.6); }
+  .homes h3 { width: 100%; text-align: center; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; }
+</style>
+</head>
+<body>
+<section>
+  <h1>Thema 6: App-Icon ohne Logo</h1>
+  <p>Nur Farbe bzw. das violette Leuchten aus dem App-Hintergrund, mit Schwarz, ohne Zeichen oder Text. Unten auf einem dunklen und einem hellen Homescreen.</p>
+
+  <div class="icons">
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon E"><rect width="150" height="150" fill="#b026ff"/></svg>
+      <h3>E · Reines Violett</h3>
+      <p>Eine Fläche Neon-Violett. Maximal simpel, fällt auf jedem Homescreen auf.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon F">
+        <defs>
+          <radialGradient id="f1" cx="85%" cy="10%" r="75%"><stop offset="0" stop-color="#b026ff"/><stop offset=".55" stop-color="#b026ff" stop-opacity=".25"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>
+          <radialGradient id="f2" cx="5%" cy="95%" r="65%"><stop offset="0" stop-color="#5a1bff" stop-opacity=".9"/><stop offset="1" stop-color="#5a1bff" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#f1)"/><rect width="150" height="150" fill="url(#f2)"/>
+      </svg>
+      <h3>F · App-Hintergrund</h3>
+      <p>Genau das Muster aus der App: Violett oben rechts, Blau-Violett unten links, Schwarz dazwischen.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon G">
+        <defs>
+          <radialGradient id="g1" cx="70%" cy="25%" r="55%"><stop offset="0" stop-color="#d27bff"/><stop offset=".35" stop-color="#b026ff"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#g1)"/>
+      </svg>
+      <h3>G · Ein Leuchten</h3>
+      <p>Ein einzelner heller Glow auf Schwarz, wie eine Lampe. Mehr Schwarz als Farbe.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon H">
+        <defs>
+          <linearGradient id="h1" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#07060a"/><stop offset=".45" stop-color="#2a0a4a"/><stop offset=".8" stop-color="#b026ff"/><stop offset="1" stop-color="#d27bff"/></linearGradient>
+        </defs>
+        <rect width="150" height="150" fill="url(#h1)"/>
+      </svg>
+      <h3>H · Verlauf</h3>
+      <p>Diagonaler Verlauf von Schwarz unten links zu hellem Violett oben rechts.</p>
+    </div>
+  </div>
+
+  <div class="homes">
+    <h3>Auf dem Homescreen</h3>
+    <div class="home dark" id="home-dark"></div>
+    <div class="home light" id="home-light"></div>
+  </div>
+</section>
+
+<script>
+  // Copy each icon onto two fake home screens between placeholder apps.
+  const icons = [...document.querySelectorAll(".ic svg")];
+  const names = ["E", "F", "G", "H"];
+  for (const [id, suffix] of [["home-dark", "d"], ["home-light", "l"]]) {
+    const cells = [];
+    for (let i = 0; i < 12; i++) cells.push(`<div><span class="ph"></span>App</div>`);
+    [1, 4, 6, 11].forEach((pos, k) => {
+      const svg = icons[k].outerHTML.replace(/id="(\w+)"/g, `id="$1${suffix}"`).replace(/url\(#(\w+)\)/g, `url(#$1${suffix})`);
+      cells[pos] = `<div>${svg}Workout ${names[k]}</div>`;
+    });
+    document.getElementById(id).innerHTML = cells.join("");
+  }
+</script>
+</body>
+</html>
