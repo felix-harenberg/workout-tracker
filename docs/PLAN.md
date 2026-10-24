@@ -1,4 +1,4 @@
-# Hyrox Tracker: Projektplan
+# Workout Tracker: Projektplan
 
 Stand: 8. Oktober 2026 · Felix
 
@@ -6,7 +6,7 @@ Stand: 8. Oktober 2026 · Felix
 
 ## Ziel und Rahmen
 
-Eine Android-App in Python, mit der du Krafttraining, Läufe und Hyrox-Einheiten loggst, offline auf dem Handy. Öffentlich auf GitHub, mit Anleitung zum Nachbauen. Budget: 3 Stunden pro Woche, Version 1.0 in ca. 13 Wochen (Mitte Januar 2027).
+Eine Android-App in Python, mit der du Krafttraining und Läufe loggst, offline auf dem Handy. Öffentlich auf GitHub, mit Anleitung zum Nachbauen. Budget: 3 Stunden pro Woche, Version 1.0 in ca. 13 Wochen (Mitte Januar 2027).
 
 **Der eine Meilenstein, der zählt:** v0.1 nach ca. 5 Wochen. Ab da loggst du jedes Training in deiner eigenen App. Alles danach baut auf einer App auf, die du schon benutzt.
 
@@ -16,6 +16,7 @@ Eine Android-App in Python, mit der du Krafttraining, Läufe und Hyrox-Einheiten
 - Kein iOS
 - Keine Trainingspläne, Timer oder Social-Features
 - Kein Play Store (Installation per APK aus GitHub Releases)
+- Kein Hyrox (gestrichen am 24.10.2026: Rennen laufen über Roxfit, Gym und Laufen sind wichtiger)
 
 Kommt dir während dem Bauen eine neue Feature-Idee, landet sie als GitHub Issue mit Label `later`. Nicht im Code.
 
@@ -74,18 +75,19 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 - [x] Tests für die Pace-Berechnung
 - [ ] Release v0.2
 
-### Phase 4: Hyrox, v0.3 (Woche 8 bis 9)
+### Phase 4: Hyrox (gestrichen)
 
-- [ ] Workout-Typ `hyrox`: 8 Laufsplits und die 8 Stationen in fester Reihenfolge (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Rowing, Farmers Carry, Sandbag Lunges, Wall Balls)
-- [ ] Zeit pro Abschnitt eintragen, Gesamtzeit wird berechnet
-- [ ] Auch Teil-Simulationen erlauben (z.B. nur 4 Stationen)
-- [ ] Release v0.3
+Am 24.10.2026 gestrichen: Hyrox-Rennen trackt Felix mit Roxfit, für Gym und Laufen ist die App wichtiger. Die gewonnenen zwei Wochen sind Puffer, keine neuen Features.
 
-### Phase 5: Auswertung, v0.4 (Woche 10 bis 11)
+- [x] ~~Workout-Typ `hyrox`: 8 Laufsplits und die 8 Stationen in fester Reihenfolge (SkiErg, Sled Push, Sled Pull, Burpee Broad Jumps, Rowing, Farmers Carry, Sandbag Lunges, Wall Balls)~~
+- [x] ~~Zeit pro Abschnitt eintragen, Gesamtzeit wird berechnet~~
+- [x] ~~Auch Teil-Simulationen erlauben (z.B. nur 4 Stationen)~~
+
+### Phase 5: Auswertung, v0.3 (Woche 10 bis 11)
 
 - [ ] `core/`: Berechnung von PRs (bestes Gewicht, geschätztes 1RM), Wochenvolumen, Pace-Verlauf, mit Tests
 - [ ] Screen mit Fortschrittsgraphen pro Übung und für Lauf-Pace
-- [ ] Release v0.4
+- [ ] Release v0.3
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 
@@ -101,7 +103,7 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 Das Repo ist ab Tag 1 öffentlich. Eine saubere Commit-Historie über drei Monate zeigt mehr als ein einzelner grosser Upload am Ende.
 
 ```
-hyrox-tracker/
+workout-tracker/
 ├── src/
 │   ├── main.py          # Einstiegspunkt der App
 │   ├── core/            # Modelle, Datenbank, Berechnungen (kein Flet!)
@@ -125,7 +127,7 @@ hyrox-tracker/
 
 1. **Fixer Slot:** 3 Stunden zu festen Zeiten im Kalender, z.B. zweimal 90 Minuten. Nicht "wenn ich Zeit habe".
 2. **Jede Session endet mit einem Commit**, auch wenn es nur ein halbes Feature ist. Und mit einer Notiz im Issue, wo du das nächste Mal weitermachst.
-3. **Phasen nicht überspringen.** Graphen gibt es erst, wenn Hyrox steht.
+3. **Phasen nicht überspringen.** Graphen gibt es erst, wenn Laufen steht.
 4. **Neue Ideen = Issue mit Label `later`.** Nie sofort einbauen.
 5. **Prüfungsphase:** Wenn die ETH Vorrang braucht, pausierst du bewusst und schreibst das ins README. Pausieren ist erlaubt, stilles Liegenlassen nicht.
 6. **Blog läuft weiter:** Ein Post pro Woche bleibt. Der Fortschritt am Tracker ist gutes Material dafür.

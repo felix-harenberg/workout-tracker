@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Hyrox Tracker: offline Android app (Python + Flet + SQLite) to log strength training, runs and Hyrox sessions. Public repo, portfolio project. Owner: Felix, CS student at ETH, 3 hours per week budget.
+Workout Tracker: offline Android app (Python + Flet + SQLite) to log strength training and runs. Public repo, portfolio project. Owner: Felix, CS student at ETH, 3 hours per week budget.
 
 ## Read first
 
@@ -13,7 +13,7 @@ Hyrox Tracker: offline Android app (Python + Flet + SQLite) to log strength trai
 Felix tends to add features mid-project. Your job is to protect the scope:
 
 - Anything not in the current phase, or listed under "Bewusst nicht in 1.0", is **not built**. Instead, propose a GitHub issue with label `later` (`gh issue create --label later ...`) and continue.
-- No login, server, cloud sync, iOS, training plans, timers, social features, Play Store.
+- No login, server, cloud sync, iOS, training plans, timers, social features, Play Store, Hyrox (dropped 2026-10-24; Felix uses Roxfit for races).
 - If a request conflicts with the plan, say so directly before doing anything.
 
 ## Architecture rules
