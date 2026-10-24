@@ -1,7 +1,13 @@
-"""Domain models. Units: weight in kg."""
+"""Domain models. Units: weight and distance in kg and km, durations in seconds."""
 
 from dataclasses import dataclass
 from datetime import date
+from enum import StrEnum
+
+
+class WorkoutType(StrEnum):
+    STRENGTH = "strength"
+    RUN = "run"
 
 
 @dataclass(frozen=True)
@@ -16,6 +22,7 @@ class Workout:
     name: str
     date: date
     notes: str = ""
+    type: WorkoutType = WorkoutType.STRENGTH
 
 
 @dataclass(frozen=True)
@@ -30,3 +37,10 @@ class WorkoutSet:
     @property
     def is_bodyweight(self) -> bool:
         return self.weight_kg is None
+
+
+@dataclass(frozen=True)
+class Run:
+    workout_id: int
+    distance_km: float
+    duration_s: int

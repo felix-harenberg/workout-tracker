@@ -43,20 +43,26 @@ def test_one_row_per_set(conn: sqlite3.Connection) -> None:
             "date": "2026-10-22",
             "workout_name": "Chestday",
             "workout_notes": "good",
+            "workout_type": "strength",
             "exercise": "Bankdrücken",
             "set_number": "1",
             "reps": "8",
             "weight_kg": "82.5",
+            "distance_km": "",
+            "duration_s": "",
         },
         {
             "workout_id": str(workout.id),
             "date": "2026-10-22",
             "workout_name": "Chestday",
             "workout_notes": "good",
+            "workout_type": "strength",
             "exercise": "Dips",
             "set_number": "1",
             "reps": "12",
             "weight_kg": "",
+            "distance_km": "",
+            "duration_s": "",
         },
     ]
 
@@ -88,6 +94,14 @@ def test_rows_sorted_oldest_workout_first(conn: sqlite3.Connection) -> None:
 def test_notes_with_commas_and_newlines_survive(conn: sqlite3.Connection) -> None:
     repo.create_workout(conn, "x", date(2026, 10, 22), notes='tired, "heavy"\nsecond line')
     assert read_rows(export_csv(conn))[0]["workout_notes"] == 'tired, "heavy"\nsecond line'
+
+
+def test_run_exports_distance_and_duration(conn: sqlite3.Connection) -> None:
+    repo.create_run(conn, "Easy", date(2026, 10, 24), distance_km=10.5, duration_s=3150)
+    (row,) = read_rows(export_csv(conn))
+    assert row["workout_type"] == "run"
+    assert (row["distance_km"], row["duration_s"]) == ("10.5", "3150")
+    assert row["exercise"] == row["reps"] == row["weight_kg"] == ""
 
 
 def test_export_filename() -> None:
