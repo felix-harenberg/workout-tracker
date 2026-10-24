@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rekord und App-Icon</title>
+<!-- Draft of the record moment and app icon options in style B. See design.md and ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a;
+    --text: #f3eefc;
+    --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff;
+    --violet-light: #d27bff;
+    --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06);
+    --glass-border: rgba(255, 255, 255, .14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  section { max-width: 1200px; margin: 0 auto 56px; }
+  section > h1 { font-size: 26px; font-weight: 800; }
+  section > p { color: #aaa; margin: 6px 0 26px; max-width: 75ch; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .col h2 { font-size: 16px; font-weight: 800; }
+  .col p.desc { font-size: 13px; color: #aaa; max-width: 320px; line-height: 1.5; }
+  .col p.desc b { color: #eee; }
+
+  .phone { width: 320px; height: 680px; border-radius: 40px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text);
+           box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 250px; height: 250px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 210px; height: 210px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
+  .dim { opacity: .25; filter: blur(2px); }
+
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 54px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+  .bar { height: 120px; }
+
+  .overlay { position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); z-index: 3;
+             padding: 26px 20px 20px; text-align: center; border-radius: 26px;
+             background: rgba(20, 12, 30, .72); border: 1px solid rgba(176, 38, 255, .55);
+             backdrop-filter: blur(24px); box-shadow: 0 0 40px rgba(176, 38, 255, .35); }
+  .overlay .kicker { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; color: var(--violet-light); }
+  .overlay .pr { font-family: Anton, Impact, sans-serif; font-size: 56px; line-height: 1; margin: 10px 0 2px; }
+  .overlay .ex { font-size: 14px; color: var(--text-muted); font-weight: 600; }
+  .overlay .old { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .overlay .line { font-size: 17px; font-weight: 800; margin: 18px 0 18px; line-height: 1.35; }
+  .overlay .actions { display: flex; gap: 8px; }
+  .overlay .actions span { flex: 1; padding: 12px 0; border-radius: 14px; font-size: 13px; font-weight: 800; letter-spacing: 1px; }
+  .a-main { background: var(--violet); color: #fff; box-shadow: 0 0 20px rgba(176, 38, 255, .6); }
+  .a-sub { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); color: var(--text-muted); }
+  .overlay.warn { border-color: rgba(255,255,255,.25); box-shadow: none; }
+  .overlay.warn .kicker { color: var(--text-muted); }
+
+  .lines { max-width: 760px; margin: 30px auto 0; padding: 18px 22px; border-radius: 18px; background: #12101a; border: 1px solid #2a2635; }
+  .lines h3 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
+  .lines ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 24px; }
+  .lines li { font-size: 15px; font-weight: 600; color: #eee; }
+  .lines li::before { content: "› "; color: var(--violet-light); }
+
+  /* Icons */
+  .icons { display: flex; flex-wrap: wrap; gap: 36px; justify-content: center; }
+  .ic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ic svg { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+  .ic h3 { font-size: 15px; font-weight: 800; }
+  .ic p { font-size: 12px; color: #aaa; max-width: 190px; text-align: center; line-height: 1.45; }
+  .home { margin: 34px auto 0; width: 340px; padding: 26px 22px; border-radius: 34px; background: linear-gradient(160deg, #2b2340, #120f1a);
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 10px; }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #ddd; }
+  .home svg, .home .ph { width: 56px; height: 56px; border-radius: 14px; }
+  .home .ph { background: rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+
+<section>
+  <h1>Thema 4: Neuer Rekord</h1>
+  <p>Kurz, trocken, kein Konfetti. Erscheint nach dem Speichern eines Satzes über dem Satz-Screen und verschwindet nach ein paar Sekunden oder per Tap. Ist der Sprung verdächtig gross, fragt die App zuerst, ob du dich vertippt hast.</p>
+  <div class="row">
+
+    <div class="col">
+      <h2>1 · Normaler Rekord</h2>
+      <div class="phone">
+        <div class="screen dim">
+          <div class="label">Übung 2 von 4</div>
+          <div class="title">Bank<br><span class="accent">drücken</span></div>
+          <div class="glass bar"></div><div class="glass bar"></div>
+        </div>
+        <div class="overlay">
+          <div class="kicker">Neuer Rekord</div>
+          <div class="pr">85 kg × 6</div>
+          <div class="ex">Bankdrücken</div>
+          <div class="old">vorher 82.5 kg × 8 · 15. Okt</div>
+          <div class="line">Was hast du anderes erwartet?</div>
+          <div class="actions"><span class="a-main">WEITER</span></div>
+        </div>
+      </div>
+      <p class="desc">Ein Satz Text, keine Animation ausser einem kurzen violetten Aufleuchten. Der Spruch wechselt (siehe unten).<br><b>Rekord =</b> höheres Gewicht als je zuvor bei dieser Übung.</p>
+    </div>
+
+    <div class="col">
+      <h2>2 · Vertippt?</h2>
+      <div class="phone">
+        <div class="screen dim">
+          <div class="label">Übung 2 von 4</div>
+          <div class="title">Bank<br><span class="accent">drücken</span></div>
+          <div class="glass bar"></div><div class="glass bar"></div>
+        </div>
+        <div class="overlay warn">
+          <div class="kicker">Moment mal</div>
+          <div class="pr">825 kg × 8</div>
+          <div class="ex">Bankdrücken</div>
+          <div class="old">bisher bestes: 82.5 kg × 8</div>
+          <div class="line">Zehnmal so viel wie letzte Woche. Vertippt, oder bist du jetzt einfach so?</div>
+          <div class="actions"><span class="a-sub">KORRIGIEREN</span><span class="a-main">STIMMT SO</span></div>
+        </div>
+      </div>
+      <p class="desc">Ist das neue Gewicht mehr als ca. 20 % über dem bisherigen Bestwert, kommt erst diese Frage. „Korrigieren“ öffnet den Satz zum Bearbeiten. Kleine Tippfehler (85 statt 82.5) feiert die App einfach mit, das ist okay.</p>
+    </div>
+
+  </div>
+
+  <div class="lines">
+    <h3>Mögliche Sprüche (wechseln zufällig)</h3>
+    <ul>
+      <li>Was hast du anderes erwartet?</li>
+      <li>Überrascht? Wir nicht.</li>
+      <li>So sieht Durchziehen aus.</li>
+      <li>Nicht Glück. Training.</li>
+      <li>Letzte Woche war gestern.</li>
+      <li>Die Stange hat's auch gemerkt.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h1>Thema 6: App-Icon</h1>
+  <p>Vier Richtungen im Stil B. Die App deckt Gym und Laufen ab, deshalb kein reines Hantel-Icon. Unten siehst du, wie sie zwischen anderen Apps wirken.</p>
+  <div class="icons">
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon A">
+        <defs>
+          <radialGradient id="ga" cx="75%" cy="20%" r="80%"><stop offset="0" stop-color="#b026ff" stop-opacity=".9"/><stop offset=".6" stop-color="#3a0f6b" stop-opacity=".4"/><stop offset="1" stop-color="#07060a" stop-opacity="0"/></radialGradient>
+          <filter id="glowA"><feGaussianBlur stdDeviation="4"/></filter>
+        </defs>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#ga)"/>
+        <text x="75" y="112" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="104" fill="#d27bff" filter="url(#glowA)" opacity=".8">W</text>
+        <text x="75" y="112" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="104" fill="#f3eefc">W</text>
+      </svg>
+      <h3>A · Monogramm</h3>
+      <p>Ein fettes „W“ in der Titelschrift, Neon-Leuchten dahinter. Einfach, sofort wiedererkennbar.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon B">
+        <defs>
+          <radialGradient id="gb" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#5a1bff" stop-opacity=".5"/><stop offset="1" stop-color="#07060a" stop-opacity="0"/></radialGradient>
+          <filter id="glowB"><feGaussianBlur stdDeviation="3.5"/></filter>
+        </defs>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#gb)"/>
+        <g stroke="#b026ff" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#glowB)">
+          <line x1="30" y1="75" x2="120" y2="75"/><line x1="44" y1="52" x2="44" y2="98"/><line x1="106" y1="52" x2="106" y2="98"/>
+        </g>
+        <g stroke="#f3eefc" stroke-width="6" stroke-linecap="round" fill="none">
+          <line x1="30" y1="75" x2="120" y2="75"/><line x1="44" y1="52" x2="44" y2="98"/><line x1="106" y1="52" x2="106" y2="98"/>
+        </g>
+      </svg>
+      <h3>B · Neon-Hantel</h3>
+      <p>Hantel als Leuchtröhre. Sehr „Gym“, sagt aber nichts übers Laufen.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon C">
+        <defs>
+          <linearGradient id="gc" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#5a1bff"/><stop offset="1" stop-color="#b026ff"/></linearGradient>
+          <filter id="glowC"><feGaussianBlur stdDeviation="4"/></filter>
+        </defs>
+          <radialGradient id="gc2" cx="85%" cy="15%" r="70%"><stop offset="0" stop-color="#b026ff" stop-opacity=".6"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#gc2)"/>
+        <polyline points="22,104 54,104 66,74 82,118 98,52 112,86 128,86" fill="none" stroke="url(#gc)" stroke-width="12" stroke-linejoin="round" stroke-linecap="round" filter="url(#glowC)"/>
+        <polyline points="22,104 54,104 66,74 82,118 98,52 112,86 128,86" fill="none" stroke="#f3eefc" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <h3>C · Puls / Aufwärts</h3>
+      <p>Eine Zacke wie Puls oder Fortschritts-Kurve. Passt zu Gym und Laufen gleichermassen.</p>
+    </div>
+
+    <div class="ic">
+      <svg viewBox="0 0 150 150" aria-label="Icon D">
+        <defs>
+          <radialGradient id="gd1" cx="85%" cy="10%" r="70%"><stop offset="0" stop-color="#b026ff"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>
+          <radialGradient id="gd2" cx="5%" cy="95%" r="70%"><stop offset="0" stop-color="#5a1bff"/><stop offset="1" stop-color="#5a1bff" stop-opacity="0"/></radialGradient>
+        </defs>
+        <rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#gd1)"/><rect width="150" height="150" fill="url(#gd2)"/>
+        <rect x="30" y="30" width="90" height="90" rx="22" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>
+        <path d="M58 76 l12 12 l24 -26" fill="none" stroke="#f3eefc" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h3>D · Glas-Häkchen</h3>
+      <p>Milchglas-Kachel mit Häkchen, wie das Abhaken eines Satzes. Am nächsten an der Vorlage.</p>
+    </div>
+
+  </div>
+
+  <div class="home" id="home"></div>
+</section>
+
+<script>
+  // Copy each icon onto a fake home screen between placeholder apps.
+  const home = document.getElementById("home");
+  const names = ["W · A", "W · B", "W · C", "W · D"];
+  const icons = [...document.querySelectorAll(".ic svg")];
+  const cells = [];
+  for (let i = 0; i < 12; i++) cells.push(`<div><span class="ph"></span>App</div>`);
+  [1, 4, 6, 11].forEach((pos, k) => {
+    cells[pos] = `<div>${icons[k].outerHTML.replace(/id="(\w+)"/g, 'id="$1h"').replace(/url\(#(\w+)\)/g, "url(#$1h)")}${names[k]}</div>`;
+  });
+  home.innerHTML = cells.join("");
+</script>
+</body>
+</html>
