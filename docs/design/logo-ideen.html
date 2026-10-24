@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo-Ideen</title>
+<!-- Logo ideas round 2: low-poly biceps, constellation biceps, number marks. See ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  section { max-width: 1100px; margin: 0 auto 48px; }
+  h1 { font-size: 26px; font-weight: 800; }
+  h2 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  section > p { color: #aaa; margin: 6px 0 24px; max-width: 75ch; line-height: 1.5; }
+  .hero { display: flex; flex-wrap: wrap; gap: 28px; justify-content: center; margin-bottom: 28px; }
+  .hero svg { width: 320px; max-width: 100%; height: auto; border-radius: 28px; }
+  .icons { display: flex; flex-wrap: wrap; gap: 36px; justify-content: center; }
+  .ic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ic svg { width: 150px; height: 150px; border-radius: 34px; box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+  .ic h3 { font-size: 15px; font-weight: 800; }
+  .ic p { font-size: 12px; color: #aaa; max-width: 200px; text-align: center; line-height: 1.45; }
+  .home { margin: 10px auto 0; width: 320px; padding: 24px 20px; border-radius: 34px; background: linear-gradient(160deg, #2b2340, #120f1a);
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #ddd; }
+  .home svg, .home .ph { width: 54px; height: 54px; border-radius: 14px; }
+  .home .ph { background: rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+
+<section>
+  <h1>Logo-Ideen, Runde 2</h1>
+  <p>Zwei Bizeps-Varianten im Polygon-Stil wie dein Elefant, dazu Zahlen-Logos. Alles im Stil B: Schwarz, Neon-Violett.</p>
+</section>
+
+<section>
+  <h2>Bizeps aus Dreiecken</h2>
+  <p>Der 💪-Umriss wird in Dreiecke zerlegt, an jedem Eckpunkt sitzt ein kleiner Punkt. Links mit gefüllten Flächen in Violett-Tönen (wie der Elefant), rechts nur Linien und Punkte, wie ein Sternbild.</p>
+  <div class="hero" id="hero-poly"></div>
+</section>
+
+<section>
+  <h2>Zahl als Logo</h2>
+  <p><b>68</b> = F ist der 6. und H der 8. Buchstabe im Alphabet, also deine Initialen versteckt in einer Zahl. Wer es nicht weiss, sieht einfach eine starke Zahl.</p>
+  <div class="hero" id="hero-num"></div>
+</section>
+
+<section>
+  <h2>Als App-Icon</h2>
+  <div class="icons" id="icons"></div>
+  <div class="home" id="home" style="margin-top:36px"></div>
+</section>
+
+<script>
+  // Seeded random so the layout is the same on every load.
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  // Same 💪 outline as the topo concept, softened once.
+  let outline = [
+    [16, 124], [60, 128], [96, 126], [118, 119], [129, 104], [129, 80], [127, 58], [129, 44], [123, 28],
+    [108, 19], [91, 21], [80, 30], [79, 43], [88, 51], [99, 55], [103, 67], [101, 84], [94, 93], [84, 91],
+    [78, 80], [68, 67], [53, 62], [38, 69], [28, 84], [18, 98],
+  ];
+  outline = outline.flatMap((p, i) => {
+    const q = outline[(i + 1) % outline.length];
+    return [[.75 * p[0] + .25 * q[0], .75 * p[1] + .25 * q[1]], [.25 * p[0] + .75 * q[0], .25 * p[1] + .75 * q[1]]];
+  }).filter((_, i) => i % 3 !== 2);
+  function inside(px, py) {
+    let hit = false;
+    for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
+      const [xi, yi] = outline[i], [xj, yj] = outline[j];
+      if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) hit = !hit;
+    }
+    return hit;
+  }
+  function edgeDist(px, py) {
+    let d = Infinity;
+    for (let i = 0; i < outline.length; i++) {
+      const [ax, ay] = outline[i], [bx, by] = outline[(i + 1) % outline.length];
+      const dx = bx - ax, dy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+      d = Math.min(d, Math.hypot(px - ax - t * dx, py - ay - t * dy));
+    }
+    return d;
+  }
+
+  // Points: the outline plus jittered interior points kept away from the edge.
+  const pts = outline.map(p => [...p]);
+  for (let y = 20; y < 130; y += 13) for (let x = 14; x < 132; x += 13) {
+    const px = x + (rand() - .5) * 9, py = y + (rand() - .5) * 9;
+    if (inside(px, py) && edgeDist(px, py) > 5) pts.push([px, py]);
+  }
+
+  // Bowyer-Watson Delaunay triangulation.
+  function delaunay(points) {
+    const P = [...points, [-1000, -1000], [1000, -1000], [0, 1000]];
+    const n = points.length;
+    let tris = [[n, n + 1, n + 2]];
+    const circ = ([a, b, c]) => {
+      const [ax, ay] = P[a], [bx, by] = P[b], [cx, cy] = P[c];
+      const d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+      const ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
+      const uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
+      return [ux, uy, (ax - ux) ** 2 + (ay - uy) ** 2];
+    };
+    for (let i = 0; i < n; i++) {
+      const [px, py] = P[i];
+      const bad = tris.filter(t => { const [ux, uy, r2] = circ(t); return (px - ux) ** 2 + (py - uy) ** 2 < r2; });
+      const edges = [];
+      for (const t of bad) for (const e of [[t[0], t[1]], [t[1], t[2]], [t[2], t[0]]]) {
+        const k = edges.findIndex(f => f[0] === e[1] && f[1] === e[0]);
+        k >= 0 ? edges.splice(k, 1) : edges.push(e);
+      }
+      tris = tris.filter(t => !bad.includes(t)).concat(edges.map(([a, b]) => [a, b, i]));
+    }
+    return tris.filter(t => t.every(v => v < n));
+  }
+  const tris = delaunay(pts).filter(([a, b, c]) => {
+    const cx = (pts[a][0] + pts[b][0] + pts[c][0]) / 3, cy = (pts[a][1] + pts[b][1] + pts[c][1]) / 3;
+    return inside(cx, cy);
+  });
+  // Facet shade: lighter towards the biceps and the top right, plus a little noise.
+  const shades = tris.map(([a, b, c]) => {
+    const cx = (pts[a][0] + pts[b][0] + pts[c][0]) / 3, cy = (pts[a][1] + pts[b][1] + pts[c][1]) / 3;
+    const bicep = Math.exp(-((cx - 55) ** 2 + (cy - 84) ** 2) / (2 * 20 ** 2));
+    const l = 18 + 30 * bicep + (cx / 150) * 14 + (rand() - .5) * 16;
+    return `hsl(${276 + (rand() - .5) * 18} 85% ${Math.max(10, Math.min(62, l)).toFixed(0)}%)`;
+  });
+  const used = [...new Set(tris.flat())];
+
+  function poly({ filled, bg = "#07060a", id, dot = 1.6, line = .5 }) {
+    const tri = tris.map((t, k) => {
+      const d = t.map(v => pts[v].map(n => n.toFixed(1)).join(",")).join(" ");
+      return filled
+        ? `<polygon points="${d}" fill="${shades[k]}" stroke="rgba(255,255,255,.18)" stroke-width="${line}" stroke-linejoin="round"/>`
+        : `<polygon points="${d}" fill="none" stroke="#c77dff" stroke-opacity=".7" stroke-width="${line}" stroke-linejoin="round"/>`;
+    }).join("");
+    const dots = used.map(v => `<circle cx="${pts[v][0].toFixed(1)}" cy="${pts[v][1].toFixed(1)}" r="${dot}" fill="#f3eefc"/>`).join("");
+    const glow = filled ? "" : `<filter id="pg${id}"><feGaussianBlur stdDeviation="2"/></filter>`;
+    const glowLayer = filled ? "" : `<g filter="url(#pg${id})" opacity=".9">${tri.replaceAll('stroke-opacity=".7"', 'stroke-opacity="1"')}</g>`;
+    return `<svg viewBox="0 0 150 150"><defs>${glow}</defs><rect width="150" height="150" fill="${bg}"/>${glowLayer}${tri}${dots}</svg>`;
+  }
+
+  function num({ text = "68", bg = "#07060a", fill = "#f3eefc", glow = true, outline = false, size = 104, id }) {
+    const style = `font-family="Anton, Impact, sans-serif" font-size="${size}" text-anchor="middle" letter-spacing="-2"`;
+    const body = outline
+      ? `<text x="75" y="${75 + size * .36}" ${style} fill="none" stroke="${fill}" stroke-width="3">${text}</text>`
+      : `<text x="75" y="${75 + size * .36}" ${style} fill="${fill}">${text}</text>`;
+    const g = glow ? `<text x="75" y="${75 + size * .36}" ${style} fill="#b026ff" filter="url(#ng${id})">${text}</text>` : "";
+    return `<svg viewBox="0 0 150 150"><defs><filter id="ng${id}"><feGaussianBlur stdDeviation="6"/></filter>` +
+           `<radialGradient id="nb${id}" cx="85%" cy="10%" r="75%"><stop offset="0" stop-color="#b026ff" stop-opacity=".8"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient></defs>` +
+           `<rect width="150" height="150" fill="${bg}"/>${bg === "#07060a" ? `<rect width="150" height="150" fill="url(#nb${id})"/>` : ""}${g}${body}</svg>`;
+  }
+
+  const variants = [
+    { name: "M · Polygon gefüllt", text: "Dreiecke in Violett-Tönen, Bizeps am hellsten, Punkte an den Ecken.", svg: id => poly({ filled: true, id }) },
+    { name: "N · Sternbild", text: "Nur Linien und Punkte mit Neon-Leuchten. Am leichtesten, am meisten „Tech“.", svg: id => poly({ filled: false, id }) },
+    { name: "O · 68 Neon", text: "Fette Zahl in der Titelschrift, violettes Leuchten dahinter.", svg: id => num({ id }) },
+    { name: "P · 68 auf Violett", text: "Schwarze Zahl als Kontur auf reinem Violett (Icon E).", svg: id => num({ id, bg: "#b026ff", fill: "#07060a", glow: false, outline: true }) },
+  ];
+
+  document.getElementById("hero-poly").innerHTML = poly({ filled: true, id: "h1" }) + poly({ filled: false, id: "h2" });
+  document.getElementById("hero-num").innerHTML = num({ id: "h3" }) + num({ id: "h4", bg: "#b026ff", fill: "#07060a", glow: false, outline: true });
+  document.getElementById("icons").innerHTML = variants.map((v, k) =>
+    `<div class="ic">${v.svg("i" + k)}<h3>${v.name}</h3><p>${v.text}</p></div>`).join("");
+  const cells = [];
+  for (let i = 0; i < 12; i++) cells.push(`<div><span class="ph"></span>App</div>`);
+  [1, 4, 6, 11].forEach((pos, k) => { cells[pos] = `<div>${variants[k].svg("s" + k)}${variants[k].name[0]}</div>`; });
+  document.getElementById("home").innerHTML = cells.join("");
+</script>
+</body>
+</html>

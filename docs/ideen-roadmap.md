@@ -21,10 +21,11 @@ Stand: 22. Oktober 2026
 5. [x] **Leere Zustände** → [design/leere-zustaende.html](design/leere-zustaende.html). Kleiner Anstoss mit 4 rotierenden Sprüchen, alle vier passen vorerst, später anpassbar.
    - **Wunsch:** am liebsten echte Markus-Rühl-Sprüche. Nur wörtlich belegte Zitate verwenden (Quelle notieren), nichts erfinden und ihm nicht in den Mund legen. Kurze Zitate mit Namensnennung, aber Name und Bild nicht als Branding der App nutzen.
 6. [ ] **App-Icon und Name** → Wunsch: kein Logo, kein Text, nur Farbe bzw. violettes Muster wie im App-Hintergrund mit Schwarz. Entwurf [design/icon-v2.html](design/icon-v2.html): E reines Violett, F App-Hintergrund, G ein Leuchten, H Verlauf. **Finalisten: E und F**, G und H raus. Entscheidung erst in Phase 6, wenn die App im neuen Look läuft. (Erste Runde mit Logos in momente-und-icon.html verworfen.)
-   - **Neue Logo-Idee:** Bizeps wie 💪 aus Höhenlinien (Topografie), der Bizeps ist der höchste Hügel → [design/logo-topo.html](design/logo-topo.html). Varianten I–L: weiss auf schwarz, Neon-Linien, auf Icon F, auf Icon E. Erzeugter Konzept-Entwurf; ein finales Logo würde man sauber als Vektor nachzeichnen.
+   - **Neue Logo-Idee:** Bizeps wie 💪 aus Höhenlinien (Topografie), der Bizeps ist der höchste Hügel → [design/logo-topo.html](design/logo-topo.html). Varianten I–L: weiss auf schwarz, Neon-Linien, auf Icon F, auf Icon E. Erzeugter Konzept-Entwurf; ein finales Logo würde man sauber als Vektor nachzeichnen. Felix: sieht nicht so gut aus wie gedacht.
+   - **Runde 2** → [design/logo-ideen.html](design/logo-ideen.html): M Bizeps aus Dreiecken gefüllt (Low-Poly wie Elefant-Beispiel), N Sternbild (nur Linien + Punkte, Neon), O „68“ Neon, P „68“ als Kontur auf Violett. 68 = F (6.) + H (8.) Buchstabe. Verworfen: 247 und 1441 (bestehende Marken), „Do it“ (zu nah an Nike).
 7. [ ] **README-Auftritt:** Screenshots, Aufbau der GitHub-Seite
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Thema 6: Icon E/F oder Topo-Bizeps, Feedback zum Topo-Logo steht aus. Danach 7, 8.
+Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Thema 6: Logo-Runde 2 liegt vor (Polygon-Bizeps, 68), Feedback steht aus. Danach 7, 8.
