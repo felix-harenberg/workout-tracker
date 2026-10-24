@@ -45,7 +45,8 @@ jobs:
 
       # flet build downloads the matching Flutter SDK, JDK and Android SDK itself.
       - name: Build APK
-        run: flet build apk --verbose --yes
+        # run_number increases with every build, so Android accepts each APK as an update.
+        run: flet build apk --verbose --yes --build-number ${{ github.run_number }}
 
       - uses: actions/upload-artifact@v4
         with:
