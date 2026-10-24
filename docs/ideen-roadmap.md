@@ -19,10 +19,10 @@ Stand: 22. Oktober 2026
    - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. → Issue #18.
 4. [x] **Kleine Momente** (Rekord-Screen und „Vertippt?“-Frage passen so; Abhak-Animation und Abschluss-Screen nicht weiter verfolgt) → [design/momente-und-icon.html](design/momente-und-icon.html). Wunsch: kurzer Rekord-Screen, nicht fancy, trockener Ton („Was hast du anderes erwartet?“). Bei verdächtig grossem Sprung (> ca. 20 % über Bestwert) erst „Vertippt?“ fragen.
 5. [ ] **Leere Zustände:** keine Workouts, Übung zum ersten Mal
-6. [ ] **App-Icon und Name** → Wunsch: kein Logo, kein Text, nur Farbe bzw. violettes Muster wie im App-Hintergrund mit Schwarz. Entwurf [design/icon-v2.html](design/icon-v2.html): E reines Violett, F App-Hintergrund, G ein Leuchten, H Verlauf. (Erste Runde mit Logos in momente-und-icon.html verworfen.)
+6. [ ] **App-Icon und Name** → Wunsch: kein Logo, kein Text, nur Farbe bzw. violettes Muster wie im App-Hintergrund mit Schwarz. Entwurf [design/icon-v2.html](design/icon-v2.html): E reines Violett, F App-Hintergrund, G ein Leuchten, H Verlauf. **Finalisten: E und F**, G und H raus. Entscheidung erst in Phase 6, wenn die App im neuen Look läuft. (Erste Runde mit Logos in momente-und-icon.html verworfen.)
 7. [ ] **README-Auftritt:** Screenshots, Aufbau der GitHub-Seite
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6 läuft: Icons ohne Logo liegen vor, Auswahl steht aus. Danach 5, 7, 8.
+Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Als Nächstes: Thema 5 (leere Zustände), danach 7, 8.
