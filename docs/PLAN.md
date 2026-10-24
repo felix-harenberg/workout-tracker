@@ -69,7 +69,7 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 
 ### Phase 3: Laufen, v0.2 (Woche 6 bis 7)
 
-- [ ] Workout-Typ `run`: Distanz in km, Dauer, berechnete Pace in min/km
+- [x] Workout-Typ `run`: Distanz in km, Dauer, berechnete Pace in min/km
 - [ ] Optional: Splits pro Kilometer
 - [x] Tests für die Pace-Berechnung
 - [ ] Release v0.2
