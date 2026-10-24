@@ -30,4 +30,4 @@ Stand: 22. Oktober 2026
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Themen 1 bis 6 erledigt (App-Name noch offen). Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8 läuft: Test-APK wird gebaut, Ergebnis vom Handy steht aus. Danach 7, 8.
+Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8 läuft: Test-APK wird gebaut, Ergebnis vom Handy steht aus.
