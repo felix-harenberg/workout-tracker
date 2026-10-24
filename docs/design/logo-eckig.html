@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eckiger Bizeps</title>
+<!-- Logo idea round 3: angular biceps from Felix's sketch, filled white. See ../ideen-roadmap.md. -->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  section { max-width: 1100px; margin: 0 auto 44px; }
+  h1 { font-size: 26px; font-weight: 800; }
+  h2 { font-size: 18px; font-weight: 800; }
+  section > p { color: #aaa; margin: 6px 0 24px; max-width: 75ch; line-height: 1.5; }
+  .icons { display: flex; flex-wrap: wrap; gap: 36px; justify-content: center; }
+  .ic { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ic svg { width: 170px; height: 170px; border-radius: 38px; box-shadow: 0 16px 40px rgba(0,0,0,.45); }
+  .ic h3 { font-size: 15px; font-weight: 800; }
+  .ic p { font-size: 12px; color: #aaa; max-width: 200px; text-align: center; line-height: 1.45; }
+  .home { margin: 10px auto 0; width: 320px; padding: 24px 20px; border-radius: 34px; background: linear-gradient(160deg, #2b2340, #120f1a);
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 10px; }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; color: #ddd; }
+  .home svg, .home .ph { width: 54px; height: 54px; border-radius: 14px; }
+  .home .ph { background: rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+
+<section>
+  <h1>Eckiger Bizeps</h1>
+  <p>Nach deiner Skizze: grosser Block für den Oberarm, Bizeps oben, Unterarm nach oben, Faust mit Kerbe für den Daumen. Weiss gefüllt.</p>
+</section>
+
+<section>
+  <h2>Drei Formen</h2>
+  <div class="icons" id="shapes"></div>
+</section>
+
+<section>
+  <h2>Auf deinen Icon-Hintergründen</h2>
+  <p>Form Q auf Schwarz, auf dem App-Hintergrund (F) und auf reinem Violett (E).</p>
+  <div class="icons" id="bgs"></div>
+  <div class="home" id="home" style="margin-top:36px"></div>
+</section>
+
+<script>
+  // Shapes in a 150x150 box, traced from the sketch.
+  const shapes = {
+    Q: { name: "Q · Wie deine Skizze", text: "Schräge Aussenkante am Unterarm und links, kleiner Absatz an der Schulter.",
+         d: "M22 80 L30 77 L78 77 L83 81 L83 97 L110 97 L110 41 L98 41 L98 27 L127 27 L131 40 L126 50 L133 123 L17 123 Z" },
+    R: { name: "R · Nur rechte Winkel", text: "Alles gerade und rechtwinklig, wie aus Blöcken. Am strengsten.",
+         d: "M20 78 L82 78 L82 98 L108 98 L108 42 L96 42 L96 26 L130 26 L130 124 L20 124 Z" },
+    S: { name: "S · Mit Bizeps-Spitze", text: "Wie Q, aber die Oberkante steigt zu einer eckigen Bizeps-Spitze an.",
+         d: "M22 82 L30 79 L56 64 L80 74 L84 80 L84 97 L110 97 L110 41 L98 41 L98 27 L127 27 L131 40 L126 50 L133 123 L17 123 Z" },
+  };
+  const bgs = {
+    black: () => `<rect width="150" height="150" fill="#07060a"/>`,
+    F: id => `<defs><radialGradient id="f1${id}" cx="85%" cy="10%" r="75%"><stop offset="0" stop-color="#b026ff"/><stop offset=".55" stop-color="#b026ff" stop-opacity=".25"/><stop offset="1" stop-color="#b026ff" stop-opacity="0"/></radialGradient>` +
+              `<radialGradient id="f2${id}" cx="5%" cy="95%" r="65%"><stop offset="0" stop-color="#5a1bff" stop-opacity=".9"/><stop offset="1" stop-color="#5a1bff" stop-opacity="0"/></radialGradient></defs>` +
+              `<rect width="150" height="150" fill="#07060a"/><rect width="150" height="150" fill="url(#f1${id})"/><rect width="150" height="150" fill="url(#f2${id})"/>`,
+    E: () => `<rect width="150" height="150" fill="#b026ff"/>`,
+  };
+  // Shrink the shape a bit so it sits inside the icon's safe zone.
+  const icon = (shape, bg, id, fill = "#f3eefc") =>
+    `<svg viewBox="0 0 150 150">${bgs[bg](id)}<path d="${shapes[shape].d}" fill="${fill}" transform="translate(75 75) scale(.8) translate(-75 -75)" stroke-linejoin="round"/></svg>`;
+
+  document.getElementById("shapes").innerHTML = Object.keys(shapes).map(k =>
+    `<div class="ic">${icon(k, "black", "s" + k)}<h3>${shapes[k].name}</h3><p>${shapes[k].text}</p></div>`).join("");
+  const combos = [["Q", "black", "Q · Schwarz"], ["Q", "F", "Q · auf F"], ["Q", "E", "Q · auf E"]];
+  document.getElementById("bgs").innerHTML = combos.map(([s, b, n], k) =>
+    `<div class="ic">${icon(s, b, "b" + k)}<h3>${n}</h3></div>`).join("");
+  const cells = [];
+  for (let i = 0; i < 12; i++) cells.push(`<div><span class="ph"></span>App</div>`);
+  [[1, "Q", "black"], [4, "Q", "F"], [6, "Q", "E"], [11, "S", "F"]].forEach(([pos, s, b], k) => {
+    cells[pos] = `<div>${icon(s, b, "h" + k)}${s} · ${b === "black" ? "Schwarz" : b}</div>`;
+  });
+  document.getElementById("home").innerHTML = cells.join("");
+</script>
+</body>
+</html>
