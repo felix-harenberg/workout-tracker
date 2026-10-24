@@ -17,12 +17,12 @@ Stand: 22. Oktober 2026
    - **Offene Frage für die Haupt-Session:** Phase 4 (Hyrox) in `PLAN.md` passt nicht zum eigenen Training. Ersetzen oder streichen?
 3. [x] **Fortschritt-Screen** (Graph passt so; Wunsch: Ziel-Linie nie am Rand, y-Achse oben und unten mit Luft) → [design/fortschritt.html](design/fortschritt.html). Kein Graph pro Übung nötig, Kraft als einfache Zeilen („Bankdrücken 75 → 82.5 kg“).
    - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. → Issue #18.
-4. [ ] **Kleine Momente** → [design/momente-und-icon.html](design/momente-und-icon.html). Wunsch: kurzer Rekord-Screen, nicht fancy, trockener Ton („Was hast du anderes erwartet?“). Bei verdächtig grossem Sprung (> ca. 20 % über Bestwert) erst „Vertippt?“ fragen.
+4. [x] **Kleine Momente** (Rekord-Screen und „Vertippt?“-Frage passen so; Abhak-Animation und Abschluss-Screen nicht weiter verfolgt) → [design/momente-und-icon.html](design/momente-und-icon.html). Wunsch: kurzer Rekord-Screen, nicht fancy, trockener Ton („Was hast du anderes erwartet?“). Bei verdächtig grossem Sprung (> ca. 20 % über Bestwert) erst „Vertippt?“ fragen.
 5. [ ] **Leere Zustände:** keine Workouts, Übung zum ersten Mal
-6. [ ] **App-Icon und Name** → vier Icon-Richtungen im selben Entwurf (Monogramm, Neon-Hantel, Puls, Glas-Häkchen)
+6. [ ] **App-Icon und Name** → Wunsch: kein Logo, kein Text, nur Farbe bzw. violettes Muster wie im App-Hintergrund mit Schwarz. Entwurf [design/icon-v2.html](design/icon-v2.html): E reines Violett, F App-Hintergrund, G ein Leuchten, H Verlauf. (Erste Runde mit Logos in momente-und-icon.html verworfen.)
 7. [ ] **README-Auftritt:** Screenshots, Aufbau der GitHub-Seite
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
 
 ## Wo wir stehen
 
-Themen 1 bis 3 erledigt. Themen 4 und 6 laufen: Entwurf Rekord-Screen und Icons liegt vor, Feedback steht aus.
+Themen 1 bis 4 erledigt. Thema 6 läuft: Icons ohne Logo liegen vor, Auswahl steht aus. Danach 5, 7, 8.
