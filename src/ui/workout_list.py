@@ -4,6 +4,8 @@ import flet as ft
 
 from core import repository as repo
 from core.export import export_csv, export_filename
+from core.models import Workout, WorkoutType
+from core.run import run_summary
 from core.training import format_date, workout_title
 from ui.app import App
 
@@ -18,8 +20,13 @@ def workout_list_view(app: App) -> ft.View:
         content: list[ft.Control] = [
             ft.Card(
                 content=ft.ListTile(
+                    leading=ft.Icon(
+                        ft.Icons.DIRECTIONS_RUN
+                        if w.type == WorkoutType.RUN
+                        else ft.Icons.FITNESS_CENTER
+                    ),
                     title=ft.Text(workout_title(w)),
-                    subtitle=ft.Text(format_date(w.date)),
+                    subtitle=ft.Text(_subtitle(app, w)),
                     on_click=lambda _, wid=w.id: open_workout(wid),
                 )
             )
@@ -49,3 +56,11 @@ def workout_list_view(app: App) -> ft.View:
             icon=ft.Icons.ADD, tooltip="Neues Workout", on_click=lambda _: app.go("/workout/new")
         ),
     )
+
+
+def _subtitle(app: App, workout: Workout) -> str:
+    if workout.type == WorkoutType.RUN:
+        run = repo.get_run(app.conn, workout.id)
+        if run is not None:
+            return f"{format_date(workout.date)}  ·  {run_summary(run.distance_km, run.duration_s)}"
+    return format_date(workout.date)

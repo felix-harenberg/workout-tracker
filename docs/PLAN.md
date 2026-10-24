@@ -71,7 +71,7 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 
 - [ ] Workout-Typ `run`: Distanz in km, Dauer, berechnete Pace in min/km
 - [ ] Optional: Splits pro Kilometer
-- [ ] Tests für die Pace-Berechnung
+- [x] Tests für die Pace-Berechnung
 - [ ] Release v0.2
 
 ### Phase 4: Hyrox, v0.3 (Woche 8 bis 9)

@@ -60,3 +60,9 @@ def format_pace(pace_s_per_km: float) -> str:
     """300 -> "5:00 /km", rounded to full seconds."""
     minutes, seconds = divmod(round(pace_s_per_km), 60)
     return f"{minutes}:{seconds:02d} /km"
+
+
+def run_summary(distance_km: float, duration_s: int) -> str:
+    """Distance, duration and pace in one line, e.g. "10.5 km · 52:30 · 5:00 /km"."""
+    pace = format_pace(pace_s_per_km(distance_km, duration_s))
+    return f"{format_distance(distance_km)} · {format_duration(duration_s)} · {pace}"

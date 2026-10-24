@@ -7,6 +7,7 @@ from core.run import (
     pace_s_per_km,
     parse_distance,
     parse_duration,
+    run_summary,
 )
 
 # --- parse_duration ---
@@ -90,3 +91,7 @@ def test_pace_rejects_zero_distance() -> None:
 )
 def test_format_pace_rounds_to_full_seconds(pace: float, text: str) -> None:
     assert format_pace(pace) == text
+
+
+def test_run_summary() -> None:
+    assert run_summary(distance_km=10.5, duration_s=3150) == "10.5 km · 52:30 · 5:00 /km"
