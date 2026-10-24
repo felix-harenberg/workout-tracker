@@ -18,11 +18,13 @@ Stand: 22. Oktober 2026
 3. [x] **Fortschritt-Screen** (Graph passt so; Wunsch: Ziel-Linie nie am Rand, y-Achse oben und unten mit Luft) → [design/fortschritt.html](design/fortschritt.html). Kein Graph pro Übung nötig, Kraft als einfache Zeilen („Bankdrücken 75 → 82.5 kg“).
    - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. → Issue #18.
 4. [x] **Kleine Momente** (Rekord-Screen und „Vertippt?“-Frage passen so; Abhak-Animation und Abschluss-Screen nicht weiter verfolgt) → [design/momente-und-icon.html](design/momente-und-icon.html). Wunsch: kurzer Rekord-Screen, nicht fancy, trockener Ton („Was hast du anderes erwartet?“). Bei verdächtig grossem Sprung (> ca. 20 % über Bestwert) erst „Vertippt?“ fragen.
-5. [ ] **Leere Zustände** → [design/leere-zustaende.html](design/leere-zustaende.html). Wunsch: kleiner Anstoss mit Sprüchen, 4 Stück rotieren. Gesetzt: „Von nichts kommt nichts.“ Die anderen drei sind Vorschläge.
+5. [x] **Leere Zustände** → [design/leere-zustaende.html](design/leere-zustaende.html). Kleiner Anstoss mit 4 rotierenden Sprüchen, alle vier passen vorerst, später anpassbar.
+   - **Wunsch:** am liebsten echte Markus-Rühl-Sprüche. Nur wörtlich belegte Zitate verwenden (Quelle notieren), nichts erfinden und ihm nicht in den Mund legen. Kurze Zitate mit Namensnennung, aber Name und Bild nicht als Branding der App nutzen.
 6. [ ] **App-Icon und Name** → Wunsch: kein Logo, kein Text, nur Farbe bzw. violettes Muster wie im App-Hintergrund mit Schwarz. Entwurf [design/icon-v2.html](design/icon-v2.html): E reines Violett, F App-Hintergrund, G ein Leuchten, H Verlauf. **Finalisten: E und F**, G und H raus. Entscheidung erst in Phase 6, wenn die App im neuen Look läuft. (Erste Runde mit Logos in momente-und-icon.html verworfen.)
+   - **Neue Logo-Idee:** Bizeps wie 💪 aus Höhenlinien (Topografie), der Bizeps ist der höchste Hügel → [design/logo-topo.html](design/logo-topo.html). Varianten I–L: weiss auf schwarz, Neon-Linien, auf Icon F, auf Icon E. Erzeugter Konzept-Entwurf; ein finales Logo würde man sauber als Vektor nachzeichnen.
 7. [ ] **README-Auftritt:** Screenshots, Aufbau der GitHub-Seite
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Thema 5 läuft: Entwurf liegt vor, Sprüche noch offen. Danach 7, 8.
+Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Thema 6: Icon E/F oder Topo-Bizeps, Feedback zum Topo-Logo steht aus. Danach 7, 8.
