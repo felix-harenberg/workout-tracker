@@ -62,8 +62,8 @@ Sieben Phasen, jede endet mit etwas, das funktioniert. Die Wochen sind Richtwert
 - [x] `core/`: Datenbank-Schema, Funktionen zum Speichern und Laden von Workouts und Sätzen, mit Tests
 - [x] Screen: Workout starten, Übung wählen oder neu anlegen, Sätze eintragen
 - [x] Screen: Liste vergangener Workouts, Tippen öffnet Details
-- [ ] Workout bearbeiten und löschen
-- [ ] Export aller Daten als CSV (Backup, weil alles nur auf dem Handy liegt, und Grundlage für spätere ML-Auswertung)
+- [x] Workout bearbeiten und löschen
+- [x] Export aller Daten als CSV (Backup, weil alles nur auf dem Handy liegt, und Grundlage für spätere ML-Auswertung)
 - [ ] Release v0.1 auf GitHub, APK installiert
 - [ ] **Ab jetzt jedes Training in der App loggen.** Was im Gym nervt, wird ein Issue
 
