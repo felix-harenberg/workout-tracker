@@ -25,9 +25,9 @@ Stand: 22. Oktober 2026
    - **Neue Logo-Idee:** Bizeps wie 💪 aus Höhenlinien (Topografie), der Bizeps ist der höchste Hügel → [design/logo-topo.html](design/logo-topo.html). Varianten I–L: weiss auf schwarz, Neon-Linien, auf Icon F, auf Icon E. Erzeugter Konzept-Entwurf; ein finales Logo würde man sauber als Vektor nachzeichnen. Felix: sieht nicht so gut aus wie gedacht.
    - **Runde 2** → [design/logo-ideen.html](design/logo-ideen.html): M Bizeps aus Dreiecken gefüllt (Low-Poly wie Elefant-Beispiel), N Sternbild (nur Linien + Punkte, Neon), O „68“ Neon, P „68“ als Kontur auf Violett. 68 = F (6.) + H (8.) Buchstabe. Verworfen: 247 und 1441 (bestehende Marken), „Do it“ (zu nah an Nike). Felix: Dreiecke gefallen nicht.
    - **Runde 3** → [design/logo-eckig.html](design/logo-eckig.html): eckiger Bizeps nach Felix' Skizze, weiss gefüllt, simpel. Formen Q (wie Skizze), R (nur rechte Winkel), S (mit Bizeps-Spitze), jeweils auf Schwarz, F und E.
-7. [ ] **README-Auftritt:** Screenshots, Aufbau der GitHub-Seite
+7. [ ] **README-Auftritt** → [design/readme/README-entwurf.md](design/readme/README-entwurf.md), Titelbild [design/readme/hero.png](design/readme/hero.png). Zielgruppe: Nutzer und Recruiter gleichermassen. Aufbau: Icon, Name, Einzeiler, Badges, Titelbild, Sprungmarken; danach Why, Features, Install (für Nutzer), dann How it's built, Run from source, What I learned (für Recruiter/Entwickler). Sprache Englisch. Titelbild zeigt Konzept-Entwürfe, vor 1.0 durch echte Screenshots ersetzen.
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy?
 
 ## Wo wir stehen
 
-Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Themen 1 bis 6 erledigt (App-Name noch offen). Als Nächstes: Thema 7 (README-Auftritt), dann 8. Danach 7, 8.
+Themen 1 bis 4 erledigt. Thema 6: Finalisten E und F, Entscheidung später. Themen 1 bis 5 erledigt. Themen 1 bis 6 erledigt (App-Name noch offen). Thema 7 läuft: README-Entwurf liegt vor, Feedback steht aus. Danach 8. Danach 7, 8.
