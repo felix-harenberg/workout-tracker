@@ -47,6 +47,18 @@ MIGRATIONS: list[str] = [
     ALTER TABLE exercise ADD COLUMN hint_workout_id INTEGER
         REFERENCES workout(id) ON DELETE SET NULL;
     """,
+    # v0.5: bodyweight, one entry per day, and small settings like the goal weight
+    """
+    CREATE TABLE bodyweight (
+        date TEXT PRIMARY KEY,
+        weight_kg REAL NOT NULL CHECK (weight_kg > 0)
+    );
+
+    CREATE TABLE setting (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)
