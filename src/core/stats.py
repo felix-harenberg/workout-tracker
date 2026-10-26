@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 
 from core.models import WorkoutSet
+from core.training import format_weight
 
 _SET_COLUMNS = "s.id, s.workout_id, s.exercise_id, s.set_number, s.reps, s.weight_kg"
 
@@ -81,3 +82,27 @@ def weekly_volume(conn: sqlite3.Connection) -> list[WeekVolume]:
         weeks.append(WeekVolume(week, sets.get(week, 0), tonnage.get(week, 0)))
         week += timedelta(weeks=1)
     return weeks
+
+
+def progress_label(conn: sqlite3.Connection, exercise_id: int) -> str | None:
+    """First → best, e.g. "75 → 85 kg"; reps for bodyweight-only exercises, e.g. "BW × 6 → BW × 9".
+
+    None if the exercise was never logged.
+    """
+    weighted = _weighted_sets(conn, exercise_id)
+    if weighted:
+        first = weighted[0][1].weight_kg
+        best = max(s.weight_kg for _, s in weighted)
+        if first == best:
+            return f"{format_weight(best)} kg"
+        return f"{format_weight(first)} → {format_weight(best)} kg"
+
+    rows = conn.execute(
+        "SELECT s.reps FROM workout_set s JOIN workout w ON w.id = s.workout_id"
+        " WHERE s.exercise_id = ? ORDER BY w.date, s.id",
+        (exercise_id,),
+    ).fetchall()
+    if not rows:
+        return None
+    first, best = rows[0][0], max(r for (r,) in rows)
+    return f"BW × {best}" if first == best else f"BW × {first} → BW × {best}"

@@ -39,7 +39,10 @@ def new_workout_view(app: App) -> ft.View:
                 ft.Row(
                     [
                         ft.Column(
-                            [theme.name(t.name), theme.muted(f"zuletzt {last}  ·  {exercises}")],
+                            [
+                                theme.card_name(t.name, size=26),
+                                theme.muted(f"zuletzt {last}  ·  {exercises}"),
+                            ],
                             spacing=2,
                             expand=True,
                         ),

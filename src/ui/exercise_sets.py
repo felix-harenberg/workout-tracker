@@ -14,7 +14,10 @@ from core.training import (
     hint_message,
     parse_reps,
     parse_weight,
+    step_reps,
+    step_weight,
     suggest_next_set,
+    workout_title,
 )
 from ui import theme
 from ui.app import App
@@ -27,7 +30,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     last = repo.last_sets_for_exercise(app.conn, exercise.id, before=workout)
     last_sets = last[1] if last else []
 
-    info: list[ft.Control] = [theme.title_headline(exercise.name)]
+    info: list[ft.Control] = [theme.title_headline(exercise.name, overline=workout_title(workout))]
     hint = repo.get_hint(app.conn, exercise.id)
     # The reminder from last time; it is used up by the first set today.
     if hint and hint.workout_id != workout.id and not current:
@@ -49,50 +52,27 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 padding=14,
             )
         )
-    if last:
-        last_workout, sets = last
-        info.append(
-            theme.glass_card(
-                ft.Column(
-                    [
-                        theme.label(f"Letztes Mal · {day_label(last_workout.date, date.today())}"),
-                        theme.chips([format_set_compact(s) for s in sets]),
-                    ],
-                    spacing=10,
-                )
-            )
-        )
-    else:
-        info.append(theme.muted("Zum ersten Mal dabei."))
-
     pr = stats.exercise_pr(app.conn, exercise.id)
     if pr:
         info.append(
             ft.Text(
                 f"🏆 PR  {format_set(pr.workout_set)}",
-                size=17,
+                size=16,
                 color=theme.VIOLET_LIGHT,
                 style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
             )
         )
 
-    if current:
-        info.append(ft.Container(theme.label("Heute"), padding=ft.Padding(4, 8, 0, 0)))
-    for s in current:
+    if current or last_sets:
+        heading = f"Letztes Mal · {day_label(last[0].date, date.today())}" if last else "Heute"
         info.append(
             theme.glass_card(
-                ft.Row(
-                    [
-                        ft.Text(str(s.set_number), size=18, color=theme.TEXT_MUTED, width=28),
-                        theme.name(format_set_compact(s), size=24),
-                        ft.Container(expand=True),
-                        ft.Icon(ft.Icons.EDIT_OUTLINED, color=theme.TEXT_MUTED, size=20),
-                    ]
-                ),
-                on_click=lambda _, s=s: app.page.show_dialog(_edit_set_dialog(app, s)),
-                padding=14,
+                ft.Column([theme.label(heading), _set_table(app, current, last_sets)], spacing=8),
+                padding=ft.Padding(16, 14, 16, 10),
             )
         )
+    else:
+        info.append(theme.muted("Zum ersten Mal dabei."))
 
     if current:
         active = hint.direction if hint and hint.workout_id == workout.id else None
@@ -161,28 +141,66 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     weight_field.on_submit = focus_reps
     reps_field.on_submit = add
 
+    def step(field: ft.TextField, change) -> None:
+        field.value = change(field.value)
+        field.update()
+
+    def stepper(text: str, field: ft.TextField, change) -> ft.Container:
+        return ft.Container(
+            content=ft.Text(text, size=16, color=theme.TEXT, text_align=ft.TextAlign.CENTER),
+            expand=True,
+            height=40,
+            alignment=ft.Alignment.CENTER,
+            border_radius=12,
+            bgcolor=ft.Colors.with_opacity(0.07, ft.Colors.WHITE),
+            border=ft.Border.all(1, theme.GLASS_BORDER),
+            on_click=lambda _: step(field, change),
+            ink=True,
+        )
+
+    save_button = ft.Container(
+        content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=ft.Colors.WHITE, size=34),
+        width=68,
+        height=64,
+        border_radius=16,
+        bgcolor=theme.VIOLET,
+        shadow=ft.BoxShadow(blur_radius=24, color=ft.Colors.with_opacity(0.6, theme.VIOLET)),
+        alignment=ft.Alignment.CENTER,
+        tooltip="Satz speichern",
+        on_click=add,
+        ink=True,
+    )
+
     # Fixed at the bottom, within thumb reach: the one place with real glass blur.
     panel = theme.glass_panel(
         ft.Column(
             [
                 theme.label(f"Satz {len(current) + 1}", color=theme.VIOLET_LIGHT),
+                ft.Row([weight_field, reps_field, save_button], spacing=10),
                 ft.Row(
                     [
-                        weight_field,
-                        reps_field,
-                        ft.IconButton(
-                            icon=ft.Icons.CHECK_ROUNDED,
-                            tooltip="Satz speichern",
-                            bgcolor=theme.VIOLET,
-                            icon_color=ft.Colors.WHITE,
-                            icon_size=30,
-                            on_click=add,
+                        ft.Row(
+                            [
+                                stepper("−2.5", weight_field, lambda v: step_weight(v, -2.5)),
+                                stepper("+2.5", weight_field, lambda v: step_weight(v, 2.5)),
+                            ],
+                            expand=True,
+                            spacing=6,
                         ),
+                        ft.Row(
+                            [
+                                stepper("−1", reps_field, lambda v: step_reps(v, -1)),
+                                stepper("+1", reps_field, lambda v: step_reps(v, 1)),
+                            ],
+                            expand=True,
+                            spacing=6,
+                        ),
+                        ft.Container(width=68),
                     ],
                     spacing=10,
                 ),
             ],
-            spacing=8,
+            spacing=10,
         )
     )
 
@@ -216,14 +234,83 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         bar=theme.top_bar(
             app.back,
             [
-                ft.IconButton(
-                    icon=ft.Icons.DELETE_OUTLINE,
-                    tooltip="Übung entfernen",
-                    on_click=lambda _: app.page.show_dialog(confirm_delete),
+                theme.icon_button(
+                    ft.Icons.DELETE_OUTLINE,
+                    lambda _: app.page.show_dialog(confirm_delete),
+                    "Übung entfernen",
                 )
             ],
         ),
     )
+
+
+def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet]) -> ft.Column:
+    """Satz | Vorher | kg | Wdh | ✓. Done sets are bright and editable; the ones still to come
+    show last time's values faded, like prefilled values in the design."""
+    widths = {"set": 34, "kg": 64, "reps": 46, "check": 34}
+
+    def cell(text: str, width: int | None, size: int = 18, color: str = theme.TEXT, **kw):
+        return ft.Text(
+            text,
+            width=width,
+            size=size,
+            color=color,
+            style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
+            expand=width is None,
+            **kw,
+        )
+
+    def header(text: str, width: int | None) -> ft.Control:
+        return ft.Container(theme.label(text), width=width, expand=width is None)
+
+    rows: list[ft.Control] = [
+        ft.Row(
+            [
+                header("Satz", widths["set"]),
+                header("Vorher", None),
+                header("kg", widths["kg"]),
+                header("Wdh", widths["reps"]),
+                ft.Container(width=widths["check"]),
+            ]
+        )
+    ]
+    for i in range(max(len(current), len(last_sets))):
+        before = format_set_compact(last_sets[i]) if i < len(last_sets) else "–"
+        done = i < len(current)
+        shown = current[i] if done else last_sets[i]
+        kg = format_weight(shown.weight_kg) if shown.weight_kg is not None else "BW"
+        check = ft.Container(
+            content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=ft.Colors.WHITE, size=18)
+            if done
+            else None,
+            width=30,
+            height=30,
+            border_radius=15,
+            bgcolor=theme.VIOLET if done else None,
+            border=None if done else ft.Border.all(2, ft.Colors.with_opacity(0.4, ft.Colors.WHITE)),
+            shadow=ft.BoxShadow(blur_radius=14, color=theme.VIOLET) if done else None,
+            alignment=ft.Alignment.CENTER,
+        )
+        row = ft.Container(
+            ft.Row(
+                [
+                    cell(str(i + 1), widths["set"], color=theme.TEXT_MUTED),
+                    cell(before, None, size=15, color=theme.TEXT_MUTED),
+                    cell(kg, widths["kg"]),
+                    cell(str(shown.reps), widths["reps"]),
+                    ft.Container(check, width=widths["check"]),
+                ]
+            ),
+            padding=ft.Padding(0, 10, 0, 10),
+            border=ft.Border(top=ft.BorderSide(1, ft.Colors.with_opacity(0.08, ft.Colors.WHITE))),
+            opacity=1 if done else 0.35,
+            on_click=(lambda _, s=current[i]: app.page.show_dialog(_edit_set_dialog(app, s)))
+            if done
+            else None,
+            ink=done,
+        )
+        rows.append(row)
+    return ft.Column(rows, spacing=0)
 
 
 def _hint_button(direction: Hint, text: str, active: bool, on_toggle) -> ft.Container:

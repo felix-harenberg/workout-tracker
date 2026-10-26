@@ -119,3 +119,31 @@ def test_weekly_volume_empty(conn: sqlite3.Connection) -> None:
 )
 def test_format_tonnage(kg: float, text: str) -> None:
     assert stats.format_tonnage(kg) == text
+
+
+# --- progress_label ---
+
+
+def test_progress_label_weight(conn: sqlite3.Connection) -> None:
+    log(conn, date(2026, 9, 1), "Bench", (8, 75))
+    log(conn, date(2026, 10, 1), "Bench", (6, 85), (8, 82.5))
+    log(conn, date(2026, 10, 8), "Bench", (8, 80))
+    assert stats.progress_label(conn, repo.get_or_create_exercise(conn, "Bench").id) == "75 → 85 kg"
+
+
+def test_progress_label_single_day(conn: sqlite3.Connection) -> None:
+    log(conn, date(2026, 10, 1), "Bench", (8, 80))
+    assert stats.progress_label(conn, repo.get_or_create_exercise(conn, "Bench").id) == "80 kg"
+
+
+def test_progress_label_bodyweight_uses_reps(conn: sqlite3.Connection) -> None:
+    log(conn, date(2026, 9, 1), "Pull-ups", (6, None))
+    log(conn, date(2026, 10, 1), "Pull-ups", (9, None), (7, None))
+    assert stats.progress_label(conn, repo.get_or_create_exercise(conn, "Pull-ups").id) == (
+        "BW × 6 → BW × 9"
+    )
+
+
+def test_progress_label_none_without_sets(conn: sqlite3.Connection) -> None:
+    exercise = repo.get_or_create_exercise(conn, "Unused")
+    assert stats.progress_label(conn, exercise.id) is None

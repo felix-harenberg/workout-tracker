@@ -39,14 +39,12 @@ def workout_list_view(app: App) -> ft.View:
         bar=theme.top_bar(
             None,
             [
-                ft.IconButton(
-                    icon=ft.Icons.INSIGHTS, tooltip="Statistik", on_click=lambda _: app.go("/stats")
-                ),
-                ft.IconButton(icon=ft.Icons.SHARE, tooltip="Als CSV exportieren", on_click=export),
+                theme.icon_button(ft.Icons.INSIGHTS, lambda _: app.go("/stats"), "Statistik"),
+                theme.icon_button(ft.Icons.SHARE, export, "Als CSV exportieren"),
             ],
         ),
         scroll=ft.ScrollMode.AUTO,
-        floating_action_button=theme.fab(lambda _: app.go("/workout/new"), "Neues Workout"),
+        fab=theme.fab(lambda _: app.go("/workout/new"), "Neues Workout"),
     )
 
 
@@ -59,7 +57,7 @@ def _workout_card(app: App, workout: Workout, running: bool) -> ft.Control:
                     f"{day} · läuft" if running else day,
                     color=theme.VIOLET_LIGHT if running else theme.TEXT_MUTED,
                 ),
-                theme.name(workout_title(workout)),
+                theme.card_name(workout_title(workout)),
                 theme.muted(_summary(app, workout)),
             ],
             spacing=4,

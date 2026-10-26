@@ -15,6 +15,8 @@ from core.training import (
     month_label,
     parse_reps,
     parse_weight,
+    step_reps,
+    step_weight,
     suggest_next_set,
     volume_label,
     workout_title,
@@ -205,3 +207,28 @@ def test_format_set_compact() -> None:
 )
 def test_format_weight_reps(weight: float | None, reps: int, text: str) -> None:
     assert format_weight_reps(weight, reps) == text
+
+
+# --- steppers ---
+
+
+@pytest.mark.parametrize(
+    ("text", "delta", "result"),
+    [
+        ("80", 2.5, "82.5"),
+        ("82,5", -2.5, "80"),
+        ("1", -2.5, "0"),
+        ("", 2.5, "2.5"),
+        ("abc", 2.5, "abc"),
+    ],
+)
+def test_step_weight(text: str, delta: float, result: str) -> None:
+    assert step_weight(text, delta) == result
+
+
+@pytest.mark.parametrize(
+    ("text", "delta", "result"),
+    [("8", 1, "9"), ("8", -1, "7"), ("1", -1, "1"), ("", 1, "1"), ("x", 1, "x")],
+)
+def test_step_reps(text: str, delta: int, result: str) -> None:
+    assert step_reps(text, delta) == result

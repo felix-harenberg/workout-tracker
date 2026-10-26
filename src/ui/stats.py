@@ -2,7 +2,6 @@ import flet as ft
 
 from core import repository as repo
 from core import stats
-from core.training import format_set
 from ui import theme
 from ui.app import App
 from ui.charts import week_bar_chart
@@ -22,35 +21,20 @@ def stats_view(app: App) -> ft.View:
         for w in weeks
     ]
 
-    exercise_cards: list[ft.Control] = []
+    # Strength as simple lines (first -> best), like the progress draft; tap for the chart.
+    rows: list[ft.Control] = []
     for exercise in repo.list_exercises(app.conn):
-        pr = stats.exercise_pr(app.conn, exercise.id)
-        exercise_cards.append(
-            theme.glass_card(
-                ft.Row(
-                    [
-                        ft.Column(
-                            [
-                                theme.name(exercise.name, size=20),
-                                theme.muted(
-                                    f"PR  {format_set(pr.workout_set)}"
-                                    if pr
-                                    else "Nur Körpergewicht",
-                                    size=15,
-                                ),
-                            ],
-                            spacing=2,
-                            expand=True,
-                        ),
-                        ft.Icon(ft.Icons.CHEVRON_RIGHT, color=theme.TEXT_MUTED)
-                        if pr
-                        else ft.Container(),
-                    ]
-                ),
+        progress = stats.progress_label(app.conn, exercise.id)
+        if progress is None:
+            continue  # never logged
+        has_chart = stats.exercise_pr(app.conn, exercise.id) is not None
+        rows.append(
+            theme.list_row(
+                exercise.name,
+                progress,
                 on_click=(lambda _, eid=exercise.id: app.go(f"/stats/exercise/{eid}"))
-                if pr
+                if has_chart
                 else None,
-                padding=14,
             )
         )
 
@@ -61,8 +45,10 @@ def stats_view(app: App) -> ft.View:
             theme.glass_card(
                 ft.Column([theme.label("Sätze pro Woche"), week_bar_chart(week_bars)], spacing=16)
             ),
-            ft.Container(theme.label("Übungen"), padding=ft.Padding(4, 12, 0, 0)),
-            *(exercise_cards or [theme.muted("Noch keine Übungen.")]),
+            ft.Container(
+                theme.label("Kraft · erster → bester Wert"), padding=ft.Padding(4, 12, 0, 0)
+            ),
+            theme.glass_list(rows) if rows else theme.muted("Noch keine Übungen."),
         ],
         bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,

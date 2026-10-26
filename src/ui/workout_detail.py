@@ -45,22 +45,20 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
         bar=theme.top_bar(
             app.back,
             [
-                ft.IconButton(
-                    icon=ft.Icons.EDIT_OUTLINED,
-                    tooltip="Bearbeiten",
-                    on_click=lambda _: app.go(f"{route}/edit"),
+                theme.icon_button(
+                    ft.Icons.EDIT_OUTLINED, lambda _: app.go(f"{route}/edit"), "Bearbeiten"
                 ),
-                ft.IconButton(
-                    icon=ft.Icons.DELETE_OUTLINE,
-                    tooltip="Löschen",
-                    on_click=lambda _: app.page.show_dialog(confirm_delete),
+                theme.icon_button(
+                    ft.Icons.DELETE_OUTLINE,
+                    lambda _: app.page.show_dialog(confirm_delete),
+                    "Löschen",
                 ),
             ],
         ),
         scroll=ft.ScrollMode.AUTO,
-        floating_action_button=None
+        fab=None
         if is_run
-        else theme.fab(lambda _: app.go(f"{route}/add-exercise"), "Übung hinzufügen"),
+        else theme.fab(lambda _: app.go(f"{route}/add-exercise"), "Übung hinzufügen", "Übung"),
     )
 
 
@@ -80,7 +78,7 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
             theme.glass_card(
                 ft.Column(
                     [
-                        theme.name(exercise.name, size=22),
+                        theme.card_name(exercise.name, size=26),
                         theme.chips(
                             [format_set_compact(s) for s in sets],
                             highlighted=_pr_index(app, exercise_id, sets),
@@ -104,7 +102,7 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
                         [
                             ft.Column(
                                 [
-                                    theme.name(p.exercise.name, size=22),
+                                    theme.card_name(p.exercise.name, size=26),
                                     theme.muted(
                                         "  ·  ".join(format_set_compact(s) for s in p.last_sets)
                                     ),

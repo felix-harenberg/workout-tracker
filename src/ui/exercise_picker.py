@@ -24,58 +24,48 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
             return
         open_exercise(exercise.id)
 
-    cards: list[ft.Container] = []
+    rows: list[tuple[str, ft.Control]] = []
     for e in exercises:
         last = repo.last_set_of_exercise(app.conn, e.id)
-        subtitle = (
+        text = (
             f"Zuletzt {format_set_compact(last[1])} · {day_label(last[0], date.today())}"
             if last
             else "Noch nie gemacht"
         )
-        card = theme.glass_card(
-            ft.Row(
-                [
-                    ft.Column(
-                        [theme.name(e.name, size=20), _subtitle(app, e.id, subtitle)],
-                        spacing=2,
-                        expand=True,
-                    ),
-                    ft.Icon(ft.Icons.CHEVRON_RIGHT, color=theme.TEXT_MUTED),
-                ]
-            ),
+        row = theme.list_row(
+            e.name,
+            _subtitle(app, e.id, text),
             on_click=lambda _, eid=e.id: open_exercise(eid),
-            padding=14,
         )
-        card.data = e.name.casefold()
-        cards.append(card)
+        rows.append((e.name.casefold(), row))
 
-    new_label = ft.Text("", size=18, color=theme.VIOLET_LIGHT)
-    new_card = theme.glass_card(
-        ft.Row([ft.Icon(ft.Icons.ADD, color=theme.VIOLET_LIGHT), new_label]),
-        on_click=add_new,
-        padding=14,
-    )
-    new_card.visible = False
+    def build(query: str) -> ft.Control | None:
+        """The list for a search: matching exercises, then "„…“ neu anlegen" if it is new."""
+        key = query.casefold()
+        shown = [row for name, row in rows if key in name]
+        if key and all(name != key for name, _ in rows):
+            shown.append(
+                theme.list_row(
+                    f"+ „{query}“ neu anlegen",
+                    on_click=add_new,
+                    trailing=ft.Container(),
+                    color=theme.VIOLET_LIGHT,
+                )
+            )
+        return theme.glass_list(shown) if shown else None
 
     def filter_list(_: ft.Event) -> None:
-        query = (search.value or "").strip()
-        key = query.casefold()
-        for card in cards:
-            card.visible = key in card.data
-        # Offer creating a new exercise unless the name already exists.
-        new_card.visible = bool(key) and all(card.data != key for card in cards)
-        new_label.value = f"„{query}“ neu anlegen"
+        results.content = build((search.value or "").strip())
         results.update()
 
     search = theme.text_field(
-        hint_text="Übung suchen oder neu anlegen",
+        hint_text="Suchen oder neu anlegen",
         prefix_icon=ft.Icons.SEARCH,
-        text_size=18,
         autofocus=not exercises,
         on_change=filter_list,
         on_submit=add_new,
     )
-    results = ft.Column([*cards, new_card], spacing=10)
+    results = ft.Container(build(""))
 
     return theme.view(
         route,

@@ -135,3 +135,20 @@ def hint_message(hint: WeightHint, today: date) -> str:
         day = day_label(hint.set_on, today)
         when = f" {day.lower()}" if day in ("Heute", "Gestern") else f" am {day}"
     return f"{amount} Gewicht hast du dir{when} vorgenommen"
+
+
+def step_weight(text: str | None, delta: float) -> str:
+    """The ±2.5 kg buttons: change the typed weight, never below 0. Unreadable input stays."""
+    try:
+        weight = parse_weight(text) or 0
+    except ValueError:
+        return text or ""
+    return format_weight(max(weight + delta, 0))
+
+
+def step_reps(text: str | None, delta: int) -> str:
+    """The ±1 buttons: change the typed reps, never below 1. Unreadable input stays."""
+    stripped = (text or "").strip()
+    if stripped and not stripped.isdigit():
+        return stripped
+    return str(max(int(stripped or 0) + delta, 1))
