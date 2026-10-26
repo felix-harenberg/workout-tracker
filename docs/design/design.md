@@ -37,10 +37,26 @@ Violett nur für Akzente und Aktionen, nie für Flächen mit Text.
 
 Was in der Vorschau CSS ist, gibt es in Flet so:
 
-- Glas: `Container(bgcolor=..., border=..., border_radius=22, blur=18)`. Die Unschärfe wirkt auf das, was hinter dem Container liegt.
+- Glas: `Container(bgcolor=..., border=..., border_radius=22, blur=18)`. Die Unschärfe wirkt auf das, was hinter dem Container liegt. Nur sparsam einsetzen, siehe „Glas: getestet auf dem Handy“ unten.
 - Leucht-Flecken: Container mit Kreisform und starker Unschärfe in einem `Stack` hinter dem Inhalt.
 - Glow: `BoxShadow` mit violetter Farbe und grossem Blur-Radius.
 - Anton: TTF-Datei in die Assets legen und über `page.fonts` registrieren, damit sie offline funktioniert.
 - Hochformat: `page.set_allowed_device_orientations([DeviceOrientation.PORTRAIT_UP])`, nur auf Mobilgeräten aufrufen.
 
-Unschärfe kostet Leistung. Wenn es auf dem Handy ruckelt, zuerst die Hintergrund-Unschärfe der Karten reduzieren, die Leucht-Flecken behalten.
+## Glas: getestet auf dem Handy (26. Oktober 2026)
+
+Test-App mit 24 scrollenden Karten und einem festen Panel unten, drei Modi verglichen:
+
+| Modus | Ergebnis |
+| --- | --- |
+| Echt: Unschärfe auf allen Karten | ruckelt beim Scrollen, spürbar |
+| Angedeutet: keine Unschärfe | flüssig |
+| Mischung: Karten angedeutet, echte Unschärfe nur beim festen Panel | flüssig |
+
+**Regel daraus:**
+
+- **Alles, was scrollt** (Karten, Listen-Einträge): angedeutetes Glas ohne `blur`. Füllung als Verlauf von Weiss 11 % oben links zu Weiss 3 % unten rechts, Rand 1 px Weiss 18 %, Radius wie gehabt.
+- **Echte Unschärfe** (`blur=18`) nur für feste Elemente, die sich nicht mitbewegen, z.B. das Eingabe-Panel unten im Satz-Screen. Maximal ein bis zwei pro Screen.
+- **Leucht-Flecken im Hintergrund** als `RadialGradient` statt als weichgezeichnete Kreise. Das sieht gleich aus und kostet nichts.
+
+Code der Test-App mit allen drei Modi: [glas-test/main.py](glas-test/main.py) (Funktion `style_glass`). Lief auf dem inzwischen gelöschten Branch `spike/glas-test`.
