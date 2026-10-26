@@ -92,6 +92,17 @@ Am 24.10.2026 gestrichen: Hyrox-Rennen trackt Felix mit Roxfit, für Gym und Lau
 - [ ] Screen mit Fortschrittsgraphen pro Übung (schwerstes Gewicht pro Training)
 - [ ] Release v0.3
 
+### Phase 5b: Design und Politur, v0.4 (Puffer bis Anfang Dezember)
+
+Am 26.10.2026 dazugenommen, nutzt die durch Hyrox und Laufen frei gewordene Zeit. Entwürfe und Entscheide auf dem Branch `ideas/design` (`docs/design/`, `docs/ideen-roadmap.md`, `docs/logging-ux.md`). **Feste Liste:** Was hier nicht steht, wird ein `later`-Issue.
+
+- [ ] App-Icon einbauen (`docs/design/logo/icon_android.png`, Anleitung in `EINBAU.md`)
+- [ ] Neues Design auf allen bestehenden Screens: dunkel, Neon-Violett, Glas nach der getesteten Mischung-Regel (`docs/design/design.md`), Schrift Anton für Titel, Hochformat
+- [ ] ▲▼-Indikator pro Übung: nächstes Mal mehr oder weniger Gewicht (Migration, Logik in `core/` mit Tests)
+- [ ] Rekord-Moment: kurzer Rekord-Screen; bei mehr als ca. 20 % über dem Bestwert zuerst „Vertippt?“ fragen (Logik in `core/` mit Tests)
+- [ ] Leere Zustände mit rotierenden Sprüchen (Zitate nur wörtlich belegt, mit Quelle)
+- [ ] Release v0.4
+
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 
 - [ ] README fertig: Screenshots, Features, Installation per APK, Build aus dem Quellcode
@@ -130,7 +141,7 @@ workout-tracker/
 
 1. **Fixer Slot:** 3 Stunden zu festen Zeiten im Kalender, z.B. zweimal 90 Minuten. Nicht "wenn ich Zeit habe".
 2. **Jede Session endet mit einem Commit**, auch wenn es nur ein halbes Feature ist. Und mit einer Notiz im Issue, wo du das nächste Mal weitermachst.
-3. **Phasen nicht überspringen.** Graphen gibt es erst, wenn das Loggen im Gym rund läuft.
+3. **Phasen nicht überspringen.** Graphen gibt es erst, wenn das Loggen im Gym rund läuft. Design kommt nach der Auswertung.
 4. **Neue Ideen = Issue mit Label `later`.** Nie sofort einbauen.
 5. **Prüfungsphase:** Wenn die ETH Vorrang braucht, pausierst du bewusst und schreibst das ins README. Pausieren ist erlaubt, stilles Liegenlassen nicht.
 6. **Blog läuft weiter:** Ein Post pro Woche bleibt. Der Fortschritt am Tracker ist gutes Material dafür.
