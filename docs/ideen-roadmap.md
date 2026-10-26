@@ -27,7 +27,13 @@ Stand: 22. Oktober 2026
    - **Runde 3** → [design/logo-eckig.html](design/logo-eckig.html): eckiger Bizeps nach Felix' Skizze, weiss gefüllt, simpel. Formen Q (wie Skizze), R (nur rechte Winkel), S (mit Bizeps-Spitze), jeweils auf Schwarz, F und E.
 7. [x] **README-Auftritt** (Aufbau passt so) → [design/readme/README-entwurf.md](design/readme/README-entwurf.md), Titelbild [design/readme/hero.png](design/readme/hero.png). Zielgruppe: Nutzer und Recruiter gleichermassen. Aufbau: Icon, Name, Einzeiler, Badges, Titelbild, Sprungmarken; danach Why, Features, Install (für Nutzer), dann How it's built, Run from source, What I learned (für Recruiter/Entwickler). Sprache Englisch. Titelbild zeigt Konzept-Entwürfe, vor 1.0 durch echte Screenshots ersetzen.
 8. [ ] **Glas-Effekt-Test:** Ruckelt die Unschärfe in Flet auf dem Handy? Test-App auf Wegwerf-Branch `spike/glas-test` (eigene Paket-ID `io.github.felixharenberg.glastest`, installiert sich neben der echten App). 24 Glas-Karten zum Scrollen, Schalter für Unschärfe an/aus. APK per GitHub Actions.
+   - Runde 1: Mit echter Unschärfe auf allen Karten merkt man beim Scrollen einen Unterschied, nicht ganz flüssig. Grund: jede Karte zeichnet bei jedem Bild alles dahinter neu weich.
+   - Runde 2: Drei Modi zum Vergleichen: **Echt** (alles echt), **Angedeutet** (keine Unschärfe, Glas nur mit Fläche, Rand und Verlauf), **Mischung** (Karten angedeutet, echte Unschärfe nur beim festen Eingabe-Panel unten). Ergebnis vom Handy steht aus.
+
+## Weitere Ideen
+
+- [ ] **Indikator: nächstes Mal hoch oder runter** → [design/indikator.html](design/indikator.html). Grünes Dreieck ▲ = mehr Gewicht, rotes ▼ = weniger. Nur Erinnerung, die Vorbefüllung bleibt unverändert. Setzen unter den Sätzen (nochmal tippen = weg), sichtbar in „Übung wählen“ und oben im Satz-Screen beim nächsten Mal, verschwindet nach dem ersten Satz. Datenmodell: ein Feld pro Übung (hoch / runter / nichts). Feedback steht aus.
 
 ## Wo wir stehen
 
-Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8 läuft: Test-APK wird gebaut, Ergebnis vom Handy steht aus.
+Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8: Test-APK Runde 2 ist gebaut, Ergebnis vom Handy steht aus. Neue Idee: Gewichts-Indikator, Entwurf liegt vor.

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gewichts-Indikator</title>
+<!-- Draft: remind yourself to go up or down in weight next time. See ../ideen-roadmap.md. -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060a; --text: #f3eefc; --text-muted: rgba(243, 238, 252, .55);
+    --violet: #b026ff; --violet-light: #d27bff; --violet-deep: #5a1bff;
+    --glass: rgba(255, 255, 255, .06); --glass-border: rgba(255, 255, 255, .14);
+    --up: #39e58c; --down: #ff4d6d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #1a1820; color: #eee; padding: 32px 16px 64px; }
+  header { max-width: 1200px; margin: 0 auto 28px; }
+  header h1 { font-size: 26px; font-weight: 800; }
+  header p { color: #aaa; margin-top: 6px; max-width: 75ch; line-height: 1.5; }
+  .row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; max-width: 1200px; margin: 0 auto; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .col h2 { font-size: 16px; font-weight: 800; }
+  .col p.desc { font-size: 13px; color: #aaa; max-width: 320px; line-height: 1.5; }
+  .col p.desc b { color: #eee; }
+
+  .phone { width: 320px; height: 680px; border-radius: 40px; overflow: hidden; position: relative;
+           background: var(--bg); color: var(--text); box-shadow: 0 30px 60px rgba(0,0,0,.5), 0 0 0 10px #111; }
+  .phone::before, .phone::after { content: ""; position: absolute; border-radius: 50%; filter: blur(50px); }
+  .phone::before { width: 250px; height: 250px; background: var(--violet); top: -60px; right: -90px; opacity: .55; }
+  .phone::after { width: 210px; height: 210px; background: var(--violet-deep); bottom: 60px; left: -110px; opacity: .45; }
+  .screen { position: absolute; inset: 0; padding: 20px 16px; display: flex; flex-direction: column; gap: 10px; z-index: 1; }
+
+  .icon { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; background: var(--glass); border: 1px solid var(--glass-border); }
+  .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+  .title { font-family: Anton, Impact, sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: .5px; font-size: 54px; }
+  .accent { color: var(--violet-light); text-shadow: 0 0 18px rgba(176, 38, 255, .8); }
+  .glass { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius: 20px; }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; padding: 6px 4px; color: var(--text-muted); }
+  td { padding: 9px 4px; font-size: 16px; font-weight: 600; border-top: 1px solid rgba(255,255,255,.08); }
+  td.prev { font-size: 12px; font-weight: 400; opacity: .55; }
+  .check { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 14px; background: var(--violet); color: #fff; box-shadow: 0 0 14px var(--violet); }
+
+  /* The indicator: a small solid triangle. */
+  .tri { display: inline-block; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; vertical-align: middle; }
+  .tri.up { border-bottom: 10px solid var(--up); filter: drop-shadow(0 0 5px rgba(57, 229, 140, .7)); }
+  .tri.down { border-top: 10px solid var(--down); filter: drop-shadow(0 0 5px rgba(255, 77, 109, .7)); }
+  .tri.big { border-left-width: 9px; border-right-width: 9px; }
+  .tri.big.up { border-bottom-width: 15px; } .tri.big.down { border-top-width: 15px; }
+
+  .next { padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .next .txt { flex: 1; font-size: 13px; font-weight: 600; }
+  .toggle { display: flex; gap: 6px; }
+  .toggle span { width: 46px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+                 background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+  .toggle span.on-up { border-color: var(--up); background: rgba(57, 229, 140, .12); }
+
+  .reminder { padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; }
+  .reminder.up { border-color: rgba(57, 229, 140, .55); }
+  .reminder .sub { font-size: 12px; font-weight: 400; color: var(--text-muted); display: block; margin-top: 2px; }
+
+  .field { padding: 12px 14px; font-size: 18px; font-weight: 600; }
+  .list .item { padding: 13px 14px; display: flex; justify-content: space-between; align-items: center;
+                border-top: 1px solid rgba(255,255,255,.07); font-size: 16px; font-weight: 600; }
+  .list .item:first-child { border-top: 0; }
+  .list .item .sub { font-size: 12px; font-weight: 400; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Indikator: nächstes Mal hoch oder runter</h1>
+  <p>Nur eine Erinnerung, das Gewicht wird nicht automatisch geändert. Grünes Dreieck nach oben = mehr Gewicht, rotes nach unten = weniger.</p>
+</header>
+
+<div class="row">
+
+  <div class="col">
+    <h2>1 · Setzen (heute)</h2>
+    <div class="phone"><div class="screen">
+      <div class="icon">←</div>
+      <div class="title">Bank<br><span class="accent">drücken</span></div>
+      <div class="glass" style="padding:6px 12px;margin-top:6px">
+        <table>
+          <tr><th>Satz</th><th>Vorher</th><th>kg</th><th>Wdh</th><th></th></tr>
+          <tr><td>1</td><td class="prev">80 × 8</td><td>82.5</td><td>8</td><td><span class="check">✓</span></td></tr>
+          <tr><td>2</td><td class="prev">80 × 8</td><td>82.5</td><td>8</td><td><span class="check">✓</span></td></tr>
+          <tr><td>3</td><td class="prev">80 × 6</td><td>82.5</td><td>8</td><td><span class="check">✓</span></td></tr>
+        </table>
+      </div>
+      <div class="glass next">
+        <div class="txt">Nächstes Mal<br><span style="color:var(--up)">mehr Gewicht</span></div>
+        <div class="toggle"><span class="on-up"><i class="tri big up"></i></span><span><i class="tri big down"></i></span></div>
+      </div>
+    </div></div>
+    <p class="desc">Unter den Sätzen zwei kleine Knöpfe. Tippen auf ▲ setzt „hoch“, nochmal tippen nimmt es weg. Ohne Tippen passiert nichts.</p>
+  </div>
+
+  <div class="col">
+    <h2>2 · Übung wählen (nächstes Mal)</h2>
+    <div class="phone"><div class="screen">
+      <div class="icon">←</div>
+      <div class="title">Übung<br><span class="accent">wählen</span></div>
+      <div class="glass field" style="margin-top:8px"><span style="color:var(--text-muted);font-weight:400">⌕ Suchen oder neu anlegen</span></div>
+      <div class="glass list">
+        <div class="item"><div>Bankdrücken<div class="sub"><i class="tri up"></i>Zuletzt 82.5 × 8 · 22. Okt</div></div><span>›</span></div>
+        <div class="item"><div>Schulterdrücken<div class="sub">Zuletzt 40 × 10 · 22. Okt</div></div><span>›</span></div>
+        <div class="item"><div>Kniebeugen<div class="sub"><i class="tri down"></i>Zuletzt 105 × 4 · 20. Okt</div></div><span>›</span></div>
+        <div class="item"><div>Klimmzüge<div class="sub">Zuletzt BW × 9 · 20. Okt</div></div><span>›</span></div>
+      </div>
+    </div></div>
+    <p class="desc">Das Dreieck steht klein vor dem letzten Satz. Auf einen Blick: bei welchen Übungen hattest du dir etwas vorgenommen.</p>
+  </div>
+
+  <div class="col">
+    <h2>3 · Satz-Screen (nächstes Mal)</h2>
+    <div class="phone"><div class="screen">
+      <div class="icon">←</div>
+      <div class="title">Bank<br><span class="accent">drücken</span></div>
+      <div class="glass reminder up" style="margin-top:6px">
+        <i class="tri big up"></i>
+        <div>Mehr Gewicht<span class="sub">hast du dir am 22. Okt vorgenommen · zuletzt 82.5 × 8</span></div>
+      </div>
+      <div class="glass" style="padding:6px 12px">
+        <table>
+          <tr><th>Satz</th><th>Vorher</th><th>kg</th><th>Wdh</th><th></th></tr>
+          <tr><td>1</td><td class="prev">82.5 × 8</td><td style="opacity:.35">82.5</td><td style="opacity:.35">8</td><td><span class="check" style="background:none;box-shadow:none;border:2px solid rgba(255,255,255,.4)"></span></td></tr>
+        </table>
+      </div>
+    </div></div>
+    <p class="desc">Oben eine Zeile mit grünem Rand. Vorbefüllt bleibt das alte Gewicht, du entscheidest selbst, wie viel mehr. Nach dem ersten Satz verschwindet der Hinweis.</p>
+  </div>
+
+</div>
+</body>
+</html>
