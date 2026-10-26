@@ -88,8 +88,8 @@ Am 24.10.2026 gestrichen: Hyrox-Rennen trackt Felix mit Roxfit, für Gym und Lau
 
 ### Phase 5: Auswertung, v0.3 (Woche 10 bis 11)
 
-- [ ] `core/`: Berechnung von PRs (schwerster Satz), Wochenvolumen (Sätze pro Woche), mit Tests. Geschätztes 1RM und Pace-Verlauf am 26.10.2026 gestrichen: Felix will sein echtes Maximum sehen, Läufe sind raus.
-- [ ] Screen mit Fortschrittsgraphen pro Übung (schwerstes Gewicht pro Training)
+- [x] `core/`: Berechnung von PRs (schwerster Satz), Wochenvolumen (Sätze pro Woche), mit Tests. Geschätztes 1RM und Pace-Verlauf am 26.10.2026 gestrichen: Felix will sein echtes Maximum sehen, Läufe sind raus.
+- [x] Screen mit Fortschrittsgraphen pro Übung (schwerstes Gewicht pro Training)
 - [ ] Release v0.3
 
 ### Phase 5b: Design und Politur, v0.4 (Puffer bis Anfang Dezember)
