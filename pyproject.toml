@@ -26,6 +26,13 @@ product = "Workout Tracker"
 [tool.flet.app]
 path = "src"
 
+# Splash shows src/assets/splash_android.png on the app background, light and dark mode alike.
+[tool.flet.splash]
+color = "#07060A"
+dark_color = "#07060A"
+icon_background = "#07060A"
+icon_dark_background = "#07060A"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
