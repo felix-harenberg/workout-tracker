@@ -26,6 +26,12 @@ product = "Workout Tracker"
 [tool.flet.app]
 path = "src"
 
+# Phones from the last ~8 years are arm64. Skipping armeabi-v7a (very old phones) and
+# x86_64 (emulators) makes the APK much smaller and the build faster, with fewer downloads
+# that can fail (a corrupt x86_64 Python download broke a build once).
+[tool.flet.android]
+target_arch = ["arm64-v8a"]
+
 # Splash shows src/assets/splash_android.png on the app background, light and dark mode alike.
 [tool.flet.splash]
 color = "#07060A"
