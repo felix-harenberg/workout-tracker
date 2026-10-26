@@ -3,7 +3,8 @@ from datetime import date
 import flet as ft
 
 from core import repository as repo
-from core.models import Workout, WorkoutType
+from core import stats
+from core.models import Workout, WorkoutSet, WorkoutType
 from core.run import format_distance, format_duration, format_pace, pace_s_per_km
 from core.templates import pending_exercises
 from core.training import day_label, format_set_compact, group_sets_by_exercise, workout_title
@@ -80,7 +81,10 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
                 ft.Column(
                     [
                         theme.name(exercise.name, size=22),
-                        theme.chips([format_set_compact(s) for s in sets]),
+                        theme.chips(
+                            [format_set_compact(s) for s in sets],
+                            highlighted=_pr_index(app, exercise_id, sets),
+                        ),
                     ],
                     spacing=10,
                 ),
@@ -141,3 +145,11 @@ def _run_controls(app: App, workout: Workout) -> list[ft.Control]:
             )
         )
     ]
+
+
+def _pr_index(app: App, exercise_id: int, sets: list[WorkoutSet]) -> int | None:
+    """Index of the exercise's all-time PR among these sets, if it is one of them."""
+    pr = stats.exercise_pr(app.conn, exercise_id)
+    if pr is None:
+        return None
+    return next((i for i, s in enumerate(sets) if s.id == pr.workout_set.id), None)

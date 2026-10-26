@@ -28,10 +28,15 @@ def format_weight(weight_kg: float) -> str:
     return f"{weight_kg:g}"
 
 
+def format_weight_reps(weight_kg: float | None, reps: int) -> str:
+    """Weight and reps as text: "85 kg × 6", or "BW × 12" for bodyweight."""
+    if weight_kg is None:
+        return f"BW × {reps}"
+    return f"{format_weight(weight_kg)} kg × {reps}"
+
+
 def format_set(workout_set: WorkoutSet) -> str:
-    if workout_set.weight_kg is None:
-        return f"BW × {workout_set.reps}"
-    return f"{format_weight(workout_set.weight_kg)} kg × {workout_set.reps}"
+    return format_weight_reps(workout_set.weight_kg, workout_set.reps)
 
 
 def format_set_compact(workout_set: WorkoutSet) -> str:

@@ -204,8 +204,14 @@ def chip(text: str, highlight: bool = False) -> ft.Container:
     )
 
 
-def chips(texts: list[str]) -> ft.Row:
-    return ft.Row([chip(t) for t in texts], wrap=True, spacing=8, run_spacing=8)
+def chips(texts: list[str], highlighted: int | None = None) -> ft.Row:
+    """Set chips; the one at index `highlighted` (e.g. the PR) glows violet."""
+    return ft.Row(
+        [chip(t, highlight=i == highlighted) for i, t in enumerate(texts)],
+        wrap=True,
+        spacing=8,
+        run_spacing=8,
+    )
 
 
 def glass_card(

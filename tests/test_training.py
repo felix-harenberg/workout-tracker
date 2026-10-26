@@ -10,6 +10,7 @@ from core.training import (
     format_set,
     format_set_compact,
     format_weight,
+    format_weight_reps,
     group_sets_by_exercise,
     month_label,
     parse_reps,
@@ -196,3 +197,11 @@ def test_month_label(day: date, text: str) -> None:
 def test_format_set_compact() -> None:
     assert format_set_compact(make_set(1, 8, 82.5)) == "82.5 × 8"
     assert format_set_compact(make_set(1, 12, None)) == "BW × 12"
+
+
+@pytest.mark.parametrize(
+    ("weight", "reps", "text"),
+    [(85, 6, "85 kg × 6"), (82.5, 8, "82.5 kg × 8"), (None, 12, "BW × 12")],
+)
+def test_format_weight_reps(weight: float | None, reps: int, text: str) -> None:
+    assert format_weight_reps(weight, reps) == text

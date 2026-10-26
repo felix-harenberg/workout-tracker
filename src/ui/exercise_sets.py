@@ -5,6 +5,7 @@ import flet as ft
 from core import repository as repo
 from core import stats
 from core.models import Exercise, Hint, Workout, WorkoutSet
+from core.records import check_new_set
 from core.training import (
     day_label,
     format_set,
@@ -17,6 +18,7 @@ from core.training import (
 )
 from ui import theme
 from ui.app import App
+from ui.record_dialogs import show_record, show_suspicious
 
 
 def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.View:
@@ -136,8 +138,22 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         if values is None:
             return
         weight_kg, reps = values
-        repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
-        app.render()
+        check = check_new_set(app.conn, exercise.id, weight_kg)
+
+        def save() -> None:
+            repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
+            app.render()
+            if check.is_record:
+                show_record(app, exercise.name, weight_kg, reps, check)
+
+        if check.suspicious:
+
+            async def correct() -> None:
+                await weight_field.focus()
+
+            show_suspicious(app, exercise.name, weight_kg, reps, check, correct, save)
+        else:
+            save()
 
     weight_field.on_submit = focus_reps
     reps_field.on_submit = add
