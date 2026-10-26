@@ -41,7 +41,8 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
     return theme.view(
         route,
         controls,
-        appbar=theme.app_bar(
+        bar=theme.top_bar(
+            app.back,
             [
                 ft.IconButton(
                     icon=ft.Icons.EDIT_OUTLINED,
@@ -53,7 +54,7 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
                     tooltip="Löschen",
                     on_click=lambda _: app.page.show_dialog(confirm_delete),
                 ),
-            ]
+            ],
         ),
         scroll=ft.ScrollMode.AUTO,
         floating_action_button=None

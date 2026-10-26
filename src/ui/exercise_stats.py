@@ -51,6 +51,6 @@ def exercise_stats_view(app: App, exercise: Exercise) -> ft.View:
     return theme.view(
         f"/stats/exercise/{exercise.id}",
         controls,
-        appbar=theme.app_bar(),
+        bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )

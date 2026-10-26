@@ -70,7 +70,11 @@ class App:
         self.page.views.extend(views)
         self.page.update()
 
-    def _on_view_pop(self, e: ft.ViewPopEvent) -> None:
+    def back(self, _: ft.Event | None = None) -> None:
+        """Go to the screen below; used by the back arrow and Android's back gesture."""
         if len(self.page.views) > 1:
             self.page.views.pop()
             self.go(self.page.views[-1].route)
+
+    def _on_view_pop(self, e: ft.ViewPopEvent) -> None:
+        self.back()

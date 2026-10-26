@@ -50,4 +50,6 @@ def new_workout_view(app: App) -> ft.View:
             )
         )
 
-    return theme.view("/workout/new", controls, appbar=theme.app_bar(), scroll=ft.ScrollMode.AUTO)
+    return theme.view(
+        "/workout/new", controls, bar=theme.top_bar(app.back), scroll=ft.ScrollMode.AUTO
+    )

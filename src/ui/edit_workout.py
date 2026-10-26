@@ -70,6 +70,6 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
             notes_field,
             theme.primary_button("Speichern", save),
         ],
-        appbar=theme.app_bar(),
+        bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )

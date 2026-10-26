@@ -148,14 +148,15 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             ),
             panel,
         ],
-        appbar=theme.app_bar(
+        bar=theme.top_bar(
+            app.back,
             [
                 ft.IconButton(
                     icon=ft.Icons.DELETE_OUTLINE,
                     tooltip="Übung entfernen",
                     on_click=lambda _: app.page.show_dialog(confirm_delete),
                 )
-            ]
+            ],
         ),
     )
 

@@ -36,13 +36,14 @@ def workout_list_view(app: App) -> ft.View:
     return theme.view(
         "/",
         content,
-        appbar=theme.app_bar(
+        bar=theme.top_bar(
+            None,
             [
                 ft.IconButton(
                     icon=ft.Icons.INSIGHTS, tooltip="Statistik", on_click=lambda _: app.go("/stats")
                 ),
                 ft.IconButton(icon=ft.Icons.SHARE, tooltip="Als CSV exportieren", on_click=export),
-            ]
+            ],
         ),
         scroll=ft.ScrollMode.AUTO,
         floating_action_button=theme.fab(lambda _: app.go("/workout/new"), "Neues Workout"),

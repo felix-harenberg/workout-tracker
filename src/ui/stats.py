@@ -64,6 +64,6 @@ def stats_view(app: App) -> ft.View:
             ft.Container(theme.label("Übungen"), padding=ft.Padding(4, 12, 0, 0)),
             *(exercise_cards or [theme.muted("Noch keine Übungen.")]),
         ],
-        appbar=theme.app_bar(),
+        bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )

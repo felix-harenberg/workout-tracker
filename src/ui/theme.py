@@ -53,59 +53,87 @@ async def lock_portrait(page: ft.Page) -> None:
         await page.set_allowed_device_orientations([ft.DeviceOrientation.PORTRAIT_UP])
 
 
-def view(
-    route: str,
-    controls: list[ft.Control],
-    scroll: ft.ScrollMode | None = None,
-    **kwargs,
-) -> ft.View:
-    """A screen on the dark background with a violet glow in the top right corner.
-
-    The glow is its own layer behind the content: a gradient in `View.decoration` did not
-    show up on the phone, gradients on containers do. Content scrolls without a scrollbar,
-    which would otherwise cut into the cards.
-    """
-    glow = ft.Container(
+def _glow(center: ft.Alignment, radius: float, color: str, opacity: float) -> ft.Container:
+    return ft.Container(
         left=0,
         top=0,
         right=0,
         bottom=0,
         gradient=ft.RadialGradient(
-            center=ft.Alignment(1.0, -1.0),
-            radius=1.3,
-            colors=[
-                ft.Colors.with_opacity(0.45, VIOLET),
-                ft.Colors.with_opacity(0.12, VIOLET_DEEP),
-                ft.Colors.with_opacity(0, BG),
-            ],
-            stops=[0, 0.45, 1],
+            center=center,
+            radius=radius,
+            colors=[ft.Colors.with_opacity(opacity, color), ft.Colors.with_opacity(0, color)],
         ),
+    )
+
+
+def view(
+    route: str,
+    controls: list[ft.Control],
+    bar: ft.Control | None = None,
+    scroll: ft.ScrollMode | None = None,
+    **kwargs,
+) -> ft.View:
+    """A full-screen page: glow spots top right and bottom left, then the bar and the content.
+
+    The glow sits in its own layers behind everything, including the bar, so there is no
+    edge below the bar (a Flet AppBar paints its own background, and a gradient in
+    `View.decoration` did not render on the phone). Content scrolls without a scrollbar,
+    which would otherwise cut into the cards.
+    """
+    body = ft.Column(
+        controls,
+        spacing=12,
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
+        scroll=ft.ScrollMode.HIDDEN if scroll else None,
+        expand=True,
     )
     content = ft.Container(
         left=0,
         top=0,
         right=0,
         bottom=0,
-        padding=ft.Padding(20, 8, 20, 24),
-        content=ft.Column(
-            controls,
-            spacing=12,
-            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
-            scroll=ft.ScrollMode.HIDDEN if scroll else None,
+        content=ft.SafeArea(
+            ft.Container(
+                ft.Column(
+                    [bar or ft.Container(height=8), body],
+                    spacing=0,
+                    horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                ),
+                padding=ft.Padding(20, 0, 20, 16),
+            )
         ),
     )
     return ft.View(
         route=route,
-        controls=[ft.Stack([glow, content], expand=True)],
+        controls=[
+            ft.Stack(
+                [
+                    _glow(ft.Alignment(1.0, -1.0), 1.3, VIOLET, 0.45),
+                    _glow(ft.Alignment(-1.0, 1.0), 1.2, VIOLET_DEEP, 0.30),
+                    content,
+                ],
+                expand=True,
+            )
+        ],
         bgcolor=BG,
         padding=0,
         **kwargs,
     )
 
 
-def app_bar(actions: list[ft.Control] | None = None) -> ft.AppBar:
-    """Transparent bar for the back arrow and actions; the title is a big headline instead."""
-    return ft.AppBar(bgcolor=ft.Colors.TRANSPARENT, actions=actions or [])
+def top_bar(on_back: Callable | None, actions: list[ft.Control] | None = None) -> ft.Row:
+    """Back arrow on the left (if `on_back`), actions on the right. Lives inside the glow."""
+    return ft.Row(
+        [
+            ft.IconButton(icon=ft.Icons.ARROW_BACK, on_click=on_back, tooltip="Zurück")
+            if on_back
+            else ft.Container(),
+            ft.Row(actions or [], spacing=0),
+        ],
+        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        height=56,
+    )
 
 
 def headline(text: str, accent: str = "", overline: str = "", size: int = 60) -> ft.Control:

@@ -80,6 +80,6 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
     return theme.view(
         route,
         [theme.headline("Übung ", "wählen", size=52), search, results],
-        appbar=theme.app_bar(),
+        bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )
