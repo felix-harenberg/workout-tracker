@@ -1,8 +1,11 @@
+from datetime import date
+
 import flet as ft
 
 from core import repository as repo
 from core.models import Workout, WorkoutType
 from core.run import format_distance, format_duration, format_pace, pace_s_per_km
+from core.templates import pending_exercises
 from core.training import format_date, format_set, group_sets_by_exercise, workout_title
 from ui.app import App
 
@@ -64,7 +67,9 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
 def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
     route = f"/workout/{workout.id}"
     groups = group_sets_by_exercise(repo.list_sets(app.conn, workout.id))
-    if not groups:
+    # Only today's workout offers last time's exercises; old ones show what was done.
+    pending = pending_exercises(app.conn, workout) if workout.date == date.today() else []
+    if not groups and not pending:
         return [ft.Text("Noch keine Übungen. Tippe auf +, um eine hinzuzufügen.")]
 
     controls: list[ft.Control] = []
@@ -82,6 +87,24 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
                 )
             )
         )
+
+    if pending:
+        controls.append(ft.Text("Vom letzten Mal", size=16, weight=ft.FontWeight.BOLD))
+        for p in pending:
+            controls.append(
+                ft.Card(
+                    variant=ft.CardVariant.OUTLINED,
+                    content=ft.ListTile(
+                        title=ft.Text(p.exercise.name),
+                        subtitle=ft.Text(
+                            "  ·  ".join(format_set(s) for s in p.last_sets),
+                            color=ft.Colors.GREY,
+                        ),
+                        trailing=ft.Icon(ft.Icons.PLAY_ARROW),
+                        on_click=lambda _, eid=p.exercise.id: app.go(f"{route}/exercise/{eid}"),
+                    ),
+                )
+            )
     return controls
 
 
