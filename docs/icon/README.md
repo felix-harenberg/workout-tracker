@@ -7,11 +7,11 @@ The images in `src/assets/` are rendered from the HTML files in this folder. `fl
 | `icon-android.html` | `src/assets/icon_android.png` | Android app icon, used exactly as is (no extra margin) |
 | `splash-android.html` | `src/assets/splash_android.png` | Splash image, transparent, on the color from `[tool.flet.splash]` in `pyproject.toml` |
 
-Design: angular biceps (logo R) from the `ideas/design` branch, background F (violet gradient).
+Design: angular biceps (logo R) from the `ideas/design` branch. Icon: "neon" variant, glowing violet biceps on black (chosen 2026-10-26). Splash: white biceps.
 
 ## Render
 
-With Microsoft Edge headless, 1024 × 1024 px. Use a fresh `--user-data-dir` each time: if an Edge process still holds the profile, the call exits 0 without writing a file.
+With Microsoft Edge headless, 1024 × 1024 px. Use a fresh `--user-data-dir` each time: if an Edge process still holds the profile, the call exits 0 without writing a file. Edge may also return before the screenshot is written, so wait a few seconds before checking for the file.
 
 ```bash
 EDGE="/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
