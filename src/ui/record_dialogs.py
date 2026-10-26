@@ -1,4 +1,7 @@
-"""Dialogs for a new record and for a jump that looks like a typo."""
+"""Dialogs for a new record and for a jump that looks like a typo.
+
+Layout follows docs/design/momente-und-icon.html on the ideas/design branch.
+"""
 
 import asyncio
 from collections.abc import Callable
@@ -14,24 +17,95 @@ from ui.app import App
 RECORD_SECONDS = 4  # the record dialog closes itself after this
 
 
-def _dialog(content: list[ft.Control], actions: list[ft.Control]) -> ft.AlertDialog:
+def _overlay(
+    kicker: str,
+    big: str,
+    exercise_name: str,
+    detail: str,
+    line: str,
+    buttons: list[ft.Control],
+    warn: bool = False,
+) -> ft.AlertDialog:
+    """Centered glass card over the dimmed set screen; violet glow, or plain for a warning."""
+
+    def centered(text: str, size: int, color: str, font: str | None = None, **style) -> ft.Text:
+        return ft.Text(
+            text,
+            size=size,
+            color=color,
+            text_align=ft.TextAlign.CENTER,
+            style=ft.TextStyle(font_family=font, **style),
+        )
+
+    glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, theme.VIOLET))
+    card = ft.Container(
+        padding=ft.Padding(24, 30, 24, 24),
+        border_radius=26,
+        bgcolor=ft.Colors.with_opacity(0.85, "#140C1E"),
+        border=ft.Border.all(
+            1,
+            ft.Colors.with_opacity(0.25, ft.Colors.WHITE)
+            if warn
+            else ft.Colors.with_opacity(0.55, theme.VIOLET),
+        ),
+        shadow=None
+        if warn
+        else ft.BoxShadow(blur_radius=40, color=ft.Colors.with_opacity(0.35, theme.VIOLET)),
+        blur=24,
+        content=ft.Column(
+            [
+                centered(
+                    kicker.upper(),
+                    14,
+                    theme.TEXT_MUTED if warn else theme.VIOLET_LIGHT,
+                    theme.STRONG_FONT,
+                    letter_spacing=3,
+                ),
+                ft.Container(height=6),
+                centered(big, 60, theme.TEXT, theme.TITLE_FONT, height=1.15, shadow=glow),
+                centered(exercise_name, 18, theme.TEXT_MUTED, theme.MEDIUM_FONT),
+                centered(detail, 15, theme.TEXT_MUTED),
+                ft.Container(height=14),
+                centered(line, 20, theme.TEXT, theme.STRONG_FONT, height=1.35),
+                ft.Container(height=14),
+                ft.Row(buttons, spacing=10),
+            ],
+            tight=True,
+            spacing=4,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+    )
     return ft.AlertDialog(
         modal=True,
-        bgcolor="#15111D",
-        shape=ft.RoundedRectangleBorder(radius=22),
-        content=ft.Column(content, tight=True, spacing=10),
-        actions=actions,
-        actions_alignment=ft.MainAxisAlignment.END,
+        bgcolor=ft.Colors.TRANSPARENT,
+        elevation=0,
+        content_padding=0,
+        inset_padding=ft.Padding(20, 24, 20, 24),
+        barrier_color=ft.Colors.with_opacity(0.7, theme.BG),
+        content=card,
     )
 
 
-def _big(text: str) -> ft.Text:
-    glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, theme.VIOLET))
-    return ft.Text(
-        text,
-        size=38,
-        color=theme.TEXT,
-        style=ft.TextStyle(font_family=theme.TITLE_FONT, shadow=glow),
+def _button(text: str, on_click: Callable, main: bool) -> ft.Container:
+    """Equal-width action: violet for the main one, outlined for the other."""
+    return ft.Container(
+        content=ft.Text(
+            text.upper(),
+            size=15,
+            color=ft.Colors.WHITE if main else theme.TEXT,
+            text_align=ft.TextAlign.CENTER,
+            style=ft.TextStyle(font_family=theme.STRONG_FONT, letter_spacing=1),
+        ),
+        expand=True,
+        padding=ft.Padding(0, 15, 0, 15),
+        border_radius=14,
+        bgcolor=theme.VIOLET if main else None,
+        border=None if main else ft.Border.all(1, ft.Colors.with_opacity(0.3, ft.Colors.WHITE)),
+        shadow=ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.5, theme.VIOLET))
+        if main
+        else None,
+        on_click=on_click,
+        ink=True,
     )
 
 
@@ -49,16 +123,13 @@ def show_record(
         if dialog.open:
             app.page.pop_dialog()
 
-    dialog = _dialog(
-        [
-            theme.label("Neuer Rekord", color=theme.VIOLET_LIGHT),
-            _big(format_weight_reps(weight_kg, reps)),
-            theme.name(exercise_name, size=20),
-            theme.muted(before, size=15),
-            ft.Container(height=4),
-            ft.Text(pick_quote(), size=17, italic=True, color=theme.TEXT),
-        ],
-        [ft.TextButton(content="Weiter", on_click=close)],
+    dialog = _overlay(
+        "Neuer Rekord",
+        format_weight_reps(weight_kg, reps),
+        exercise_name,
+        before,
+        pick_quote(),
+        [_button("Weiter", close, main=True)],
     )
     app.page.show_dialog(dialog)
 
@@ -90,22 +161,13 @@ def show_suspicious(
         on_confirm()
 
     app.page.show_dialog(
-        _dialog(
-            [
-                theme.label("Moment mal", color=theme.DOWN_COLOR),
-                _big(format_weight_reps(weight_kg, reps)),
-                theme.name(exercise_name, size=20),
-                theme.muted(f"bisher bestes: {format_set(check.previous_best)}", size=15),
-                ft.Container(height=4),
-                ft.Text(
-                    suspicious_message(weight_kg, check.previous_best.weight_kg),
-                    size=17,
-                    color=theme.TEXT,
-                ),
-            ],
-            [
-                ft.TextButton(content="Korrigieren", on_click=correct),
-                ft.TextButton(content="Stimmt so", on_click=confirm),
-            ],
+        _overlay(
+            "Moment mal",
+            format_weight_reps(weight_kg, reps),
+            exercise_name,
+            f"bisher bestes: {format_set(check.previous_best)}",
+            suspicious_message(weight_kg, check.previous_best.weight_kg),
+            [_button("Korrigieren", correct, main=False), _button("Stimmt so", confirm, main=True)],
+            warn=True,
         )
     )

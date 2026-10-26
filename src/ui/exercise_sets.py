@@ -124,10 +124,12 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         "kg",
         format_weight(weight_value) if weight_value is not None else "",
         hint="leer = BW",
-        # After the first set, keep the keyboard up: the next set starts at the weight.
-        autofocus=bool(current),
+        # Only right after saving a set: keep the keyboard up, the next set starts at the weight.
+        # Other re-renders (e.g. tapping ▲/▼) must not pop up the keyboard.
+        autofocus=app.focus_next_set,
     )
     _select_all_now(weight_field)
+    app.focus_next_set = False
     reps_field = _number_field("Wdh.", str(reps_value) if reps_value is not None else "")
 
     async def focus_reps(_: ft.Event) -> None:
@@ -142,6 +144,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
         def save() -> None:
             repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
+            app.focus_next_set = True
             app.render()
             if check.is_record:
                 show_record(app, exercise.name, weight_kg, reps, check)

@@ -144,14 +144,14 @@ def headline(text: str, accent: str = "", overline: str = "", size: int = 60) ->
     headline("Work", "outs") gives WORKOUTS with OUTS in violet. Long titles wrap.
     """
     glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, VIOLET))
-    base = ft.TextStyle(font_family=TITLE_FONT, size=size, height=1.0, color=TEXT)
+    base = ft.TextStyle(font_family=TITLE_FONT, size=size, height=1.15, color=TEXT)
     title = ft.Text(
         spans=[
             ft.TextSpan(text.upper(), style=base),
             ft.TextSpan(
                 accent.upper(),
                 style=ft.TextStyle(
-                    font_family=TITLE_FONT, size=size, height=1.0, color=VIOLET_LIGHT, shadow=glow
+                    font_family=TITLE_FONT, size=size, height=1.15, color=VIOLET_LIGHT, shadow=glow
                 ),
             ),
         ]

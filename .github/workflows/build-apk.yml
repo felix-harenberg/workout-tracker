@@ -9,6 +9,11 @@ on:
       - ".github/workflows/build-apk.yml"
   workflow_dispatch:
 
+# A newer push makes an older, still running build pointless.
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PYTHONUTF8: 1
   FLET_CLI_NO_RICH_OUTPUT: 1

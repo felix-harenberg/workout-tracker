@@ -12,6 +12,8 @@ class App:
         self.page = page
         self.conn = conn
         self.share = ft.Share()
+        # Set right before re-rendering after a saved set, so the next set gets the keyboard.
+        self.focus_next_set = False
 
     def start(self) -> None:
         self.page.on_route_change = lambda _: self.render()
