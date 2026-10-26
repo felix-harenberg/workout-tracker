@@ -96,11 +96,12 @@ Am 24.10.2026 gestrichen: Hyrox-Rennen trackt Felix mit Roxfit, für Gym und Lau
 
 Am 26.10.2026 dazugenommen, nutzt die durch Hyrox und Laufen frei gewordene Zeit. Entwürfe und Entscheide auf dem Branch `ideas/design` (`docs/design/`, `docs/ideen-roadmap.md`, `docs/logging-ux.md`). **Feste Liste:** Was hier nicht steht, wird ein `later`-Issue.
 
+- [ ] Altes Workout als Vorlage: beim Erstellen ein früheres Workout wählen, dessen Übungen stehen mit den Werten vom letzten Mal bereit (#5, am 26.10.2026 dazugenommen statt der leeren Zustände)
 - [ ] App-Icon einbauen (`docs/design/logo/icon_android.png`, Anleitung in `EINBAU.md`)
 - [ ] Neues Design auf allen bestehenden Screens: dunkel, Neon-Violett, Glas nach der getesteten Mischung-Regel (`docs/design/design.md`), Schrift Anton für Titel, Hochformat
 - [ ] ▲▼-Indikator pro Übung: nächstes Mal mehr oder weniger Gewicht (Migration, Logik in `core/` mit Tests)
 - [ ] Rekord-Moment: kurzer Rekord-Screen; bei mehr als ca. 20 % über dem Bestwert zuerst „Vertippt?“ fragen (Logik in `core/` mit Tests)
-- [ ] Leere Zustände mit rotierenden Sprüchen (Zitate nur wörtlich belegt, mit Quelle)
+- [x] ~~Leere Zustände mit rotierenden Sprüchen~~ (am 26.10.2026 nach `later` verschoben zugunsten von #5, siehe #26)
 - [ ] Release v0.4
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
