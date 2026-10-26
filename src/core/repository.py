@@ -286,3 +286,12 @@ def _validate_run(distance_km: float, duration_s: int) -> None:
         raise ValueError("Distance must be positive")
     if duration_s <= 0:
         raise ValueError("Duration must be positive")
+
+
+def workout_volume(conn: sqlite3.Connection, workout_id: int) -> tuple[int, int]:
+    """(number of exercises, number of sets) of a workout."""
+    exercises, sets = conn.execute(
+        "SELECT COUNT(DISTINCT exercise_id), COUNT(*) FROM workout_set WHERE workout_id = ?",
+        (workout_id,),
+    ).fetchone()
+    return exercises, sets

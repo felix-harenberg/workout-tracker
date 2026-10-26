@@ -422,3 +422,16 @@ def test_list_workouts_mixes_types(conn: sqlite3.Connection) -> None:
     repo.create_workout(conn, "Chest", date(2026, 10, 22))
     repo.create_run(conn, "Run", date(2026, 10, 24), distance_km=5, duration_s=1500)
     assert [w.type for w in repo.list_workouts(conn)] == [WorkoutType.RUN, WorkoutType.STRENGTH]
+
+
+def test_workout_volume(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Push", date(2026, 10, 22))
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    dips = repo.get_or_create_exercise(conn, "Dips")
+    repo.add_set(conn, workout.id, bench.id, reps=8, weight_kg=80)
+    repo.add_set(conn, workout.id, bench.id, reps=6, weight_kg=85)
+    repo.add_set(conn, workout.id, dips.id, reps=12)
+    empty = repo.create_workout(conn, "Empty", date(2026, 10, 22))
+
+    assert repo.workout_volume(conn, workout.id) == (2, 3)
+    assert repo.workout_volume(conn, empty.id) == (0, 0)

@@ -78,3 +78,38 @@ def suggest_next_set(
     else:
         return None
     return reference.weight_kg, reference.reps
+
+
+_WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+_MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+
+
+def day_label(day: date, today: date) -> str:
+    """Short German day label: "Heute", "Gestern" or e.g. "Di · 20. Okt" (year if not this year)."""
+    if day == today:
+        return "Heute"
+    if day == today - timedelta(days=1):
+        return "Gestern"
+    label = f"{_WEEKDAYS[day.weekday()]} · {day.day}. {_MONTHS[day.month - 1]}"
+    return label if day.year == today.year else f"{label} {day.year}"
+
+
+def volume_label(exercises: int, sets: int) -> str:
+    """Size of a workout, e.g. "2 Übungen · 5 Sätze"; "Noch leer" without sets."""
+    if sets == 0:
+        return "Noch leer"
+    exercise_word = "Übung" if exercises == 1 else "Übungen"
+    set_word = "Satz" if sets == 1 else "Sätze"
+    return f"{exercises} {exercise_word} · {sets} {set_word}"
+
+
+_MONTH_NAMES = [
+    "Januar", "Februar", "März", "April", "Mai", "Juni",
+    "Juli", "August", "September", "Oktober", "November", "Dezember",
+]  # fmt: skip
+
+
+def month_label(day: date, today: date) -> str:
+    """Month heading for a list, e.g. "Oktober" or "März 2025" (year if not this year)."""
+    name = _MONTH_NAMES[day.month - 1]
+    return name if day.year == today.year else f"{name} {day.year}"

@@ -6,6 +6,7 @@ from pathlib import Path
 import flet as ft
 
 from core.db import connect
+from ui import theme
 from ui.app import App
 
 
@@ -17,8 +18,10 @@ def db_path() -> Path:
     return Path(__file__).resolve().parent.parent / "data" / "workout-tracker.db"
 
 
-def main(page: ft.Page) -> None:
+async def main(page: ft.Page) -> None:
     page.title = "Workout Tracker"
+    theme.apply(page)
+    await theme.lock_portrait(page)
     App(page, connect(db_path())).start()
 
 

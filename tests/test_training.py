@@ -5,13 +5,16 @@ import pytest
 from core.models import Workout, WorkoutSet
 from core.training import (
     date_from_picker,
+    day_label,
     format_date,
     format_set,
     format_weight,
     group_sets_by_exercise,
+    month_label,
     parse_reps,
     parse_weight,
     suggest_next_set,
+    volume_label,
     workout_title,
 )
 
@@ -155,3 +158,35 @@ def test_suggest_nothing_known() -> None:
 )
 def test_date_from_picker_returns_picked_day(value: datetime | date) -> None:
     assert date_from_picker(value) == date(2026, 10, 22)
+
+
+# --- day_label ---
+
+
+@pytest.mark.parametrize(
+    ("day", "text"),
+    [
+        (date(2026, 10, 26), "Heute"),
+        (date(2026, 10, 25), "Gestern"),
+        (date(2026, 10, 20), "Di · 20. Okt"),
+        (date(2026, 3, 2), "Mo · 2. Mär"),
+        (date(2025, 12, 28), "So · 28. Dez 2025"),  # other year shows the year
+    ],
+)
+def test_day_label(day: date, text: str) -> None:
+    assert day_label(day, today=date(2026, 10, 26)) == text
+
+
+@pytest.mark.parametrize(
+    ("exercises", "sets", "text"),
+    [(0, 0, "Noch leer"), (1, 1, "1 Übung · 1 Satz"), (2, 5, "2 Übungen · 5 Sätze")],
+)
+def test_volume_label(exercises: int, sets: int, text: str) -> None:
+    assert volume_label(exercises, sets) == text
+
+
+@pytest.mark.parametrize(
+    ("day", "text"), [(date(2026, 10, 3), "Oktober"), (date(2025, 3, 9), "März 2025")]
+)
+def test_month_label(day: date, text: str) -> None:
+    assert month_label(day, today=date(2026, 10, 26)) == text
