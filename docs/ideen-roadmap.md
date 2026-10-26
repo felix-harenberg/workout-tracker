@@ -13,7 +13,7 @@ Stand: 22. Oktober 2026
 ## Themen
 
 1. [x] **Restliche Screens im neuen Stil:** Workout-Liste, Neues Workout, Workout-Details, Übung wählen → [design/screens.html](design/screens.html). Entwurf gefällt. Ausdrücklich gewünscht: letzter Satz unter jeder Übung in der Auswahl. Offen: Wochen-Leiste, Namens-Chips, PR-Rand.
-2. [x] **Lauf-Screens** (Entwurf passt so, Pause bewusst in Metern) → [design/laufen.html](design/laufen.html). Felix macht kein Hyrox-Training, sondern läuft: Intervalle, Long Run (Zone 2), kurzer schneller Lauf. Details trackt Strava, die App braucht nur das Wesentliche: Distanz, Dauer oder Pace (der dritte Wert wird berechnet), optional Zone. Bei Intervallen zählen Anzahl, Intervall-Distanz und Pausen-Distanz.
+2. [x] ~~**Lauf-Screens**~~ **Entscheid 26. Okt 2026: Läufe werden nicht gespeichert.** Die App ist nur fürs Krafttraining. Entwurf bleibt als Archiv, wird nicht umgesetzt. (Vorher: Entwurf passt so, Pause bewusst in Metern) → [design/laufen.html](design/laufen.html). Felix macht kein Hyrox-Training, sondern läuft: Intervalle, Long Run (Zone 2), kurzer schneller Lauf. Details trackt Strava, die App braucht nur das Wesentliche: Distanz, Dauer oder Pace (der dritte Wert wird berechnet), optional Zone. Bei Intervallen zählen Anzahl, Intervall-Distanz und Pausen-Distanz.
    - **Offene Frage für die Haupt-Session:** Phase 4 (Hyrox) in `PLAN.md` passt nicht zum eigenen Training. Ersetzen oder streichen?
 3. [x] **Fortschritt-Screen** (Graph passt so; Wunsch: Ziel-Linie nie am Rand, y-Achse oben und unten mit Luft) → [design/fortschritt.html](design/fortschritt.html). Kein Graph pro Übung nötig, Kraft als einfache Zeilen („Bankdrücken 75 → 82.5 kg“).
    - **Neue Idee (nicht in `PLAN.md`):** Körpergewicht 1× pro Woche eintragen, Graph mit violetter Ziel-Linie. Richtung egal (ab- oder zunehmen), die Punkte laufen auf die Linie zu. Datenmodell: Tabelle mit Datum + kg, dazu ein Zielgewicht. → Issue #18.
@@ -37,4 +37,4 @@ Stand: 22. Oktober 2026
 
 ## Wo wir stehen
 
-Alle 8 Themen erledigt. Offen: App-Name. Gewichts-Indikator als Entwurf festgehalten.
+Alle 8 Themen erledigt. Offen: App-Name. Entscheid: keine Läufe in der App (nur Krafttraining). Gewichts-Indikator als Entwurf festgehalten.

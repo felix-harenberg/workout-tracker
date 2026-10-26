@@ -85,12 +85,16 @@ Empfehlung:
 
 ## Laufen (Phase 3)
 
+> **Hinfällig (26. Okt 2026):** Läufe werden nicht in der App gespeichert. Abschnitt bleibt nur als Archiv.
+
 - **Dauer als ein Ziffernfeld**, das automatisch formatiert: Eingabe `2530` wird zu `25:30`, `10512` wird zu `1:05:12`. Das ist schneller als getrennte Felder für h/min/s und viel schneller als ein Scroll-Rad. Wheel-only-Dauerpicker sind ein bekannter Beschwerdepunkt.
 - **Distanz** als Dezimalfeld in km, Komma erlaubt.
 - **Pace sofort live anzeigen**, während man tippt (`5:12 min/km`). Das ist gleichzeitig eine Plausibilitätskontrolle für Tippfehler.
 - Parser und Formatter für die Dauer gehören in `core/` und sind mit pytest getestet.
 
 ## Hyrox (Phase 4)
+
+> **Hinfällig:** Felix macht kein Hyrox-Training, und Läufe werden nicht gespeichert. Abschnitt bleibt nur als Archiv.
 
 Die Hyrox-Apps sind sich einig: **feste Struktur, ein Abschnitt nach dem anderen.**
 

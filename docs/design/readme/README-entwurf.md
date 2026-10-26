@@ -10,7 +10,7 @@
 <h1 align="center">[APP-NAME]</h1>
 
 <p align="center">
-  An offline Android app to log strength training and runs. Built in Python.
+  An offline Android app to log strength training. Built in Python.
 </p>
 
 <p align="center">
@@ -35,7 +35,7 @@ I used to log my workouts in a text file. It worked, but I never saw what I lift
 ## Features
 
 - **Log a set in one tap.** Every set is prefilled with what you did last time. Same weight? Tap ✓. A bit more? +2.5 kg.
-- **Runs, too.** Long runs, fast runs and intervals (e.g. 6 × 800 m). Enter two of distance, time and pace, the app calculates the third.
+- **Remind yourself.** Felt too easy? Tap ▲ and next time the app reminds you to go up in weight (▼ to go down).
 - **See progress.** Strength as simple before → after numbers, bodyweight as a chart with your goal line.
 - **New record?** The app notices. And asks if you mistyped first.
 - **Offline, no account.** Everything lives in one SQLite file on your phone. Export to CSV anytime.
@@ -63,7 +63,7 @@ The one rule that shapes the code: **logic and UI are strictly separated.**
 
 ```
 src/
-├── core/   models, database, calculations (records, pace, volume)
+├── core/   models, database, calculations (records, volume)
 │           never imports Flet, fully covered by tests
 └── ui/     Flet screens only, calls core/, no business logic
 ```
