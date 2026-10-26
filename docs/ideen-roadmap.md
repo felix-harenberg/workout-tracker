@@ -32,8 +32,8 @@ Stand: 22. Oktober 2026
 
 ## Weitere Ideen
 
-- [ ] **Indikator: nächstes Mal hoch oder runter** → [design/indikator.html](design/indikator.html). Grünes Dreieck ▲ = mehr Gewicht, rotes ▼ = weniger. Nur Erinnerung, die Vorbefüllung bleibt unverändert. Setzen unter den Sätzen (nochmal tippen = weg), sichtbar in „Übung wählen“ und oben im Satz-Screen beim nächsten Mal, verschwindet nach dem ersten Satz. Datenmodell: ein Feld pro Übung (hoch / runter / nichts). Feedback steht aus.
+- [x] **Indikator: nächstes Mal hoch oder runter** → [design/indikator.html](design/indikator.html). Grünes Dreieck ▲ = mehr Gewicht, rotes ▼ = weniger. Nur Erinnerung, die Vorbefüllung bleibt unverändert. Setzen unter den Sätzen (nochmal tippen = weg), sichtbar in „Übung wählen“ und oben im Satz-Screen beim nächsten Mal, verschwindet nach dem ersten Satz. Datenmodell: ein Feld pro Übung (hoch / runter / nichts). Entwurf passt so, Details werden beim Bau des UI angepasst.
 
 ## Wo wir stehen
 
-Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8: Test-APK Runde 2 ist gebaut, Ergebnis vom Handy steht aus. Neue Idee: Gewichts-Indikator, Entwurf liegt vor.
+Themen 1 bis 7 erledigt (App-Name noch offen). Thema 8: Test-APK Runde 2 ist gebaut, Ergebnis vom Handy steht aus. Gewichts-Indikator als Entwurf festgehalten.
