@@ -10,6 +10,13 @@ class WorkoutType(StrEnum):
     RUN = "run"
 
 
+class Hint(StrEnum):
+    """Reminder for next time: go up or down in weight."""
+
+    UP = "up"
+    DOWN = "down"
+
+
 @dataclass(frozen=True)
 class Exercise:
     id: int
@@ -44,3 +51,10 @@ class Run:
     workout_id: int
     distance_km: float
     duration_s: int
+
+
+@dataclass(frozen=True)
+class WeightHint:
+    direction: Hint
+    workout_id: int | None  # where it was set; None if that workout was deleted
+    set_on: date | None

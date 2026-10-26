@@ -4,12 +4,13 @@ import flet as ft
 
 from core import repository as repo
 from core import stats
-from core.models import Exercise, Workout, WorkoutSet
+from core.models import Exercise, Hint, Workout, WorkoutSet
 from core.training import (
     day_label,
     format_set,
     format_set_compact,
     format_weight,
+    hint_message,
     parse_reps,
     parse_weight,
     suggest_next_set,
@@ -25,6 +26,27 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     last_sets = last[1] if last else []
 
     info: list[ft.Control] = [theme.title_headline(exercise.name)]
+    hint = repo.get_hint(app.conn, exercise.id)
+    # The reminder from last time; it is used up by the first set today.
+    if hint and hint.workout_id != workout.id and not current:
+        info.append(
+            theme.glass_card(
+                ft.Row(
+                    [
+                        theme.hint_glyph(hint.direction, size=22),
+                        ft.Text(
+                            hint_message(hint, date.today()),
+                            size=16,
+                            color=theme.TEXT,
+                            expand=True,
+                        ),
+                    ],
+                    spacing=12,
+                ),
+                border_color=theme.hint_color(hint.direction),
+                padding=14,
+            )
+        )
     if last:
         last_workout, sets = last
         info.append(
@@ -67,6 +89,30 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 ),
                 on_click=lambda _, s=s: app.page.show_dialog(_edit_set_dialog(app, s)),
                 padding=14,
+            )
+        )
+
+    if current:
+        active = hint.direction if hint and hint.workout_id == workout.id else None
+
+        def toggle(direction: Hint) -> None:
+            new = None if active == direction else direction
+            repo.set_hint(app.conn, exercise.id, workout.id, new)
+            app.render()
+
+        info.append(
+            ft.Row(
+                [
+                    theme.label("Nächstes Mal"),
+                    ft.Row(
+                        [
+                            _hint_button(Hint.UP, "Mehr", active == Hint.UP, toggle),
+                            _hint_button(Hint.DOWN, "Weniger", active == Hint.DOWN, toggle),
+                        ],
+                        spacing=8,
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             )
         )
 
@@ -158,6 +204,27 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 )
             ],
         ),
+    )
+
+
+def _hint_button(direction: Hint, text: str, active: bool, on_toggle) -> ft.Container:
+    """Toggle for the next-time reminder; filled when active, tap again to remove."""
+    color = theme.hint_color(direction)
+    return ft.Container(
+        content=ft.Row(
+            [
+                theme.hint_glyph(direction, size=14),
+                ft.Text(text, size=15, color=theme.TEXT if active else theme.TEXT_MUTED),
+            ],
+            spacing=6,
+            tight=True,
+        ),
+        padding=ft.Padding(12, 8, 14, 8),
+        border_radius=12,
+        border=ft.Border.all(1, color if active else theme.GLASS_BORDER),
+        bgcolor=ft.Colors.with_opacity(0.18, color) if active else None,
+        on_click=lambda _: on_toggle(direction),
+        ink=True,
     )
 
 

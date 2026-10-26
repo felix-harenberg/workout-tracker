@@ -16,6 +16,8 @@ VIOLET = "#B026FF"
 VIOLET_LIGHT = "#D27BFF"
 VIOLET_DEEP = "#5A1BFF"
 GLASS_BORDER = ft.Colors.with_opacity(0.18, ft.Colors.WHITE)
+UP_COLOR = "#3DDC84"  # ▲ more weight next time
+DOWN_COLOR = "#FF5A6E"  # ▼ less weight next time
 
 FONTS = {
     "Anton": "fonts/Anton-Regular.ttf",
@@ -211,13 +213,14 @@ def glass_card(
     on_click: Callable | None = None,
     highlight: bool = False,
     padding: int = 16,
+    border_color: str | None = None,
 ) -> ft.Container:
     """Suggested glass without blur, safe to use in scrolling lists."""
     return ft.Container(
         content=content,
         padding=padding,
         border_radius=22,
-        border=ft.Border.all(1, VIOLET if highlight else GLASS_BORDER),
+        border=ft.Border.all(1, border_color or (VIOLET if highlight else GLASS_BORDER)),
         gradient=ft.LinearGradient(
             begin=ft.Alignment.TOP_LEFT,
             end=ft.Alignment.BOTTOM_RIGHT,
@@ -287,3 +290,12 @@ def fab(on_click: Callable, tooltip: str) -> ft.FloatingActionButton:
         foreground_color=ft.Colors.WHITE,
         on_click=on_click,
     )
+
+
+def hint_color(direction: str) -> str:
+    return UP_COLOR if direction == "up" else DOWN_COLOR
+
+
+def hint_glyph(direction: str, size: int = 16) -> ft.Text:
+    """Green ▲ or red ▼."""
+    return ft.Text("▲" if direction == "up" else "▼", size=size, color=hint_color(direction))

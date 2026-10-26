@@ -41,6 +41,12 @@ MIGRATIONS: list[str] = [
         duration_s INTEGER NOT NULL CHECK (duration_s > 0)
     );
     """,
+    # v0.4: reminder per exercise to go up or down in weight next time
+    """
+    ALTER TABLE exercise ADD COLUMN hint TEXT CHECK (hint IN ('up', 'down'));
+    ALTER TABLE exercise ADD COLUMN hint_workout_id INTEGER
+        REFERENCES workout(id) ON DELETE SET NULL;
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

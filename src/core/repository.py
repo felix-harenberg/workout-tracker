@@ -3,7 +3,7 @@
 import sqlite3
 from datetime import date
 
-from core.models import Exercise, Run, Workout, WorkoutSet, WorkoutType
+from core.models import Exercise, Hint, Run, WeightHint, Workout, WorkoutSet, WorkoutType
 
 # --- Exercises ---
 
@@ -129,6 +129,13 @@ def add_set(
     _validate_set(reps, weight_kg)
 
     with conn:
+        # The first set in a later workout uses up the "next time" hint.
+        conn.execute(
+            "UPDATE exercise SET hint = NULL, hint_workout_id = NULL"
+            " WHERE id = ? AND hint IS NOT NULL"
+            " AND (hint_workout_id IS NULL OR hint_workout_id != ?)",
+            (exercise_id, workout_id),
+        )
         (set_number,) = conn.execute(
             "SELECT COALESCE(MAX(set_number), 0) + 1 FROM workout_set"
             " WHERE workout_id = ? AND exercise_id = ?",
@@ -311,3 +318,33 @@ def last_set_of_exercise(
         return None
     iso_date, *set_values = row
     return date.fromisoformat(iso_date), WorkoutSet(*set_values)
+
+
+# --- Hints ---
+
+
+def set_hint(
+    conn: sqlite3.Connection, exercise_id: int, workout_id: int, direction: Hint | None
+) -> None:
+    """Remember to go up or down in weight next time; None removes the reminder."""
+    with conn:
+        conn.execute(
+            "UPDATE exercise SET hint = ?, hint_workout_id = ? WHERE id = ?",
+            (direction, workout_id if direction else None, exercise_id),
+        )
+
+
+def get_hint(conn: sqlite3.Connection, exercise_id: int) -> WeightHint | None:
+    row = conn.execute(
+        "SELECT e.hint, e.hint_workout_id, w.date FROM exercise e"
+        " LEFT JOIN workout w ON w.id = e.hint_workout_id WHERE e.id = ?",
+        (exercise_id,),
+    ).fetchone()
+    if row is None or row[0] is None:
+        return None
+    direction, workout_id, iso_date = row
+    return WeightHint(
+        direction=Hint(direction),
+        workout_id=workout_id,
+        set_on=date.fromisoformat(iso_date) if iso_date else None,
+    )

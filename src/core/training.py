@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, timedelta
 
-from core.models import Workout, WorkoutSet
+from core.models import Hint, WeightHint, Workout, WorkoutSet
 
 
 def parse_weight(text: str | None) -> float | None:
@@ -120,3 +120,13 @@ def month_label(day: date, today: date) -> str:
     """Month heading for a list, e.g. "Oktober" or "März 2025" (year if not this year)."""
     name = _MONTH_NAMES[day.month - 1]
     return name if day.year == today.year else f"{name} {day.year}"
+
+
+def hint_message(hint: WeightHint, today: date) -> str:
+    """The next-time reminder as a sentence, e.g. "Mehr Gewicht hast du dir gestern vorgenommen"."""
+    amount = "Mehr" if hint.direction == Hint.UP else "Weniger"
+    when = ""
+    if hint.set_on:
+        day = day_label(hint.set_on, today)
+        when = f" {day.lower()}" if day in ("Heute", "Gestern") else f" am {day}"
+    return f"{amount} Gewicht hast du dir{when} vorgenommen"

@@ -36,7 +36,7 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
             ft.Row(
                 [
                     ft.Column(
-                        [theme.name(e.name, size=20), theme.muted(subtitle, size=15)],
+                        [theme.name(e.name, size=20), _subtitle(app, e.id, subtitle)],
                         spacing=2,
                         expand=True,
                     ),
@@ -83,3 +83,12 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
         bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )
+
+
+def _subtitle(app: App, exercise_id: int, text: str) -> ft.Control:
+    """Last set, with the ▲/▼ reminder in front if one is set."""
+    hint = repo.get_hint(app.conn, exercise_id)
+    muted = theme.muted(text, size=15)
+    if hint is None:
+        return muted
+    return ft.Row([theme.hint_glyph(hint.direction, size=14), muted], spacing=6)
