@@ -8,6 +8,7 @@ from core.training import (
     day_label,
     format_date,
     format_set,
+    format_set_compact,
     format_weight,
     group_sets_by_exercise,
     month_label,
@@ -190,3 +191,8 @@ def test_volume_label(exercises: int, sets: int, text: str) -> None:
 )
 def test_month_label(day: date, text: str) -> None:
     assert month_label(day, today=date(2026, 10, 26)) == text
+
+
+def test_format_set_compact() -> None:
+    assert format_set_compact(make_set(1, 8, 82.5)) == "82.5 × 8"
+    assert format_set_compact(make_set(1, 12, None)) == "BW × 12"

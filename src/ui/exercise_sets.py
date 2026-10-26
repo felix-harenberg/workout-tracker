@@ -1,16 +1,20 @@
+from datetime import date
+
 import flet as ft
 
 from core import repository as repo
 from core import stats
 from core.models import Exercise, Workout, WorkoutSet
 from core.training import (
-    format_date,
+    day_label,
     format_set,
+    format_set_compact,
     format_weight,
     parse_reps,
     parse_weight,
     suggest_next_set,
 )
+from ui import theme
 from ui.app import App
 
 
@@ -20,41 +24,63 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     last = repo.last_sets_for_exercise(app.conn, exercise.id, before=workout)
     last_sets = last[1] if last else []
 
+    info: list[ft.Control] = [theme.title_headline(exercise.name)]
     if last:
         last_workout, sets = last
-        history = ft.Text(
-            f"Letztes Mal ({format_date(last_workout.date)}):  "
-            + "  ·  ".join(format_set(s) for s in sets),
-            color=ft.Colors.GREY,
+        info.append(
+            theme.glass_card(
+                ft.Column(
+                    [
+                        theme.label(f"Letztes Mal · {day_label(last_workout.date, date.today())}"),
+                        theme.chips([format_set_compact(s) for s in sets]),
+                    ],
+                    spacing=10,
+                )
+            )
         )
     else:
-        history = ft.Text("Zum ersten Mal dabei.", color=ft.Colors.GREY)
+        info.append(theme.muted("Zum ersten Mal dabei."))
 
     pr = stats.exercise_pr(app.conn, exercise.id)
-    pr_line: list[ft.Control] = (
-        [ft.Text(f"🏆 PR: {format_set(pr.workout_set)}", color=ft.Colors.GREY)] if pr else []
-    )
+    if pr:
+        info.append(
+            ft.Text(
+                f"🏆 PR  {format_set(pr.workout_set)}",
+                size=17,
+                color=theme.VIOLET_LIGHT,
+                style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
+            )
+        )
+
+    if current:
+        info.append(ft.Container(theme.label("Heute"), padding=ft.Padding(4, 8, 0, 0)))
+    for s in current:
+        info.append(
+            theme.glass_card(
+                ft.Row(
+                    [
+                        ft.Text(str(s.set_number), size=18, color=theme.TEXT_MUTED, width=28),
+                        theme.name(format_set_compact(s), size=24),
+                        ft.Container(expand=True),
+                        ft.Icon(ft.Icons.EDIT_OUTLINED, color=theme.TEXT_MUTED, size=20),
+                    ]
+                ),
+                on_click=lambda _, s=s: app.page.show_dialog(_edit_set_dialog(app, s)),
+                padding=14,
+            )
+        )
 
     suggestion = suggest_next_set(last_sets, current)
     weight_value, reps_value = suggestion if suggestion else (None, None)
-    weight_field = ft.TextField(
-        label="kg",
-        hint_text="leer = BW",
-        value=format_weight(weight_value) if weight_value is not None else "",
-        keyboard_type=ft.KeyboardType.NUMBER,
-        expand=True,
+    weight_field = _number_field(
+        "kg",
+        format_weight(weight_value) if weight_value is not None else "",
+        hint="leer = BW",
         # After the first set, keep the keyboard up: the next set starts at the weight.
         autofocus=bool(current),
-        on_focus=_select_all,
     )
     _select_all_now(weight_field)
-    reps_field = ft.TextField(
-        label="Wdh.",
-        value=str(reps_value) if reps_value is not None else "",
-        keyboard_type=ft.KeyboardType.NUMBER,
-        expand=True,
-        on_focus=_select_all,
-    )
+    reps_field = _number_field("Wdh.", str(reps_value) if reps_value is not None else "")
 
     async def focus_reps(_: ft.Event) -> None:
         await reps_field.focus()
@@ -70,14 +96,30 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     weight_field.on_submit = focus_reps
     reps_field.on_submit = add
 
-    set_rows: list[ft.Control] = [
-        ft.ListTile(
-            title=ft.Text(f"Satz {s.set_number}:  {format_set(s)}", size=18),
-            trailing=ft.Icon(ft.Icons.EDIT, size=18),
-            on_click=lambda _, s=s: app.page.show_dialog(_edit_set_dialog(app, s)),
+    # Fixed at the bottom, within thumb reach: the one place with real glass blur.
+    panel = theme.glass_panel(
+        ft.Column(
+            [
+                theme.label(f"Satz {len(current) + 1}", color=theme.VIOLET_LIGHT),
+                ft.Row(
+                    [
+                        weight_field,
+                        reps_field,
+                        ft.IconButton(
+                            icon=ft.Icons.CHECK_ROUNDED,
+                            tooltip="Satz speichern",
+                            bgcolor=theme.VIOLET,
+                            icon_color=ft.Colors.WHITE,
+                            icon_size=30,
+                            on_click=add,
+                        ),
+                    ],
+                    spacing=10,
+                ),
+            ],
+            spacing=8,
         )
-        for s in current
-    ]
+    )
 
     def delete_exercise(_: ft.Event) -> None:
         app.page.pop_dialog()
@@ -94,33 +136,42 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         ],
     )
 
-    return ft.View(
-        route=route,
-        appbar=ft.AppBar(
-            title=ft.Text(exercise.name),
-            actions=[
+    return theme.view(
+        route,
+        [
+            ft.Column(
+                info,
+                spacing=12,
+                scroll=ft.ScrollMode.AUTO,
+                expand=True,
+                horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+            ),
+            panel,
+        ],
+        appbar=theme.app_bar(
+            [
                 ft.IconButton(
                     icon=ft.Icons.DELETE_OUTLINE,
                     tooltip="Übung entfernen",
                     on_click=lambda _: app.page.show_dialog(confirm_delete),
                 )
-            ],
+            ]
         ),
-        controls=[
-            history,
-            *pr_line,
-            ft.Divider(),
-            *set_rows,
-            ft.Text(f"Satz {len(current) + 1}", weight=ft.FontWeight.BOLD),
-            ft.Row(
-                [
-                    weight_field,
-                    reps_field,
-                    ft.IconButton(icon=ft.Icons.ADD, tooltip="Satz speichern", on_click=add),
-                ]
-            ),
-        ],
-        scroll=ft.ScrollMode.AUTO,
+    )
+
+
+def _number_field(
+    label: str, value: str, hint: str | None = None, autofocus: bool = False
+) -> ft.TextField:
+    return theme.text_field(
+        label=label,
+        hint_text=hint,
+        value=value,
+        keyboard_type=ft.KeyboardType.NUMBER,
+        text_style=ft.TextStyle(font_family=theme.STRONG_FONT, size=24),
+        expand=True,
+        autofocus=autofocus,
+        on_focus=_select_all,
     )
 
 
@@ -142,15 +193,13 @@ def _read_inputs(
 
 
 def _edit_set_dialog(app: App, workout_set: WorkoutSet) -> ft.AlertDialog:
-    weight_field = ft.TextField(
-        label="kg",
-        hint_text="leer = BW",
-        value=format_weight(workout_set.weight_kg) if workout_set.weight_kg is not None else "",
-        keyboard_type=ft.KeyboardType.NUMBER,
+    weight_field = _number_field(
+        "kg",
+        format_weight(workout_set.weight_kg) if workout_set.weight_kg is not None else "",
+        hint="leer = BW",
     )
-    reps_field = ft.TextField(
-        label="Wdh.", value=str(workout_set.reps), keyboard_type=ft.KeyboardType.NUMBER
-    )
+    reps_field = _number_field("Wdh.", str(workout_set.reps))
+    weight_field.expand = reps_field.expand = False
 
     def save(_: ft.Event) -> None:
         values = _read_inputs(app, weight_field, reps_field)

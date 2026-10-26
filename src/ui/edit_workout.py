@@ -5,6 +5,7 @@ import flet as ft
 from core import repository as repo
 from core.models import Workout, WorkoutType
 from core.training import date_from_picker, format_date
+from ui import theme
 from ui.app import App
 from ui.run_fields import RunFields
 
@@ -12,8 +13,10 @@ from ui.run_fields import RunFields
 def edit_workout_view(app: App, workout: Workout) -> ft.View:
     selected_date = workout.date
 
-    name_field = ft.TextField(label="Name (optional)", value=workout.name)
-    notes_field = ft.TextField(label="Notizen", value=workout.notes, multiline=True, min_lines=3)
+    name_field = theme.text_field(label="Name (optional)", value=workout.name, text_size=18)
+    notes_field = theme.text_field(
+        label="Notizen", value=workout.notes, multiline=True, min_lines=3, text_size=17
+    )
     date_button = ft.OutlinedButton(
         content=format_date(selected_date), icon=ft.Icons.CALENDAR_MONTH
     )
@@ -57,15 +60,16 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
         )
         app.go(f"/workout/{workout.id}")
 
-    return ft.View(
-        route=f"/workout/{workout.id}/edit",
-        appbar=ft.AppBar(title=ft.Text("Workout bearbeiten")),
-        controls=[
+    return theme.view(
+        f"/workout/{workout.id}/edit",
+        [
+            theme.headline("", "Bearbeiten", size=52),
             name_field,
-            ft.Row([ft.Text("Datum"), date_button]),
+            ft.Row([theme.label("Datum"), date_button], spacing=16),
             *(run_fields.controls if run_fields else []),
             notes_field,
-            ft.Button(content="Speichern", on_click=save),
+            theme.primary_button("Speichern", save),
         ],
+        appbar=theme.app_bar(),
         scroll=ft.ScrollMode.AUTO,
     )

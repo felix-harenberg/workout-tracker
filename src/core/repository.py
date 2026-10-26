@@ -295,3 +295,19 @@ def workout_volume(conn: sqlite3.Connection, workout_id: int) -> tuple[int, int]
         (workout_id,),
     ).fetchone()
     return exercises, sets
+
+
+def last_set_of_exercise(
+    conn: sqlite3.Connection, exercise_id: int
+) -> tuple[date, WorkoutSet] | None:
+    """The most recent set of an exercise (latest day, then last logged) with its date."""
+    row = conn.execute(
+        "SELECT w.date, s.id, s.workout_id, s.exercise_id, s.set_number, s.reps, s.weight_kg"
+        " FROM workout_set s JOIN workout w ON w.id = s.workout_id"
+        " WHERE s.exercise_id = ? ORDER BY w.date DESC, s.id DESC LIMIT 1",
+        (exercise_id,),
+    ).fetchone()
+    if row is None:
+        return None
+    iso_date, *set_values = row
+    return date.fromisoformat(iso_date), WorkoutSet(*set_values)

@@ -13,13 +13,11 @@ from ui.app import App
 
 def workout_list_view(app: App) -> ft.View:
     today = date.today()
-    content: list[ft.Control] = [theme.headline("Work outs")]
+    content: list[ft.Control] = [theme.headline("Work", "outs")]
 
     workouts = repo.list_workouts(app.conn)
     if not workouts:
-        content.append(
-            ft.Text("Noch keine Workouts. Tippe auf +, um zu starten.", color=theme.TEXT_MUTED)
-        )
+        content.append(theme.muted("Noch keine Workouts. Tippe auf +, um zu starten."))
 
     current_month = None
     for w in workouts:
@@ -27,7 +25,8 @@ def workout_list_view(app: App) -> ft.View:
         if month != current_month:
             content.append(ft.Container(theme.label(month), padding=ft.Padding(4, 12, 0, 0)))
             current_month = month
-        content.append(_workout_card(app, w, is_today=w.date == today))
+        # Only the newest workout of today is the one that is running.
+        content.append(_workout_card(app, w, running=w is workouts[0] and w.date == today))
 
     async def export(_: ft.Event) -> None:
         data = export_csv(app.conn).encode("utf-8")
@@ -50,27 +49,22 @@ def workout_list_view(app: App) -> ft.View:
     )
 
 
-def _workout_card(app: App, workout: Workout, is_today: bool) -> ft.Control:
+def _workout_card(app: App, workout: Workout, running: bool) -> ft.Control:
     day = day_label(workout.date, date.today())
     return theme.glass_card(
         ft.Column(
             [
                 theme.label(
-                    f"{day} · läuft" if is_today else day,
-                    color=theme.VIOLET_LIGHT if is_today else theme.TEXT_MUTED,
+                    f"{day} · läuft" if running else day,
+                    color=theme.VIOLET_LIGHT if running else theme.TEXT_MUTED,
                 ),
-                ft.Text(
-                    workout_title(workout),
-                    size=20,
-                    color=theme.TEXT,
-                    style=ft.TextStyle(font_family=theme.STRONG_FONT),
-                ),
-                ft.Text(_summary(app, workout), color=theme.TEXT_MUTED),
+                theme.name(workout_title(workout)),
+                theme.muted(_summary(app, workout)),
             ],
             spacing=4,
         ),
         on_click=lambda _: app.go(f"/workout/{workout.id}"),
-        highlight=is_today,
+        highlight=running,
     )
 
 

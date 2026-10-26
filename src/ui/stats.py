@@ -3,6 +3,7 @@ import flet as ft
 from core import repository as repo
 from core import stats
 from core.training import format_set
+from ui import theme
 from ui.app import App
 from ui.charts import week_bar_chart
 
@@ -21,33 +22,48 @@ def stats_view(app: App) -> ft.View:
         for w in weeks
     ]
 
-    exercise_tiles: list[ft.Control] = []
+    exercise_cards: list[ft.Control] = []
     for exercise in repo.list_exercises(app.conn):
         pr = stats.exercise_pr(app.conn, exercise.id)
-        subtitle = f"PR {format_set(pr.workout_set)}" if pr else "Nur Körpergewicht"
-        exercise_tiles.append(
-            ft.ListTile(
-                title=ft.Text(exercise.name),
-                subtitle=ft.Text(subtitle),
-                trailing=ft.Icon(ft.Icons.CHEVRON_RIGHT) if pr else None,
+        exercise_cards.append(
+            theme.glass_card(
+                ft.Row(
+                    [
+                        ft.Column(
+                            [
+                                theme.name(exercise.name, size=20),
+                                theme.muted(
+                                    f"PR  {format_set(pr.workout_set)}"
+                                    if pr
+                                    else "Nur Körpergewicht",
+                                    size=15,
+                                ),
+                            ],
+                            spacing=2,
+                            expand=True,
+                        ),
+                        ft.Icon(ft.Icons.CHEVRON_RIGHT, color=theme.TEXT_MUTED)
+                        if pr
+                        else ft.Container(),
+                    ]
+                ),
                 on_click=(lambda _, eid=exercise.id: app.go(f"/stats/exercise/{eid}"))
                 if pr
                 else None,
+                padding=14,
             )
         )
 
-    return ft.View(
-        route="/stats",
-        appbar=ft.AppBar(title=ft.Text("Statistik")),
-        controls=[
-            _section("Sätze pro Woche"),
-            week_bar_chart(week_bars),
-            _section("Übungen"),
-            *(exercise_tiles or [ft.Text("Noch keine Übungen.", color=ft.Colors.GREY)]),
+    return theme.view(
+        "/stats",
+        [
+            theme.headline("", "Statistik"),
+            theme.glass_card(
+                ft.Column([theme.label("Sätze pro Woche"), week_bar_chart(week_bars)], spacing=16)
+            ),
+            ft.Container(theme.label("Übungen"), padding=ft.Padding(4, 12, 0, 0)),
+            *(exercise_cards or [theme.muted("Noch keine Übungen.")]),
         ],
+        appbar=theme.app_bar(),
         scroll=ft.ScrollMode.AUTO,
     )
-
-
-def _section(title: str) -> ft.Control:
-    return ft.Text(title, size=18, weight=ft.FontWeight.BOLD)

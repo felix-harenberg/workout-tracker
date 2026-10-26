@@ -34,6 +34,13 @@ def format_set(workout_set: WorkoutSet) -> str:
     return f"{format_weight(workout_set.weight_kg)} kg × {workout_set.reps}"
 
 
+def format_set_compact(workout_set: WorkoutSet) -> str:
+    """Without the unit, for chips: "82.5 × 8", "BW × 12"."""
+    if workout_set.weight_kg is None:
+        return f"BW × {workout_set.reps}"
+    return f"{format_weight(workout_set.weight_kg)} × {workout_set.reps}"
+
+
 def format_date(value: date) -> str:
     return value.strftime("%d.%m.%Y")
 

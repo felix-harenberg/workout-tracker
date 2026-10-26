@@ -73,6 +73,7 @@ def view(route: str, controls: list[ft.Control], **kwargs) -> ft.View:
         ),
         padding=ft.Padding(20, 8, 20, 24),
         spacing=12,
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
         **kwargs,
     )
 
@@ -82,19 +83,20 @@ def app_bar(actions: list[ft.Control] | None = None) -> ft.AppBar:
     return ft.AppBar(bgcolor=ft.Colors.TRANSPARENT, actions=actions or [])
 
 
-def headline(text: str, overline: str = "") -> ft.Control:
-    """Big Anton title in capitals; the last word glows violet. Optional small label above."""
-    words = text.upper().split()
-    first, last = " ".join(words[:-1]), words[-1] if words else ""
+def headline(text: str, accent: str = "", overline: str = "", size: int = 60) -> ft.Control:
+    """Big Anton title in capitals on one line; `accent` follows directly and glows violet.
+
+    headline("Work", "outs") gives WORKOUTS with OUTS in violet. Long titles wrap.
+    """
     glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, VIOLET))
-    style = ft.TextStyle(font_family=TITLE_FONT, size=46, height=1.0, color=TEXT)
+    base = ft.TextStyle(font_family=TITLE_FONT, size=size, height=1.0, color=TEXT)
     title = ft.Text(
         spans=[
-            ft.TextSpan(f"{first}\n" if first else "", style=style),
+            ft.TextSpan(text.upper(), style=base),
             ft.TextSpan(
-                last,
+                accent.upper(),
                 style=ft.TextStyle(
-                    font_family=TITLE_FONT, size=46, height=1.0, color=VIOLET_LIGHT, shadow=glow
+                    font_family=TITLE_FONT, size=size, height=1.0, color=VIOLET_LIGHT, shadow=glow
                 ),
             ),
         ]
@@ -104,14 +106,51 @@ def headline(text: str, overline: str = "") -> ft.Control:
     return ft.Column([label(overline), title], spacing=4)
 
 
+def title_headline(title: str, overline: str = "") -> ft.Control:
+    """A workout or exercise name as a headline; the last word glows violet."""
+    *rest, last = title.split() or [""]
+    return headline(" ".join(rest) + " " if rest else "", last, overline=overline, size=52)
+
+
 def label(text: str, color: str = TEXT_MUTED) -> ft.Text:
     """Small capitals with wide spacing, e.g. above a title or a number."""
     return ft.Text(
         text.upper(),
-        size=11,
+        size=13,
         color=color,
         style=ft.TextStyle(font_family=MEDIUM_FONT, letter_spacing=1.6),
     )
+
+
+def name(text: str, size: int = 24, color: str = TEXT) -> ft.Text:
+    """Workout or exercise name in bold."""
+    return ft.Text(text, size=size, color=color, style=ft.TextStyle(font_family=STRONG_FONT))
+
+
+def muted(text: str, size: int = 17) -> ft.Text:
+    return ft.Text(text, size=size, color=TEXT_MUTED)
+
+
+def chip(text: str, highlight: bool = False) -> ft.Container:
+    """Compact pill for a set, e.g. "82.5 × 8"."""
+    return ft.Container(
+        content=ft.Text(
+            text,
+            size=16,
+            color=TEXT,
+            style=ft.TextStyle(font_family=STRONG_FONT),
+        ),
+        padding=ft.Padding(12, 6, 12, 6),
+        border_radius=12,
+        bgcolor=ft.Colors.with_opacity(0.25, VIOLET)
+        if highlight
+        else ft.Colors.with_opacity(0.08, ft.Colors.WHITE),
+        border=ft.Border.all(1, VIOLET if highlight else GLASS_BORDER),
+    )
+
+
+def chips(texts: list[str]) -> ft.Row:
+    return ft.Row([chip(t) for t in texts], wrap=True, spacing=8, run_spacing=8)
 
 
 def glass_card(

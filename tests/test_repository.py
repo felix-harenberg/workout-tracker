@@ -435,3 +435,19 @@ def test_workout_volume(conn: sqlite3.Connection) -> None:
 
     assert repo.workout_volume(conn, workout.id) == (2, 3)
     assert repo.workout_volume(conn, empty.id) == (0, 0)
+
+
+def test_last_set_of_exercise(conn: sqlite3.Connection) -> None:
+    bench = repo.get_or_create_exercise(conn, "Bench Press")
+    squat = repo.get_or_create_exercise(conn, "Squat")
+    older = repo.create_workout(conn, "A", date(2026, 10, 15))
+    newer = repo.create_workout(conn, "B", date(2026, 10, 22))
+    repo.add_set(conn, newer.id, bench.id, reps=8, weight_kg=82.5)
+    repo.add_set(conn, newer.id, bench.id, reps=6, weight_kg=85)
+    repo.add_set(conn, older.id, bench.id, reps=5, weight_kg=90)  # logged later, but older day
+
+    day, last = repo.last_set_of_exercise(conn, bench.id)
+
+    assert day == date(2026, 10, 22)
+    assert (last.weight_kg, last.reps) == (85, 6)
+    assert repo.last_set_of_exercise(conn, squat.id) is None

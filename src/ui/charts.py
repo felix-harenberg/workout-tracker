@@ -8,6 +8,7 @@ import flet as ft
 import flet_charts as fc
 
 from core.scale import axis_range, nice_step
+from ui.theme import TEXT_MUTED
 
 CHART_HEIGHT = 220
 
@@ -29,7 +30,8 @@ def _value_axis(axis_min: float, axis_max: float, step: float, fmt: Callable[[fl
         label_spacing=step,
         labels=[
             fc.ChartAxisLabel(
-                value=axis_min + i * step, label=ft.Text(fmt(axis_min + i * step), size=10)
+                value=axis_min + i * step,
+                label=ft.Text(fmt(axis_min + i * step), size=12, color=TEXT_MUTED),
             )
             for i in range(count + 1)
         ],
@@ -78,8 +80,13 @@ def date_line_chart(
             label_size=24,
             label_spacing=1,
             labels=[
-                fc.ChartAxisLabel(value=0, label=ft.Text(_short_date(first), size=10)),
-                fc.ChartAxisLabel(value=last_x, label=ft.Text(_short_date(points[-1][0]), size=10)),
+                fc.ChartAxisLabel(
+                    value=0, label=ft.Text(_short_date(first), size=12, color=TEXT_MUTED)
+                ),
+                fc.ChartAxisLabel(
+                    value=last_x,
+                    label=ft.Text(_short_date(points[-1][0]), size=12, color=TEXT_MUTED),
+                ),
             ],
         ),
         horizontal_grid_lines=fc.ChartGridLines(
@@ -122,7 +129,9 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
             label_size=24,
             label_spacing=1,
             labels=[
-                fc.ChartAxisLabel(value=i, label=ft.Text(_short_date(week), size=10))
+                fc.ChartAxisLabel(
+                    value=i, label=ft.Text(_short_date(week), size=12, color=TEXT_MUTED)
+                )
                 for i, (week, _, _) in enumerate(bars)
                 if i % label_every == 0
             ],

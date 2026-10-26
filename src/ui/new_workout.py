@@ -11,7 +11,7 @@ from ui.app import App
 
 def new_workout_view(app: App) -> ft.View:
     # Runs are no longer logged here (watch + Strava do that); existing runs stay viewable.
-    name_field = theme.text_field(label="Name (optional)", hint_text="z.B. Chestday")
+    name_field = theme.text_field(label="Name (optional)", hint_text="z.B. Chestday", text_size=18)
 
     def start(name: str) -> None:
         workout = repo.create_workout(app.conn, name.strip(), date.today())
@@ -20,7 +20,7 @@ def new_workout_view(app: App) -> ft.View:
     name_field.on_submit = lambda _: start(name_field.value or "")
 
     controls: list[ft.Control] = [
-        theme.headline("Neues Workout"),
+        theme.headline("Neues ", "Workout", size=52),
         name_field,
         theme.primary_button("Starten", lambda _: start(name_field.value or "")),
     ]
@@ -30,40 +30,24 @@ def new_workout_view(app: App) -> ft.View:
         controls.append(
             ft.Container(theme.label("Wie letztes Mal"), padding=ft.Padding(4, 16, 0, 0))
         )
-        for t in templates:
-            exercises = f"{t.exercise_count} {'Übung' if t.exercise_count == 1 else 'Übungen'}"
-            last = day_label(t.last_date, date.today())
-            last = last.lower() if last in ("Heute", "Gestern") else last
-            controls.append(
-                theme.glass_card(
-                    ft.Row(
-                        [
-                            ft.Column(
-                                [
-                                    ft.Text(
-                                        t.name,
-                                        size=18,
-                                        color=theme.TEXT,
-                                        style=ft.TextStyle(font_family=theme.STRONG_FONT),
-                                    ),
-                                    ft.Text(
-                                        f"zuletzt {last}  ·  {exercises}",
-                                        color=theme.TEXT_MUTED,
-                                    ),
-                                ],
-                                spacing=2,
-                                expand=True,
-                            ),
-                            ft.Icon(ft.Icons.REPLAY, color=theme.VIOLET_LIGHT),
-                        ]
-                    ),
-                    on_click=lambda _, name=t.name: start(name),
-                )
+    for t in templates:
+        last = day_label(t.last_date, date.today())
+        last = last.lower() if last in ("Heute", "Gestern") else last
+        exercises = f"{t.exercise_count} {'Übung' if t.exercise_count == 1 else 'Übungen'}"
+        controls.append(
+            theme.glass_card(
+                ft.Row(
+                    [
+                        ft.Column(
+                            [theme.name(t.name), theme.muted(f"zuletzt {last}  ·  {exercises}")],
+                            spacing=2,
+                            expand=True,
+                        ),
+                        ft.Icon(ft.Icons.REPLAY, color=theme.VIOLET_LIGHT, size=28),
+                    ]
+                ),
+                on_click=lambda _, name=t.name: start(name),
             )
+        )
 
-    return theme.view(
-        "/workout/new",
-        controls,
-        appbar=theme.app_bar(),
-        scroll=ft.ScrollMode.AUTO,
-    )
+    return theme.view("/workout/new", controls, appbar=theme.app_bar(), scroll=ft.ScrollMode.AUTO)
