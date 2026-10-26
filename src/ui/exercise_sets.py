@@ -32,9 +32,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
     pr = stats.exercise_pr(app.conn, exercise.id)
     pr_line: list[ft.Control] = (
-        [ft.Text(f"🏆 PR: {stats.format_1rm(pr.best_1rm)} (1RM geschätzt)", color=ft.Colors.GREY)]
-        if pr
-        else []
+        [ft.Text(f"🏆 PR: {format_set(pr.workout_set)}", color=ft.Colors.GREY)] if pr else []
     )
 
     suggestion = suggest_next_set(last_sets, current)
@@ -45,14 +43,17 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         value=format_weight(weight_value) if weight_value is not None else "",
         keyboard_type=ft.KeyboardType.NUMBER,
         expand=True,
+        # After the first set, keep the keyboard up: the next set starts at the weight.
+        autofocus=bool(current),
+        on_focus=_select_all,
     )
+    _select_all_now(weight_field)
     reps_field = ft.TextField(
         label="Wdh.",
         value=str(reps_value) if reps_value is not None else "",
         keyboard_type=ft.KeyboardType.NUMBER,
         expand=True,
-        # After the first set, keep the keyboard up so the next set is one tap on ✓.
-        autofocus=bool(current),
+        on_focus=_select_all,
     )
 
     async def focus_reps(_: ft.Event) -> None:
@@ -174,3 +175,13 @@ def _edit_set_dialog(app: App, workout_set: WorkoutSet) -> ft.AlertDialog:
             ft.TextButton(content="Speichern", on_click=save),
         ],
     )
+
+
+def _select_all_now(field: ft.TextField) -> None:
+    """Select the prefilled value: typing replaces it, ✓ keeps it."""
+    field.selection = ft.TextSelection(base_offset=0, extent_offset=len(field.value or ""))
+
+
+def _select_all(e: ft.Event) -> None:
+    _select_all_now(e.control)
+    e.control.update()

@@ -7,7 +7,7 @@ since I am a CS student I want to build my own thing.
 
 An App that I can use locally on my phone that displays my Workouts in a organized way. (V1)
 
-Then later I want to include runs and a progress graph. 
+Then later I want to include a progress graph. 
 
 The goal is to work 3h/week on this and make constant progress :)
 

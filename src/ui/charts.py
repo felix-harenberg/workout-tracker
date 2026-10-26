@@ -1,16 +1,39 @@
 """Small wrappers around flet-charts so the screens stay readable."""
 
+import math
 from collections.abc import Callable
 from datetime import date
 
 import flet as ft
 import flet_charts as fc
 
+from core.scale import axis_range, nice_step
+
 CHART_HEIGHT = 220
+
+# Dark tooltip with white text: readable on light and dark themes.
+TOOLTIP_BG = ft.Colors.BLUE_GREY_900
+TOOLTIP_TEXT = ft.TextStyle(color=ft.Colors.WHITE, size=13, weight=ft.FontWeight.BOLD)
 
 
 def _short_date(day: date) -> str:
     return day.strftime("%d.%m.")
+
+
+def _value_axis(axis_min: float, axis_max: float, step: float, fmt: Callable[[float], str]):
+    # The chart only asks for labels every `label_spacing`, starting at the axis minimum,
+    # so labels must sit exactly on those multiples to be shown.
+    count = round((axis_max - axis_min) / step)
+    return fc.ChartAxis(
+        label_size=48,
+        label_spacing=step,
+        labels=[
+            fc.ChartAxisLabel(
+                value=axis_min + i * step, label=ft.Text(fmt(axis_min + i * step), size=10)
+            )
+            for i in range(count + 1)
+        ],
+    )
 
 
 def date_line_chart(
@@ -22,20 +45,19 @@ def date_line_chart(
 
     first = points[0][0]
     values = [value for _, value in points]
-    low, high = min(values), max(values)
-    padding = max((high - low) * 0.15, high * 0.03, 1)
-    min_y, max_y = low - padding, high + padding
+    min_y, max_y, step = axis_range(min(values), max(values))
     last_x = max((points[-1][0] - first).days, 1)
 
     data = [
         fc.LineChartDataPoint(
             x=(day - first).days,
             y=value,
-            tooltip=f"{_short_date(day)}  {format_y(value)}",
+            tooltip=fc.LineChartDataPointTooltip(
+                text=f"{_short_date(day)}  {format_y(value)}", text_style=TOOLTIP_TEXT
+            ),
         )
         for day, value in points
     ]
-    bottom_labels = {0: points[0][0], last_x: points[-1][0]}
     return fc.LineChart(
         data_series=[
             fc.LineChartData(
@@ -51,22 +73,19 @@ def date_line_chart(
         max_x=last_x,
         min_y=min_y,
         max_y=max_y,
-        left_axis=fc.ChartAxis(
-            label_size=48,
-            labels=[
-                fc.ChartAxisLabel(value=v, label=ft.Text(format_y(v), size=10)) for v in (low, high)
-            ],
-        ),
+        left_axis=_value_axis(min_y, max_y, step, format_y),
         bottom_axis=fc.ChartAxis(
             label_size=24,
+            label_spacing=1,
             labels=[
-                fc.ChartAxisLabel(value=x, label=ft.Text(_short_date(day), size=10))
-                for x, day in bottom_labels.items()
+                fc.ChartAxisLabel(value=0, label=ft.Text(_short_date(first), size=10)),
+                fc.ChartAxisLabel(value=last_x, label=ft.Text(_short_date(points[-1][0]), size=10)),
             ],
         ),
         horizontal_grid_lines=fc.ChartGridLines(
-            interval=(max_y - min_y) / 4, color=ft.Colors.OUTLINE_VARIANT, width=0.5
+            interval=step, color=ft.Colors.OUTLINE_VARIANT, width=0.5
         ),
+        tooltip=fc.LineChartTooltip(bgcolor=TOOLTIP_BG),
         interactive=True,
         height=CHART_HEIGHT,
     )
@@ -78,6 +97,8 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
         return ft.Text("Noch keine Daten.", color=ft.Colors.GREY)
 
     max_value = max(value for _, value, _ in bars) or 1
+    step = max(nice_step(max_value), 1)  # counts: no half steps
+    max_y = (math.floor(max_value / step) + 1) * step
     label_every = max(len(bars) // 4, 1)
     return fc.BarChart(
         groups=[
@@ -89,25 +110,27 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
                         width=14,
                         color=ft.Colors.PRIMARY,
                         border_radius=3,
-                        tooltip=tooltip,
+                        tooltip=fc.BarChartRodTooltip(text=tooltip, text_style=TOOLTIP_TEXT),
                     )
                 ],
             )
             for i, (_, value, tooltip) in enumerate(bars)
         ],
-        max_y=max_value * 1.15,
-        left_axis=fc.ChartAxis(
-            label_size=32,
-            labels=[fc.ChartAxisLabel(value=max_value, label=ft.Text(f"{max_value:g}", size=10))],
-        ),
+        max_y=max_y,
+        left_axis=_value_axis(0, max_y, step, lambda v: f"{v:g}"),
         bottom_axis=fc.ChartAxis(
             label_size=24,
+            label_spacing=1,
             labels=[
                 fc.ChartAxisLabel(value=i, label=ft.Text(_short_date(week), size=10))
                 for i, (week, _, _) in enumerate(bars)
                 if i % label_every == 0
             ],
         ),
+        horizontal_grid_lines=fc.ChartGridLines(
+            interval=step, color=ft.Colors.OUTLINE_VARIANT, width=0.5
+        ),
+        tooltip=fc.BarChartTooltip(bgcolor=TOOLTIP_BG),
         interactive=True,
         height=CHART_HEIGHT,
     )

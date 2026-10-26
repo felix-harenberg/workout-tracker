@@ -2,10 +2,9 @@ import flet as ft
 
 from core import repository as repo
 from core import stats
-from core.run import format_pace
 from core.training import format_set
 from ui.app import App
-from ui.charts import date_line_chart, week_bar_chart
+from ui.charts import week_bar_chart
 
 WEEKS_SHOWN = 12
 
@@ -25,13 +24,7 @@ def stats_view(app: App) -> ft.View:
     exercise_tiles: list[ft.Control] = []
     for exercise in repo.list_exercises(app.conn):
         pr = stats.exercise_pr(app.conn, exercise.id)
-        if pr is None:
-            subtitle = "Nur Körpergewicht"
-        else:
-            subtitle = (
-                f"1RM {stats.format_1rm(pr.best_1rm)}  ·  schwerster Satz "
-                f"{format_set(pr.heaviest_set)}"
-            )
+        subtitle = f"PR {format_set(pr.workout_set)}" if pr else "Nur Körpergewicht"
         exercise_tiles.append(
             ft.ListTile(
                 title=ft.Text(exercise.name),
@@ -49,8 +42,6 @@ def stats_view(app: App) -> ft.View:
         controls=[
             _section("Sätze pro Woche"),
             week_bar_chart(week_bars),
-            _section("Lauf-Pace", "tiefer = schneller"),
-            date_line_chart(stats.pace_history(app.conn), format_pace),
             _section("Übungen"),
             *(exercise_tiles or [ft.Text("Noch keine Übungen.", color=ft.Colors.GREY)]),
         ],
@@ -58,8 +49,5 @@ def stats_view(app: App) -> ft.View:
     )
 
 
-def _section(title: str, hint: str = "") -> ft.Control:
-    controls: list[ft.Control] = [ft.Text(title, size=18, weight=ft.FontWeight.BOLD)]
-    if hint:
-        controls.append(ft.Text(hint, size=12, color=ft.Colors.GREY))
-    return ft.Row(controls, vertical_alignment=ft.CrossAxisAlignment.END)
+def _section(title: str) -> ft.Control:
+    return ft.Text(title, size=18, weight=ft.FontWeight.BOLD)
