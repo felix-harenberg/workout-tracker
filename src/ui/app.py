@@ -14,6 +14,9 @@ class App:
         self.share = ft.Share()
         # Set right before re-rendering after a saved set, so the next set gets the keyboard.
         self.focus_next_set = False
+        # Start screen: 0 = Training, 1 = Gewicht; and the period shown on the weight page.
+        self.home_tab = 0
+        self.weight_period = "3M"
 
     def start(self) -> None:
         self.page.on_route_change = lambda _: self.render()
@@ -34,6 +37,7 @@ class App:
         from ui.exercise_stats import exercise_stats_view
         from ui.new_workout import new_workout_view
         from ui.stats import stats_view
+        from ui.weight import weigh_view
         from ui.workout_detail import workout_detail_view
         from ui.workout_list import workout_list_view
 
@@ -43,6 +47,8 @@ class App:
             match parts:
                 case ["workout", "new"]:
                     views.append(new_workout_view(self))
+                case ["weight", "new"]:
+                    views.append(weigh_view(self))
                 case ["stats"]:
                     views.append(stats_view(self))
                 case ["stats", "exercise", exercise_id]:

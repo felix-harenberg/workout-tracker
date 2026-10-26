@@ -8,7 +8,7 @@ import flet as ft
 import flet_charts as fc
 
 from core.scale import axis_range, nice_step
-from ui.theme import TEXT_MUTED
+from ui.theme import TEXT_MUTED, VIOLET_LIGHT
 
 CHART_HEIGHT = 220
 
@@ -39,14 +39,21 @@ def _value_axis(axis_min: float, axis_max: float, step: float, fmt: Callable[[fl
 
 
 def date_line_chart(
-    points: list[tuple[date, float]], format_y: Callable[[float], str]
+    points: list[tuple[date, float]],
+    format_y: Callable[[float], str],
+    goal: float | None = None,
+    color: str = ft.Colors.PRIMARY,
 ) -> ft.Control:
-    """Line chart over time; x is days since the first point so gaps show as gaps."""
+    """Line chart over time; x is days since the first point so gaps show as gaps.
+
+    With `goal`, a dashed violet line marks it; the axis includes it, so it never sits
+    on the edge of the chart.
+    """
     if not points:
         return ft.Text("Noch keine Daten.", color=ft.Colors.GREY)
 
     first = points[0][0]
-    values = [value for _, value in points]
+    values = [value for _, value in points] + ([goal] if goal is not None else [])
     min_y, max_y, step = axis_range(min(values), max(values))
     last_x = max((points[-1][0] - first).days, 1)
 
@@ -60,17 +67,31 @@ def date_line_chart(
         )
         for day, value in points
     ]
-    chart = fc.LineChart(
-        data_series=[
+    series = [
+        fc.LineChartData(
+            points=data,
+            color=color,
+            stroke_width=3,
+            # Straight segments: a curve would suggest values between trainings.
+            curved=False,
+            point=fc.ChartCirclePoint(radius=4, color=color),
+        )
+    ]
+    if goal is not None:
+        series.append(
             fc.LineChartData(
-                points=data,
-                color=ft.Colors.PRIMARY,
-                stroke_width=3,
-                # Straight segments: a curve would suggest values between trainings.
-                curved=False,
-                point=fc.ChartCirclePoint(radius=4, color=ft.Colors.PRIMARY),
+                points=[
+                    fc.LineChartDataPoint(x=0, y=goal, show_tooltip=False),
+                    fc.LineChartDataPoint(x=last_x, y=goal, show_tooltip=False),
+                ],
+                color=VIOLET_LIGHT,
+                stroke_width=2,
+                dash_pattern=[8, 6],
+                point=False,
             )
-        ],
+        )
+    chart = fc.LineChart(
+        data_series=series,
         min_x=0,
         max_x=last_x,
         min_y=min_y,

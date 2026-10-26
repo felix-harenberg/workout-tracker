@@ -2,6 +2,7 @@ from datetime import date
 
 import flet as ft
 
+from core import bodyweight as bw
 from core import repository as repo
 from core.export import export_csv, export_filename
 from core.models import Workout, WorkoutType
@@ -9,12 +10,113 @@ from core.run import run_summary
 from core.training import day_label, month_label, volume_label, workout_title
 from ui import theme
 from ui.app import App
+from ui.weight import weight_page
+
+TABS = ["Training", "Gewicht"]
 
 
 def workout_list_view(app: App) -> ft.View:
-    today = date.today()
-    content: list[ft.Control] = [theme.headline("Work", "outs")]
+    """Start screen: two pages to swipe between, Training and Gewicht.
 
+    The pages sit in the content layer of theme.view, so the glow behind them stays put
+    and only the glass cards slide.
+    """
+    today = date.today()
+    pages = [_page(_training_page(app, today)), _page(weight_page(app))]
+    fab_holder = ft.Container(_fab(app, app.home_tab))
+    tab_row = ft.Row(spacing=18)
+
+    def show_tabs() -> None:
+        tab_row.controls = [_tab(name, i == app.home_tab, i, go_to) for i, name in enumerate(TABS)]
+
+    async def go_to(index: int) -> None:
+        await page_view.go_to_page(
+            index, animation_duration=280, animation_curve=ft.AnimationCurve.EASE_OUT
+        )
+
+    def on_change(e: ft.Event) -> None:
+        app.home_tab = int(e.data)
+        show_tabs()
+        fab_holder.content = _fab(app, app.home_tab)
+        tab_row.update()
+        fab_holder.update()
+
+    page_view = ft.PageView(pages, selected_index=app.home_tab, expand=True, on_change=on_change)
+    show_tabs()
+
+    async def export(_: ft.Event) -> None:
+        files = [
+            ft.ShareFile.from_bytes(
+                export_csv(app.conn).encode("utf-8"),
+                mime_type="text/csv",
+                name=export_filename(today),
+            ),
+            ft.ShareFile.from_bytes(
+                bw.export_bodyweight_csv(app.conn).encode("utf-8"),
+                mime_type="text/csv",
+                name=f"bodyweight-{today.isoformat()}.csv",
+            ),
+        ]
+        await app.share.share_files(files, subject="Workout Tracker Backup")
+
+    return theme.view(
+        "/",
+        [page_view],
+        bar=theme.top_bar(
+            None,
+            [
+                theme.icon_button(ft.Icons.INSIGHTS, lambda _: app.go("/stats"), "Statistik"),
+                theme.icon_button(ft.Icons.SHARE, export, "Als CSV exportieren"),
+            ],
+            left=tab_row,
+        ),
+        fab=fab_holder,
+    )
+
+
+def _page(controls: list[ft.Control]) -> ft.Column:
+    """One swipe page; scrolls on its own and leaves room for the floating button."""
+    return ft.Column(
+        [*controls, ft.Container(height=88)],
+        spacing=12,
+        scroll=ft.ScrollMode.HIDDEN,
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+    )
+
+
+def _tab(name: str, active: bool, index: int, on_select) -> ft.Container:
+    """Tab label: bright with a violet line when active, grey otherwise. Tap to switch."""
+
+    async def select(_: ft.Event) -> None:
+        await on_select(index)
+
+    return ft.Container(
+        content=ft.Column(
+            [
+                theme.label(name, color=theme.TEXT if active else theme.TEXT_MUTED),
+                ft.Container(
+                    height=3,
+                    width=28,
+                    border_radius=2,
+                    bgcolor=theme.VIOLET if active else ft.Colors.TRANSPARENT,
+                ),
+            ],
+            spacing=6,
+            tight=True,
+        ),
+        padding=ft.Padding(0, 10, 0, 0),
+        on_click=select,
+    )
+
+
+def _fab(app: App, tab: int) -> ft.Control:
+    if tab == 1:
+        return theme.fab(lambda _: app.go("/weight/new"), "Gewicht eintragen", "Gewicht")
+    return theme.fab(lambda _: app.go("/workout/new"), "Neues Workout")
+
+
+def _training_page(app: App, today: date) -> list[ft.Control]:
+    content: list[ft.Control] = [theme.headline("Work", "outs")]
     workouts = repo.list_workouts(app.conn)
     if not workouts:
         content.append(theme.muted("Noch keine Workouts. Tippe auf +, um zu starten."))
@@ -27,25 +129,7 @@ def workout_list_view(app: App) -> ft.View:
             current_month = month
         # Only the newest workout of today is the one that is running.
         content.append(_workout_card(app, w, running=w is workouts[0] and w.date == today))
-
-    async def export(_: ft.Event) -> None:
-        data = export_csv(app.conn).encode("utf-8")
-        csv_file = ft.ShareFile.from_bytes(data, mime_type="text/csv", name=export_filename(today))
-        await app.share.share_files([csv_file], subject="Workout Tracker Backup")
-
-    return theme.view(
-        "/",
-        content,
-        bar=theme.top_bar(
-            None,
-            [
-                theme.icon_button(ft.Icons.INSIGHTS, lambda _: app.go("/stats"), "Statistik"),
-                theme.icon_button(ft.Icons.SHARE, export, "Als CSV exportieren"),
-            ],
-        ),
-        scroll=ft.ScrollMode.AUTO,
-        fab=theme.fab(lambda _: app.go("/workout/new"), "Neues Workout"),
-    )
+    return content
 
 
 def _workout_card(app: App, workout: Workout, running: bool) -> ft.Control:

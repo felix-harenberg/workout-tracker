@@ -85,7 +85,7 @@ def view(
     which would otherwise cut into the cards. The floating button (`fab`) sits on top,
     bottom right, with room left below the content so it never covers the last card.
     """
-    if fab is not None:
+    if fab is not None and scroll:  # pages that scroll themselves leave their own room
         controls = [*controls, ft.Container(height=88)]
     body = ft.Column(
         controls,
@@ -142,11 +142,17 @@ def icon_button(icon: str, on_click: Callable, tooltip: str) -> ft.Container:
     )
 
 
-def top_bar(on_back: Callable | None, actions: list[ft.Control] | None = None) -> ft.Row:
-    """Back arrow on the left (if `on_back`), actions on the right. Lives inside the glow."""
+def top_bar(
+    on_back: Callable | None,
+    actions: list[ft.Control] | None = None,
+    left: ft.Control | None = None,
+) -> ft.Row:
+    """Back arrow (or `left`, e.g. tabs) on the left, actions on the right. Inside the glow."""
+    if left is None:
+        left = icon_button(ft.Icons.ARROW_BACK, on_back, "Zurück") if on_back else ft.Container()
     return ft.Row(
         [
-            icon_button(ft.Icons.ARROW_BACK, on_back, "Zurück") if on_back else ft.Container(),
+            left,
             ft.Row(actions or [], spacing=10),
         ],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
