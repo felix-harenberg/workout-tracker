@@ -142,7 +142,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             ft.Column(
                 info,
                 spacing=12,
-                scroll=ft.ScrollMode.AUTO,
+                scroll=ft.ScrollMode.HIDDEN,
                 expand=True,
                 horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
             ),

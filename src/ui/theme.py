@@ -53,27 +53,52 @@ async def lock_portrait(page: ft.Page) -> None:
         await page.set_allowed_device_orientations([ft.DeviceOrientation.PORTRAIT_UP])
 
 
-def view(route: str, controls: list[ft.Control], **kwargs) -> ft.View:
-    """A screen on the dark background with a violet glow in the top right corner."""
+def view(
+    route: str,
+    controls: list[ft.Control],
+    scroll: ft.ScrollMode | None = None,
+    **kwargs,
+) -> ft.View:
+    """A screen on the dark background with a violet glow in the top right corner.
+
+    The glow is its own layer behind the content: a gradient in `View.decoration` did not
+    show up on the phone, gradients on containers do. Content scrolls without a scrollbar,
+    which would otherwise cut into the cards.
+    """
+    glow = ft.Container(
+        left=0,
+        top=0,
+        right=0,
+        bottom=0,
+        gradient=ft.RadialGradient(
+            center=ft.Alignment(1.0, -1.0),
+            radius=1.3,
+            colors=[
+                ft.Colors.with_opacity(0.45, VIOLET),
+                ft.Colors.with_opacity(0.12, VIOLET_DEEP),
+                ft.Colors.with_opacity(0, BG),
+            ],
+            stops=[0, 0.45, 1],
+        ),
+    )
+    content = ft.Container(
+        left=0,
+        top=0,
+        right=0,
+        bottom=0,
+        padding=ft.Padding(20, 8, 20, 24),
+        content=ft.Column(
+            controls,
+            spacing=12,
+            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
+            scroll=ft.ScrollMode.HIDDEN if scroll else None,
+        ),
+    )
     return ft.View(
         route=route,
-        controls=controls,
+        controls=[ft.Stack([glow, content], expand=True)],
         bgcolor=BG,
-        decoration=ft.BoxDecoration(
-            gradient=ft.RadialGradient(
-                center=ft.Alignment(1.2, -1.1),
-                radius=1.4,
-                colors=[
-                    ft.Colors.with_opacity(0.38, VIOLET),
-                    ft.Colors.with_opacity(0.10, VIOLET_DEEP),
-                    ft.Colors.with_opacity(0, BG),
-                ],
-                stops=[0, 0.45, 1],
-            )
-        ),
-        padding=ft.Padding(20, 8, 20, 24),
-        spacing=12,
-        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
+        padding=0,
         **kwargs,
     )
 

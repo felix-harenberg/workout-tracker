@@ -60,14 +60,14 @@ def date_line_chart(
         )
         for day, value in points
     ]
-    return fc.LineChart(
+    chart = fc.LineChart(
         data_series=[
             fc.LineChartData(
                 points=data,
                 color=ft.Colors.PRIMARY,
                 stroke_width=3,
-                curved=True,
-                prevent_curve_over_shooting=True,
+                # Straight segments: a curve would suggest values between trainings.
+                curved=False,
                 point=fc.ChartCirclePoint(radius=4, color=ft.Colors.PRIMARY),
             )
         ],
@@ -96,6 +96,8 @@ def date_line_chart(
         interactive=True,
         height=CHART_HEIGHT,
     )
+    # Room on the right so the last date label is not cut off.
+    return ft.Container(chart, padding=ft.Padding(0, 0, 16, 0))
 
 
 def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
