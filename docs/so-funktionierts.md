@@ -127,7 +127,7 @@ Lies dir zu jeder Funktion auch ihre Tests an, zum Beispiel in [test_training.py
 
 Jeder Screen hat eine Adresse (Route), wie eine Webseite: `/`, `/workout/12`, `/workout/12/exercise/3`, `/stats`.
 
-[`render`](../src/ui/app.py#L27) baut aus der Route einen **Stapel** von Screens. Für `/workout/12/exercise/3` liegen drei Screens übereinander: Liste, Workout 12, Übung 3. Drückt man auf Android "Zurück", wird der oberste entfernt ([`_on_view_pop`](../src/ui/app.py#L73)), und man landet automatisch auf dem richtigen Screen darunter.
+[`render`](../src/ui/app.py#L27) baut aus der Route einen **Stapel** von Screens. Für `/workout/12/exercise/3` liegen drei Screens übereinander: Liste, Workout 12, Übung 3. Drückt man auf Android "Zurück" oder auf den Pfeil oben links, wird der oberste entfernt ([`back`](../src/ui/app.py#L73)), und man landet automatisch auf dem richtigen Screen darunter.
 
 Das `match parts:` ist Pythons **Structural Pattern Matching** (seit 3.10): `case ["workout", workout_id, *rest]` passt auf jede Liste, die mit `"workout"` beginnt, und speichert den Rest in Variablen.
 
@@ -143,7 +143,7 @@ Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`wo
 
 Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.glass_card(...)` auf, statt jedes Mal Farben anzugeben. Willst du das Violett ändern, änderst du eine Zeile.
 
-**Die Glas-Regel aus deinem Handy-Test:** Echte Unschärfe (`blur`) kostet Leistung, weil bei jedem Bild alles dahinter neu weichgezeichnet wird. Deshalb haben scrollende Karten nur angedeutetes Glas (Verlauf + Rand), und echte Unschärfe gibt es nur beim festen Eingabe-Panel ([`glass_panel`](../src/ui/theme.py#L211)).
+**Die Glas-Regel aus deinem Handy-Test:** Echte Unschärfe (`blur`) kostet Leistung, weil bei jedem Bild alles dahinter neu weichgezeichnet wird. Deshalb haben scrollende Karten nur angedeutetes Glas (Verlauf + Rand), und echte Unschärfe gibt es nur beim festen Eingabe-Panel ([`glass_panel`](../src/ui/theme.py#L239)).
 
 ## 8. Tests
 
