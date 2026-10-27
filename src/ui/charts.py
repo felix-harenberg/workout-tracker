@@ -21,9 +21,16 @@ def _short_date(day: date) -> str:
     return day.strftime("%d.%m.")
 
 
-def _value_axis(axis_min: float, axis_max: float, step: float, fmt: Callable[[float], str]):
+def _value_axis(
+    axis_min: float,
+    axis_max: float,
+    step: float,
+    fmt: Callable[[float], str],
+    skip_min: bool = False,
+):
     # The chart only asks for labels every `label_spacing`, starting at the axis minimum,
     # so labels must sit exactly on those multiples to be shown.
+    # `skip_min` leaves out the lowest label, which would collide with the first date.
     count = round((axis_max - axis_min) / step)
     return fc.ChartAxis(
         label_size=48,
@@ -33,7 +40,7 @@ def _value_axis(axis_min: float, axis_max: float, step: float, fmt: Callable[[fl
                 value=axis_min + i * step,
                 label=ft.Text(fmt(axis_min + i * step), size=12, color=TEXT_MUTED),
             )
-            for i in range(count + 1)
+            for i in range(1 if skip_min else 0, count + 1)
         ],
     )
 
@@ -96,7 +103,7 @@ def date_line_chart(
         max_x=last_x,
         min_y=min_y,
         max_y=max_y,
-        left_axis=_value_axis(min_y, max_y, step, format_y),
+        left_axis=_value_axis(min_y, max_y, step, format_y, skip_min=True),
         bottom_axis=fc.ChartAxis(
             label_size=24,
             label_spacing=1,

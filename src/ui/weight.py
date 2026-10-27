@@ -82,8 +82,8 @@ def weight_page(app: App) -> list[ft.Control]:
                 theme.list_row(
                     f"{format_weight(entry_kg)} kg",
                     day_label(entry_day, date.today()),
-                    on_click=lambda _, d=entry_day, k=entry_kg: _confirm_delete(app, d, k),
-                    trailing=ft.Icon(ft.Icons.DELETE_OUTLINE, color=theme.TEXT_MUTED, size=20),
+                    on_click=lambda _, d=entry_day, k=entry_kg: _edit_entry(app, d, k),
+                    trailing=ft.Icon(ft.Icons.EDIT_OUTLINED, color=theme.TEXT_MUTED, size=20),
                 )
                 for entry_day, entry_kg in history
             ]
@@ -109,7 +109,27 @@ def _period_pill(period: str, active: bool, on_pick) -> ft.Container:
     )
 
 
-def _confirm_delete(app: App, day: date, kg: float) -> None:
+def _edit_entry(app: App, day: date, kg: float) -> None:
+    """Correct or delete a weight entry."""
+    field = theme.text_field(
+        value=format_weight(kg),
+        label="kg",
+        keyboard_type=ft.KeyboardType.NUMBER,
+        autofocus=True,
+    )
+
+    def save(_: ft.Event) -> None:
+        try:
+            new_kg = parse_weight(field.value)
+        except ValueError:
+            new_kg = None
+        if not new_kg:
+            app.show_error("Bitte ein Gewicht eingeben.")
+            return
+        bw.log_weight(app.conn, day, new_kg)  # same day: replaces the entry
+        app.page.pop_dialog()
+        app.render()
+
     def delete(_: ft.Event) -> None:
         app.page.pop_dialog()
         bw.delete_weight(app.conn, day)
@@ -117,12 +137,12 @@ def _confirm_delete(app: App, day: date, kg: float) -> None:
 
     app.page.show_dialog(
         ft.AlertDialog(
-            modal=True,
-            title=ft.Text("Eintrag löschen?"),
-            content=ft.Text(f"{format_weight(kg)} kg vom {day.strftime('%d.%m.%Y')}"),
+            title=ft.Text(f"Eintrag vom {day.strftime('%d.%m.%Y')}"),
+            content=field,
             actions=[
-                ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
                 ft.TextButton(content="Löschen", on_click=delete),
+                ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
+                ft.TextButton(content="Speichern", on_click=save),
             ],
         )
     )

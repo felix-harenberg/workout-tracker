@@ -245,9 +245,9 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
 
 def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet]) -> ft.Column:
-    """Satz | Vorher | kg | Wdh | ✓. Done sets are bright and editable; the ones still to come
+    """Satz | Vorher | kg | Wdh. Done sets are bright and editable (✎); the ones still to come
     show last time's values faded, like prefilled values in the design."""
-    widths = {"set": 34, "kg": 64, "reps": 46, "check": 34}
+    widths = {"set": 34, "kg": 64, "reps": 46, "edit": 24}
 
     def cell(text: str, width: int | None, size: int = 18, color: str = theme.TEXT, **kw):
         return ft.Text(
@@ -270,7 +270,7 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
                 header("Vorher", None),
                 header("kg", widths["kg"]),
                 header("Wdh", widths["reps"]),
-                ft.Container(width=widths["check"]),
+                ft.Container(width=widths["edit"]),
             ]
         )
     ]
@@ -279,18 +279,6 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
         done = i < len(current)
         shown = current[i] if done else last_sets[i]
         kg = format_weight(shown.weight_kg) if shown.weight_kg is not None else "BW"
-        check = ft.Container(
-            content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=ft.Colors.WHITE, size=18)
-            if done
-            else None,
-            width=30,
-            height=30,
-            border_radius=15,
-            bgcolor=theme.VIOLET if done else None,
-            border=None if done else ft.Border.all(2, ft.Colors.with_opacity(0.4, ft.Colors.WHITE)),
-            shadow=ft.BoxShadow(blur_radius=14, color=theme.VIOLET) if done else None,
-            alignment=ft.Alignment.CENTER,
-        )
         row = ft.Container(
             ft.Row(
                 [
@@ -298,7 +286,12 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
                     cell(before, None, size=15, color=theme.TEXT_MUTED),
                     cell(kg, widths["kg"]),
                     cell(str(shown.reps), widths["reps"]),
-                    ft.Container(check, width=widths["check"]),
+                    ft.Container(
+                        ft.Icon(ft.Icons.EDIT_OUTLINED, size=18, color=theme.TEXT_MUTED)
+                        if done
+                        else None,
+                        width=widths["edit"],
+                    ),
                 ]
             ),
             padding=ft.Padding(0, 10, 0, 10),
