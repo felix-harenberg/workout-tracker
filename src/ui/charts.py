@@ -35,6 +35,7 @@ def _value_axis(
     return fc.ChartAxis(
         label_size=48,
         label_spacing=step,
+        show_min=not skip_min,  # otherwise the chart adds its own label at the minimum
         labels=[
             fc.ChartAxisLabel(
                 value=axis_min + i * step,

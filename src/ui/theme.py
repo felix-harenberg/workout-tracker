@@ -28,6 +28,7 @@ FONTS = {
 TITLE_FONT = "Anton"
 STRONG_FONT = "Inter ExtraBold"  # names and numbers
 MEDIUM_FONT = "Inter SemiBold"
+SIDE_PADDING = 20  # space between screen edge and cards
 
 
 def apply(page: ft.Page) -> None:
@@ -75,9 +76,14 @@ def view(
     bar: ft.Control | None = None,
     scroll: ft.ScrollMode | None = None,
     fab: ft.Control | None = None,
+    edge_to_edge: bool = False,
     **kwargs,
 ) -> ft.View:
     """A full-screen page: glow spots top right and bottom left, then the bar and the content.
+
+    With `edge_to_edge`, the content uses the full screen width and brings its own side
+    padding. Swipe pages need that: they must slide out over the screen edge instead of
+    being cut off 20 px inside it.
 
     The glow sits in its own layers behind everything, including the bar, so there is no
     edge below the bar (a Flet AppBar paints its own background, and a gradient in
@@ -94,6 +100,10 @@ def view(
         scroll=ft.ScrollMode.HIDDEN if scroll else None,
         expand=True,
     )
+    side = 0 if edge_to_edge else SIDE_PADDING
+    top = bar or ft.Container(height=8)
+    if edge_to_edge:
+        top = ft.Container(top, padding=ft.Padding(SIDE_PADDING, 0, SIDE_PADDING, 0))
     content = ft.Container(
         left=0,
         top=0,
@@ -102,11 +112,11 @@ def view(
         content=ft.SafeArea(
             ft.Container(
                 ft.Column(
-                    [bar or ft.Container(height=8), body],
+                    [top, body],
                     spacing=0,
                     horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
                 ),
-                padding=ft.Padding(20, 0, 20, 16),
+                padding=ft.Padding(side, 0, side, 16),
             )
         ),
     )

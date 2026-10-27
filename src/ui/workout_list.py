@@ -71,16 +71,21 @@ def workout_list_view(app: App) -> ft.View:
             left=tab_row,
         ),
         fab=fab_holder,
+        edge_to_edge=True,
     )
 
 
-def _page(controls: list[ft.Control]) -> ft.Column:
-    """One swipe page; scrolls on its own and leaves room for the floating button."""
-    return ft.Column(
-        [*controls, ft.Container(height=88)],
-        spacing=12,
-        scroll=ft.ScrollMode.HIDDEN,
-        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+def _page(controls: list[ft.Control]) -> ft.Container:
+    """One swipe page: full width with its own side padding, so it slides out over the
+    screen edge; scrolls on its own and leaves room for the floating button."""
+    return ft.Container(
+        ft.Column(
+            [*controls, ft.Container(height=88)],
+            spacing=12,
+            scroll=ft.ScrollMode.HIDDEN,
+            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+        ),
+        padding=ft.Padding(theme.SIDE_PADDING, 0, theme.SIDE_PADDING, 0),
     )
 
 
