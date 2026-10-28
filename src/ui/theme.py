@@ -18,6 +18,7 @@ LINE = "#333333"  # hairlines between rows
 BLUE = "#1F5FFF"
 UP_COLOR = "#3DDC84"  # ▲ more weight next time
 DOWN_COLOR = "#FF5A6E"  # ▼ less weight next time
+DANGER = DOWN_COLOR  # deleting is the only red action in the app
 
 FONTS = {
     "Instrument Serif": "fonts/InstrumentSerif-Italic.ttf",
@@ -456,4 +457,82 @@ def secondary_button(text: str, on_click: Callable, icon: str | None = None) -> 
         border=ft.Border.all(1, BLUE),
         on_click=on_click,
         ink=True,
+    )
+
+
+def dialog_button(text: str, on_click: Callable, kind: str = "plain") -> ft.Container:
+    """Equal-width dialog action. kind: "main" (blue block), "plain" (outlined),
+    "danger" (red block), "danger_outline" (red outline, for delete next to Speichern)."""
+    fill = {"main": BLUE, "danger": DANGER}.get(kind)
+    color = {"main": TEXT, "danger": BG, "danger_outline": DANGER}.get(kind, TEXT)
+    border = {"plain": TEXT_MUTED, "danger_outline": DANGER}.get(kind)
+    return ft.Container(
+        content=_button_text(text, color, size=14),
+        expand=True,
+        alignment=ft.Alignment.CENTER,
+        padding=ft.Padding(0, 15, 0, 15),
+        bgcolor=fill,
+        border=ft.Border.all(1, border) if border else None,
+        on_click=on_click,
+        ink=True,
+    )
+
+
+def name_sentence(name: str, rest: str) -> ft.Text:
+    """A sentence that starts with a workout or exercise name in the wide sans."""
+    return ft.Text(
+        spans=[
+            ft.TextSpan(
+                name.upper(), style=ft.TextStyle(font_family=STRONG_FONT, size=14, color=TEXT)
+            ),
+            ft.TextSpan(rest, style=ft.TextStyle(size=16, color=TEXT_MUTED)),
+        ]
+    )
+
+
+def dialog(
+    kicker: str,
+    title: str,
+    body: list[ft.Control],
+    actions: list[ft.Control],
+    danger: bool = False,
+) -> ft.AlertDialog:
+    """Black box over the dimmed screen, like the rest of the app instead of Android's default.
+
+    A colored line on top (red for deleting, blue otherwise), a small mono `kicker` (e.g.
+    "Satz 2 · Benchpress"), the title in the curly serif, then `body` and the `actions`
+    (rows of dialog_button).
+    """
+    accent = DANGER if danger else BLUE
+    side = ft.BorderSide(1, LINE)
+    card = ft.Container(
+        padding=ft.Padding(20, 22, 20, 20),
+        bgcolor=BG,
+        border=ft.Border(top=ft.BorderSide(2, accent), left=side, right=side, bottom=side),
+        content=ft.Column(
+            [
+                label(kicker, color=DANGER if danger else TEXT_MUTED),
+                ft.Text(
+                    title,
+                    size=40,
+                    color=TEXT,
+                    style=ft.TextStyle(font_family=TITLE_FONT, height=1.0),
+                ),
+                *body,
+                ft.Container(height=4),
+                *actions,
+            ],
+            tight=True,
+            spacing=12,
+            horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+        ),
+    )
+    return ft.AlertDialog(
+        modal=True,
+        bgcolor=ft.Colors.TRANSPARENT,
+        elevation=0,
+        content_padding=0,
+        inset_padding=ft.Padding(20, 24, 20, 24),
+        barrier_color=ft.Colors.with_opacity(0.72, BG),
+        content=card,
     )

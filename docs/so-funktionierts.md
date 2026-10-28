@@ -143,7 +143,9 @@ Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`wo
 
 Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.section(...)` auf, statt jedes Mal Farben anzugeben. Willst du das Blau ändern, änderst du eine Zeile.
 
-**Der Blog-Look (Branch `design/blog`):** Die App sieht aus wie dein Blog: Schwarz, Weiss und ein Blau, keine Rundungen, kein Glas. Statt Karten trennen dünne Linien die Zeilen, wie die Postliste im Blog. Drei Schriften haben je eine Aufgabe: die kursive Serif für Screen-Titel ([`headline`](../src/ui/theme.py#L186)), die breite fette Sans für Namen von Workouts und Übungen, die Mono-Schrift für Daten, Sätze und Labels. Der blaue Ring mit Zahl ([`count_ring`](../src/ui/theme.py#L156)) kommt von der Post-Anzahl auf der Blog-Startseite.
+**Der Blog-Look (Branch `design/blog`):** Die App sieht aus wie dein Blog: Schwarz, Weiss und ein Blau, keine Rundungen, kein Glas. Statt Karten trennen dünne Linien die Zeilen, wie die Postliste im Blog. Drei Schriften haben je eine Aufgabe: die kursive Serif für Screen-Titel ([`headline`](../src/ui/theme.py#L187)), die breite fette Sans für Namen von Workouts und Übungen, die Mono-Schrift für Daten, Sätze und Labels. Der blaue Ring mit Zahl ([`count_ring`](../src/ui/theme.py#L157)) kommt von der Post-Anzahl auf der Blog-Startseite.
+
+**Eigene Dialoge:** Android zeigt Dialoge sonst im Standard-Look (weisse Box, Text-Knöpfe). [`dialog`](../src/ui/theme.py#L493) baut stattdessen einen schwarzen Kasten mit farbigem Strich oben: rot fürs Löschen, sonst blau. Alle Dialoge (Löschen, Satz bearbeiten, Gewicht, Ziel) nutzen ihn, deshalb sehen sie gleich aus.
 
 **Warum feste Schriftdateien:** Archivo, JetBrains Mono und Inter Tight gibt es bei Google Fonts nur als *variable* Schrift (eine Datei, Breite und Dicke stufenlos). Flet kann daraus nicht zuverlässig eine bestimmte Breite wählen. Deshalb liegen in `assets/fonts` feste Ausschnitte, z.B. Archivo mit Breite 125 % und Dicke 800.
 

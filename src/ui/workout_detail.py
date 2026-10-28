@@ -7,7 +7,13 @@ from core import stats
 from core.models import Workout, WorkoutSet, WorkoutType
 from core.run import format_distance, format_duration, format_pace, pace_s_per_km
 from core.templates import copy_pending_exercises, pending_exercises
-from core.training import day_label, format_set_compact, group_sets_by_exercise, workout_title
+from core.training import (
+    day_label,
+    format_set_compact,
+    group_sets_by_exercise,
+    volume_label,
+    workout_title,
+)
 from ui import theme
 from ui.app import App
 
@@ -29,14 +35,30 @@ def workout_detail_view(app: App, workout: Workout) -> ft.View:
         app.go("/")
 
     what = "wird" if is_run else "und alle Sätze werden"
-    confirm_delete = ft.AlertDialog(
-        modal=True,
-        title=ft.Text("Workout löschen?"),
-        content=ft.Text(f"„{workout_title(workout)}“ {what} gelöscht."),
-        actions=[
-            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
-            ft.TextButton(content="Löschen", on_click=delete),
+    body: list[ft.Control] = [
+        theme.name_sentence(
+            workout_title(workout),
+            f" {what} gelöscht. Das lässt sich nicht rückgängig machen.",
+        )
+    ]
+    if not is_run:
+        exercises, sets = repo.workout_volume(app.conn, workout.id)
+        if sets:
+            body.append(theme.chips(volume_label(exercises, sets).split(" · ")))
+    confirm_delete = theme.dialog(
+        "Löschen",
+        "Workout löschen?",
+        body,
+        [
+            ft.Row(
+                [
+                    theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                    theme.dialog_button("Löschen", delete, "danger"),
+                ],
+                spacing=10,
+            )
         ],
+        danger=True,
     )
 
     return theme.view(

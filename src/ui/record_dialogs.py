@@ -80,25 +80,6 @@ def _overlay(
     )
 
 
-def _button(text: str, on_click: Callable, main: bool) -> ft.Container:
-    """Equal-width action: blue block for the main one, outlined for the other."""
-    return ft.Container(
-        content=ft.Text(
-            text.upper(),
-            size=14,
-            color=theme.TEXT,
-            text_align=ft.TextAlign.CENTER,
-            style=ft.TextStyle(font_family=theme.MONO_MEDIUM_FONT, letter_spacing=1),
-        ),
-        expand=True,
-        padding=ft.Padding(0, 15, 0, 15),
-        bgcolor=theme.BLUE if main else None,
-        border=None if main else ft.Border.all(1, theme.TEXT_MUTED),
-        on_click=on_click,
-        ink=True,
-    )
-
-
 def show_record(
     app: App, exercise_name: str, weight_kg: float, reps: int, check: RecordCheck
 ) -> None:
@@ -119,7 +100,7 @@ def show_record(
         exercise_name,
         before,
         pick_quote(),
-        [_button("Weiter", close, main=True)],
+        [theme.dialog_button("Weiter", close, "main")],
     )
     app.page.show_dialog(dialog)
 
@@ -157,7 +138,10 @@ def show_suspicious(
             exercise_name,
             f"bisher bestes: {format_set(check.previous_best)}",
             suspicious_message(weight_kg, check.previous_best.weight_kg),
-            [_button("Korrigieren", correct, main=False), _button("Stimmt so", confirm, main=True)],
+            [
+                theme.dialog_button("Korrigieren", correct),
+                theme.dialog_button("Stimmt so", confirm, "main"),
+            ],
             warn=True,
         )
     )

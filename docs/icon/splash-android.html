@@ -1,8 +1,10 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>Splash render</title>
-<!-- Source for src/assets/splash_android.png: white angular biceps on transparent background.
-     The splash background color (#07060A) is set in pyproject.toml under [tool.flet.splash]. -->
+<!-- Source for src/assets/splash_android.png: the icon's logo (blue outline biceps in a blue square) on a
+     transparent background. The splash background color (#141414) is set in pyproject.toml under
+     [tool.flet.splash]. Same proportions as the icon, scaled to a square side of 68: Android 12+ shows the
+     splash inside a circle of about 2/3 of the image, and the square's corners must stay inside it. -->
 <style>html,body{margin:0;width:1024px;height:1024px;overflow:hidden;background:transparent}svg{display:block;width:1024px;height:1024px}</style></head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><path d="M20 78 L82 78 L82 98 L108 98 L108 42 L96 42 L96 26 L130 26 L130 124 L20 124 Z" fill="#f3eefc" transform="translate(75 75) scale(.6) translate(-75 -75)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><rect x="41" y="41" width="68" height="68" fill="none" stroke="#1f5fff" stroke-width="2.72"/><path d="M20 78 L82 78 L82 101 L108 101 L108 38 L96 38 L96 20 L130 20 L130 130 L20 130 Z" fill="none" stroke="#1f5fff" stroke-width="6" transform="translate(75 75) scale(.4533) translate(-75 -75)"/></svg>
 </body></html>

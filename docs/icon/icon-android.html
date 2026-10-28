@@ -1,8 +1,9 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>App icon render</title>
-<!-- Source for src/assets/icon_android.png: glowing violet angular biceps on black ("neon" variant).
-     Render: see docs/icon/README.md. The biceps scale (transform scale) keeps it inside Android's safe zone. -->
-<style>html,body{margin:0;width:1024px;height:1024px;overflow:hidden;background:#07060a}svg{display:block;width:1024px;height:1024px}</style></head>
+<!-- Source for src/assets/icon_android.png: blue outline biceps in a blue square on #141414 (blog look).
+     Render: see docs/icon/README.md. The biceps is 110 x 110 units (square), centered at 75/75, so the
+     gap to the square is the same on all four sides. Square side 75: corners stay inside Android's round mask. -->
+<style>html,body{margin:0;width:1024px;height:1024px;overflow:hidden;background:#141414}svg{display:block;width:1024px;height:1024px}</style></head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs><rect width="150" height="150" fill="#07060a"/><path d="M20 78 L82 78 L82 98 L108 98 L108 42 L96 42 L96 26 L130 26 L130 124 L20 124 Z" fill="#b026ff" filter="url(#g)" opacity=".9" transform="translate(75 75) scale(.5) translate(-75 -75)"/><path d="M20 78 L82 78 L82 98 L108 98 L108 42 L96 42 L96 26 L130 26 L130 124 L20 124 Z" fill="#c04bff" transform="translate(75 75) scale(.5) translate(-75 -75)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><rect width="150" height="150" fill="#141414"/><rect x="37.5" y="37.5" width="75" height="75" fill="none" stroke="#1f5fff" stroke-width="3"/><path d="M20 78 L82 78 L82 101 L108 101 L108 38 L96 38 L96 20 L130 20 L130 130 L20 130 Z" fill="none" stroke="#1f5fff" stroke-width="6" transform="translate(75 75) scale(.5) translate(-75 -75)"/></svg>
 </body></html>

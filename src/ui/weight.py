@@ -135,13 +135,19 @@ def _edit_entry(app: App, day: date, kg: float) -> None:
         app.render()
 
     app.page.show_dialog(
-        ft.AlertDialog(
-            title=ft.Text(f"Eintrag vom {day.strftime('%d.%m.%Y')}"),
-            content=field,
-            actions=[
-                ft.TextButton(content="Löschen", on_click=delete),
-                ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
-                ft.TextButton(content="Speichern", on_click=save),
+        theme.dialog(
+            f"Eintrag · {day.strftime('%d.%m.%Y')}",
+            "Gewicht ändern",
+            [field],
+            [
+                ft.Row([theme.dialog_button("Speichern", save, "main")]),
+                ft.Row(
+                    [
+                        theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                        theme.dialog_button("Löschen", delete, "danger_outline"),
+                    ],
+                    spacing=10,
+                ),
             ],
         )
     )
@@ -264,13 +270,19 @@ def _goal_dialog(app: App) -> None:
         app.render()
 
     app.page.show_dialog(
-        ft.AlertDialog(
-            title=ft.Text("Zielgewicht"),
-            content=field,
-            actions=[
-                ft.TextButton(content="Entfernen", on_click=remove),
-                ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
-                ft.TextButton(content="Speichern", on_click=save),
+        theme.dialog(
+            "Ziel",
+            "Zielgewicht",
+            [field],
+            [
+                ft.Row([theme.dialog_button("Speichern", save, "main")]),
+                ft.Row(
+                    [
+                        theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                        theme.dialog_button("Entfernen", remove, "danger_outline"),
+                    ],
+                    spacing=10,
+                ),
             ],
         )
     )

@@ -34,10 +34,10 @@ target_arch = ["arm64-v8a"]
 
 # Splash shows src/assets/splash_android.png on the app background, light and dark mode alike.
 [tool.flet.splash]
-color = "#07060A"
-dark_color = "#07060A"
-icon_background = "#07060A"
-icon_dark_background = "#07060A"
+color = "#141414"
+dark_color = "#141414"
+icon_background = "#141414"
+icon_dark_background = "#141414"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

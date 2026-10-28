@@ -76,7 +76,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 ft.Column(
                     [
                         theme.label(heading),
-                        _set_table(app, current, last_sets),
+                        _set_table(app, exercise.name, current, last_sets),
                         *(
                             [
                                 ft.Container(
@@ -165,27 +165,6 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     weight_field.on_submit = focus_reps
     reps_field.on_submit = add
 
-    def step(field: ft.TextField, change) -> None:
-        field.value = change(field.value)
-        field.update()
-
-    def stepper(text: str, field: ft.TextField, change) -> ft.Container:
-        return ft.Container(
-            content=ft.Text(
-                text,
-                size=15,
-                color=theme.TEXT,
-                text_align=ft.TextAlign.CENTER,
-                style=ft.TextStyle(font_family=theme.MONO_FONT),
-            ),
-            expand=True,
-            height=40,
-            alignment=ft.Alignment.CENTER,
-            border=ft.Border.all(1, theme.LINE),
-            on_click=lambda _: step(field, change),
-            ink=True,
-        )
-
     save_button = ft.Container(
         content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=theme.TEXT, size=34),
         width=68,
@@ -205,22 +184,8 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 ft.Row([weight_field, reps_field, save_button], spacing=10),
                 ft.Row(
                     [
-                        ft.Row(
-                            [
-                                stepper("−2.5", weight_field, lambda v: step_weight(v, -2.5)),
-                                stepper("+2.5", weight_field, lambda v: step_weight(v, 2.5)),
-                            ],
-                            expand=True,
-                            spacing=6,
-                        ),
-                        ft.Row(
-                            [
-                                stepper("−1", reps_field, lambda v: step_reps(v, -1)),
-                                stepper("+1", reps_field, lambda v: step_reps(v, 1)),
-                            ],
-                            expand=True,
-                            spacing=6,
-                        ),
+                        _weight_steppers(weight_field),
+                        _reps_steppers(reps_field),
                         ft.Container(width=68),
                     ],
                     spacing=10,
@@ -235,14 +200,29 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         repo.delete_exercise_from_workout(app.conn, workout.id, exercise.id)
         app.go(f"/workout/{workout.id}")
 
-    confirm_delete = ft.AlertDialog(
-        modal=True,
-        title=ft.Text("Übung entfernen?"),
-        content=ft.Text(f"Alle Sätze von „{exercise.name}“ in diesem Workout werden gelöscht."),
-        actions=[
-            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
-            ft.TextButton(content="Löschen", on_click=delete_exercise),
+    confirm_delete = theme.dialog(
+        "Löschen",
+        "Übung entfernen?",
+        [
+            theme.name_sentence(
+                exercise.name, " und alle Sätze davon in diesem Workout werden gelöscht."
+            ),
+            *(
+                [theme.chips([f"{len(current)} {'Satz' if len(current) == 1 else 'Sätze'}"])]
+                if current
+                else []
+            ),
         ],
+        [
+            ft.Row(
+                [
+                    theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                    theme.dialog_button("Entfernen", delete_exercise, "danger"),
+                ],
+                spacing=10,
+            )
+        ],
+        danger=True,
     )
 
     return theme.view(
@@ -270,7 +250,9 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     )
 
 
-def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet]) -> ft.Column:
+def _set_table(
+    app: App, exercise_name: str, current: list[WorkoutSet], last_sets: list[WorkoutSet]
+) -> ft.Column:
     """Satz | Vorher | kg | Wdh. Done sets are bright and editable (✎); the ones still to come
     show last time's values faded, like prefilled values in the design."""
     widths = {
@@ -328,7 +310,11 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
             padding=ft.Padding(0, 10, 0, 10),
             border=ft.Border(top=ft.BorderSide(1, theme.LINE)),
             opacity=1 if done else 0.35,
-            on_click=(lambda _, s=current[i]: app.page.show_dialog(_edit_set_dialog(app, s)))
+            on_click=(
+                lambda _, s=current[i]: app.page.show_dialog(
+                    _edit_set_dialog(app, exercise_name, s)
+                )
+            )
             if done
             else None,
             ink=done,
@@ -389,14 +375,61 @@ def _read_inputs(
     return weight_kg, reps
 
 
-def _edit_set_dialog(app: App, workout_set: WorkoutSet) -> ft.AlertDialog:
+def _stepper(text: str, field: ft.TextField, change) -> ft.Container:
+    """Square ± button that changes `field` with `change` (e.g. step_weight)."""
+
+    def step(_: ft.Event) -> None:
+        field.value = change(field.value)
+        field.update()
+
+    return ft.Container(
+        content=ft.Text(
+            text,
+            size=15,
+            color=theme.TEXT,
+            text_align=ft.TextAlign.CENTER,
+            style=ft.TextStyle(font_family=theme.MONO_FONT),
+        ),
+        expand=True,
+        height=40,
+        alignment=ft.Alignment.CENTER,
+        border=ft.Border.all(1, theme.LINE),
+        on_click=step,
+        ink=True,
+    )
+
+
+def _weight_steppers(field: ft.TextField) -> ft.Row:
+    return ft.Row(
+        [
+            _stepper("−2.5", field, lambda v: step_weight(v, -2.5)),
+            _stepper("+2.5", field, lambda v: step_weight(v, 2.5)),
+        ],
+        expand=True,
+        spacing=6,
+    )
+
+
+def _reps_steppers(field: ft.TextField) -> ft.Row:
+    return ft.Row(
+        [
+            _stepper("−1", field, lambda v: step_reps(v, -1)),
+            _stepper("+1", field, lambda v: step_reps(v, 1)),
+        ],
+        expand=True,
+        spacing=6,
+    )
+
+
+def _edit_set_dialog(app: App, exercise_name: str, workout_set: WorkoutSet) -> ft.AlertDialog:
+    """Change or delete a logged set; same fields and ± buttons as the input panel."""
     weight_field = _number_field(
         "kg",
         format_weight(workout_set.weight_kg) if workout_set.weight_kg is not None else "",
         hint="leer = BW",
     )
     reps_field = _number_field("Wdh.", str(workout_set.reps))
-    weight_field.expand = reps_field.expand = False
+    weight_field.expand = reps_field.expand = False  # here they sit in columns, not a row
 
     def save(_: ft.Event) -> None:
         values = _read_inputs(app, weight_field, reps_field)
@@ -412,13 +445,28 @@ def _edit_set_dialog(app: App, workout_set: WorkoutSet) -> ft.AlertDialog:
         app.page.pop_dialog()
         app.render()
 
-    return ft.AlertDialog(
-        title=ft.Text(f"Satz {workout_set.set_number} bearbeiten"),
-        content=ft.Column([weight_field, reps_field], tight=True),
-        actions=[
-            ft.TextButton(content="Löschen", on_click=delete),
-            ft.TextButton(content="Abbrechen", on_click=lambda _: app.page.pop_dialog()),
-            ft.TextButton(content="Speichern", on_click=save),
+    return theme.dialog(
+        f"Satz {workout_set.set_number} · {exercise_name}",
+        "Satz bearbeiten",
+        [
+            ft.Row(
+                [
+                    ft.Column([weight_field, _weight_steppers(weight_field)], expand=True),
+                    ft.Column([reps_field, _reps_steppers(reps_field)], expand=True),
+                ],
+                spacing=10,
+                vertical_alignment=ft.CrossAxisAlignment.START,
+            )
+        ],
+        [
+            ft.Row([theme.dialog_button("Speichern", save, "main")]),
+            ft.Row(
+                [
+                    theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                    theme.dialog_button("Satz löschen", delete, "danger_outline"),
+                ],
+                spacing=10,
+            ),
         ],
     )
 
