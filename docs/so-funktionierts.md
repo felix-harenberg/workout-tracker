@@ -170,7 +170,9 @@ Zwei Workflows in [.github/workflows/](../.github/workflows/):
 
 **Signieren:** Android erkennt Updates an Paket-ID **und** Signatur. Der Schlüssel liegt als GitHub Secret vor, der Workflow schreibt ihn in eine temporäre Datei und gibt ihn über Umgebungsvariablen an Flet. Ohne festen Schlüssel hätte jeder Build eine andere Signatur, und Android würde Updates verweigern.
 
-**Build-Nummer:** `--build-number ${{ github.run_number }}`. Jeder Build bekommt eine höhere Nummer, Android erkennt ihn als neuer.
+**Build-Nummer:** die Anzahl Commits (`git rev-list --count HEAD`). Sie wächst mit jedem Commit, egal welcher Workflow baut, also erkennt Android jeden neueren Build als Update. Eine Laufnummer pro Workflow ginge nicht: Der Release-Workflow würde wieder bei 1 anfangen.
+
+**Release per Tag:** [release.yml](../.github/workflows/release.yml) startet bei einem Tag wie `v1.0.0`, ruft [build-apk.yml](../.github/workflows/build-apk.yml) als Baustein auf (`workflow_call`) und legt das GitHub-Release mit der APK an. Den Text nimmt er aus `docs/releases/<tag>.md`.
 
 ## 10. Bugs, aus denen man lernt
 

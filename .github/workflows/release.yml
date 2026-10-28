@@ -1,0 +1,43 @@
+name: Release
+
+# Push a tag like v1.0.0 and this builds the APK and publishes the GitHub release with it.
+# Release notes come from docs/releases/<tag>.md if it exists (first line "# Title"),
+# otherwise GitHub generates them from the commits.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write  # create the release
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-apk.yml
+    secrets: inherit
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: workout-tracker-apk
+          path: apk
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          apk="workout-tracker-$TAG.apk"
+          mv apk/*.apk "$apk"
+          notes="docs/releases/$TAG.md"
+          if [ -f "$notes" ]; then
+            title="$(head -n 1 "$notes" | sed 's/^# *//')"
+            tail -n +2 "$notes" > "$RUNNER_TEMP/notes.md"
+            gh release create "$TAG" "$apk" --title "$title" --notes-file "$RUNNER_TEMP/notes.md"
+          else
+            gh release create "$TAG" "$apk" --title "$TAG" --generate-notes
+          fi

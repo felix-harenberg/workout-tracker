@@ -8,6 +8,8 @@ on:
       - "pyproject.toml"
       - ".github/workflows/build-apk.yml"
   workflow_dispatch:
+  # Also used as a building block by release.yml for tagged releases.
+  workflow_call:
 
 # A newer push makes an older, still running build pointless.
 concurrency:
@@ -23,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history, for the commit count below
 
       - uses: actions/setup-python@v5
         with:
@@ -48,10 +52,15 @@ jobs:
             echo "FLET_ANDROID_SIGNING_KEY_ALIAS=upload"
           } >> "$GITHUB_ENV"
 
+      # Android only installs an update with a higher build number. The commit count grows
+      # with every commit no matter which workflow builds, so release builds and regular
+      # builds share one increasing sequence (a per-workflow run number would restart at 1).
+      - name: Compute build number
+        run: echo "BUILD_NUMBER=$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
+
       # flet build downloads the matching Flutter SDK, JDK and Android SDK itself.
       - name: Build APK
-        # run_number increases with every build, so Android accepts each APK as an update.
-        run: flet build apk --verbose --yes --build-number ${{ github.run_number }}
+        run: flet build apk --verbose --yes --build-number "$BUILD_NUMBER"
 
       - uses: actions/upload-artifact@v4
         with:
