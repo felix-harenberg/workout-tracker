@@ -425,3 +425,27 @@ def hint_color(direction: str) -> str:
 def hint_glyph(direction: str, size: int = 16) -> ft.Text:
     """Green ▲ or red ▼."""
     return ft.Text("▲" if direction == "up" else "▼", size=size, color=hint_color(direction))
+
+
+def secondary_button(text: str, on_click: Callable, icon: str | None = None) -> ft.Container:
+    """Small violet-outlined pill for side actions, e.g. "Alles übernehmen"."""
+    content: list[ft.Control] = []
+    if icon:
+        content.append(ft.Icon(icon, color=VIOLET_LIGHT, size=18))
+    content.append(
+        ft.Text(
+            text.upper(),
+            size=14,
+            color=VIOLET_LIGHT,
+            style=ft.TextStyle(font_family=STRONG_FONT, letter_spacing=1),
+        )
+    )
+    return ft.Container(
+        content=ft.Row(content, spacing=6, tight=True),
+        padding=ft.Padding(14, 9, 16, 9),
+        border_radius=999,
+        border=ft.Border.all(1, ft.Colors.with_opacity(0.6, VIOLET)),
+        bgcolor=ft.Colors.with_opacity(0.10, VIOLET),
+        on_click=on_click,
+        ink=True,
+    )

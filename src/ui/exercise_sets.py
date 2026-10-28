@@ -6,6 +6,7 @@ from core import repository as repo
 from core import stats
 from core.models import Exercise, Hint, Workout, WorkoutSet
 from core.records import check_new_set
+from core.templates import copy_missing_sets
 from core.training import (
     day_label,
     format_set,
@@ -63,11 +64,34 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             )
         )
 
+    def take_missing(_: ft.Event) -> None:
+        """Log the sets from last time that are still missing today."""
+        copy_missing_sets(app.conn, workout, exercise.id)
+        app.render()
+
     if current or last_sets:
         heading = f"Letztes Mal · {day_label(last[0].date, date.today())}" if last else "Heute"
         info.append(
             theme.glass_card(
-                ft.Column([theme.label(heading), _set_table(app, current, last_sets)], spacing=8),
+                ft.Column(
+                    [
+                        theme.label(heading),
+                        _set_table(app, current, last_sets),
+                        *(
+                            [
+                                ft.Container(
+                                    theme.secondary_button(
+                                        "Sätze übernehmen", take_missing, ft.Icons.DONE_ALL
+                                    ),
+                                    padding=ft.Padding(0, 8, 0, 4),
+                                )
+                            ]
+                            if len(last_sets) > len(current)
+                            else []
+                        ),
+                    ],
+                    spacing=8,
+                ),
                 padding=ft.Padding(16, 14, 16, 10),
             )
         )

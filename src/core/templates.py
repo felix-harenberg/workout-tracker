@@ -81,3 +81,31 @@ def pending_exercises(conn: sqlite3.Connection, workout: Workout) -> list[Pendin
         assert exercise is not None
         pending.append(PendingExercise(exercise=exercise, last_sets=sets))
     return pending
+
+
+def copy_pending_exercises(conn: sqlite3.Connection, workout: Workout) -> int:
+    """Log every exercise still pending from last time with all of last time's sets.
+
+    Exercises already logged today are left alone. Returns the number of sets added.
+    """
+    added = 0
+    for pending in pending_exercises(conn, workout):
+        for s in pending.last_sets:
+            repo.add_set(conn, workout.id, s.exercise_id, reps=s.reps, weight_kg=s.weight_kg)
+            added += 1
+    return added
+
+
+def copy_missing_sets(conn: sqlite3.Connection, workout: Workout, exercise_id: int) -> int:
+    """Log the sets of last time that are still missing today for one exercise.
+
+    With 1 set done today and 3 last time, sets 2 and 3 are added. Returns the count.
+    """
+    last = repo.last_sets_for_exercise(conn, exercise_id, before=workout)
+    if last is None:
+        return 0
+    done = [s for s in repo.list_sets(conn, workout.id) if s.exercise_id == exercise_id]
+    missing = last[1][len(done) :]
+    for s in missing:
+        repo.add_set(conn, workout.id, exercise_id, reps=s.reps, weight_kg=s.weight_kg)
+    return len(missing)

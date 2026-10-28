@@ -110,3 +110,74 @@ def test_pending_exercises_only_look_at_earlier_workouts(conn: sqlite3.Connectio
     first = log(conn, "Chestday", date(2026, 10, 15), ("Bench", 8, 80))
     log(conn, "Chestday", date(2026, 10, 22), ("Bench", 8, 82.5), ("Dips", 10, None))
     assert templates.pending_exercises(conn, first) == []
+
+
+# --- Copying last time's sets ---
+
+
+def sets_of(conn: sqlite3.Connection, workout: Workout) -> list[tuple[str, float | None, int]]:
+    names = {e.id: e.name for e in repo.list_exercises(conn)}
+    return [(names[s.exercise_id], s.weight_kg, s.reps) for s in repo.list_sets(conn, workout.id)]
+
+
+def test_copy_pending_exercises_takes_all_sets_from_last_time(conn: sqlite3.Connection) -> None:
+    log(
+        conn, "Chestday", date(2026, 10, 22), ("Bench", 8, 80), ("Bench", 6, 85), ("Dips", 10, None)
+    )
+    today = repo.create_workout(conn, "Chestday", date(2026, 10, 28))
+
+    copied = templates.copy_pending_exercises(conn, today)
+
+    assert copied == 3
+    assert sets_of(conn, today) == [("Bench", 80, 8), ("Bench", 85, 6), ("Dips", None, 10)]
+    assert templates.pending_exercises(conn, today) == []
+
+
+def test_copy_pending_exercises_keeps_what_was_logged_today(conn: sqlite3.Connection) -> None:
+    log(conn, "Chestday", date(2026, 10, 22), ("Bench", 8, 80), ("Dips", 10, None))
+    today = log(conn, "Chestday", date(2026, 10, 28), ("Bench", 8, 82.5))
+
+    assert templates.copy_pending_exercises(conn, today) == 1
+    assert sets_of(conn, today) == [("Bench", 82.5, 8), ("Dips", None, 10)]
+
+
+def test_copy_pending_exercises_without_history_copies_nothing(conn: sqlite3.Connection) -> None:
+    today = repo.create_workout(conn, "Armday", date(2026, 10, 28))
+    assert templates.copy_pending_exercises(conn, today) == 0
+
+
+def test_copy_missing_sets_of_one_exercise(conn: sqlite3.Connection) -> None:
+    log(
+        conn,
+        "Chestday",
+        date(2026, 10, 22),
+        ("Bench", 8, 80),
+        ("Bench", 8, 80),
+        ("Bench", 6, 85),
+        ("Dips", 10, None),
+    )
+    today = log(conn, "Chestday", date(2026, 10, 28), ("Bench", 8, 82.5))
+    bench = repo.get_or_create_exercise(conn, "Bench")
+
+    copied = templates.copy_missing_sets(conn, today, bench.id)
+
+    assert copied == 2  # sets 2 and 3; set 1 was done today
+    assert sets_of(conn, today) == [("Bench", 82.5, 8), ("Bench", 80, 8), ("Bench", 85, 6)]
+    assert [s.set_number for s in repo.list_sets(conn, today.id)] == [1, 2, 3]
+
+
+def test_copy_missing_sets_uses_last_time_of_the_exercise_in_any_workout(
+    conn: sqlite3.Connection,
+) -> None:
+    log(conn, "Upper", date(2026, 10, 20), ("Bench", 5, 90))
+    today = repo.create_workout(conn, "Chestday", date(2026, 10, 28))
+    bench = repo.get_or_create_exercise(conn, "Bench")
+    assert templates.copy_missing_sets(conn, today, bench.id) == 1
+    assert sets_of(conn, today) == [("Bench", 90, 5)]
+
+
+def test_copy_missing_sets_when_nothing_is_missing(conn: sqlite3.Connection) -> None:
+    log(conn, "Chestday", date(2026, 10, 22), ("Bench", 8, 80))
+    today = log(conn, "Chestday", date(2026, 10, 28), ("Bench", 8, 82.5))
+    bench = repo.get_or_create_exercise(conn, "Bench")
+    assert templates.copy_missing_sets(conn, today, bench.id) == 0

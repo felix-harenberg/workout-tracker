@@ -6,7 +6,7 @@ from core import repository as repo
 from core import stats
 from core.models import Workout, WorkoutSet, WorkoutType
 from core.run import format_distance, format_duration, format_pace, pace_s_per_km
-from core.templates import pending_exercises
+from core.templates import copy_pending_exercises, pending_exercises
 from core.training import day_label, format_set_compact, group_sets_by_exercise, workout_title
 from ui import theme
 from ui.app import App
@@ -91,8 +91,22 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
         )
 
     if pending:
+
+        def take_all(_: ft.Event) -> None:
+            copy_pending_exercises(app.conn, workout)
+            app.render()
+
         controls.append(
-            ft.Container(theme.label("Vom letzten Mal"), padding=ft.Padding(4, 12, 0, 0))
+            ft.Container(
+                ft.Row(
+                    [
+                        theme.label("Vom letzten Mal"),
+                        theme.secondary_button("Alles übernehmen", take_all, ft.Icons.DONE_ALL),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                ),
+                padding=ft.Padding(4, 12, 0, 0),
+            )
         )
     for p in pending:
         controls.append(
