@@ -23,7 +23,7 @@ src/
 │   └── run.py           Läufe (nur noch zum Anzeigen alter Läufe)
 ├── ui/              Flet-Screens. Rufen core/ auf, enthalten keine Logik.
 │   ├── app.py           Router: welche Route zeigt welchen Screen
-│   ├── theme.py         Farben, Schriften, Bausteine (Glas-Karte, Button, ...)
+│   ├── theme.py         Farben, Schriften, Bausteine (Abschnitt, Button, ...)
 │   └── *.py             ein Screen pro Datei
 └── assets/          Icon, Splash, Schriften
 tests/               pytest, testet nur core/
@@ -141,9 +141,11 @@ Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`wo
 
 ### Design ([theme.py](../src/ui/theme.py))
 
-Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.glass_card(...)` auf, statt jedes Mal Farben anzugeben. Willst du das Violett ändern, änderst du eine Zeile.
+Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.section(...)` auf, statt jedes Mal Farben anzugeben. Willst du das Blau ändern, änderst du eine Zeile.
 
-**Die Glas-Regel aus deinem Handy-Test:** Echte Unschärfe (`blur`) kostet Leistung, weil bei jedem Bild alles dahinter neu weichgezeichnet wird. Deshalb haben scrollende Karten nur angedeutetes Glas (Verlauf + Rand), und echte Unschärfe gibt es nur beim festen Eingabe-Panel ([`glass_panel`](../src/ui/theme.py#L239)).
+**Der Blog-Look (Branch `design/blog`):** Die App sieht aus wie dein Blog: Schwarz, Weiss und ein Blau, keine Rundungen, kein Glas. Statt Karten trennen dünne Linien die Zeilen, wie die Postliste im Blog. Drei Schriften haben je eine Aufgabe: die kursive Serif für Screen-Titel ([`headline`](../src/ui/theme.py#L186)), die breite fette Sans für Namen von Workouts und Übungen, die Mono-Schrift für Daten, Sätze und Labels. Der blaue Ring mit Zahl ([`count_ring`](../src/ui/theme.py#L156)) kommt von der Post-Anzahl auf der Blog-Startseite.
+
+**Warum feste Schriftdateien:** Archivo, JetBrains Mono und Inter Tight gibt es bei Google Fonts nur als *variable* Schrift (eine Datei, Breite und Dicke stufenlos). Flet kann daraus nicht zuverlässig eine bestimmte Breite wählen. Deshalb liegen in `assets/fonts` feste Ausschnitte, z.B. Archivo mit Breite 125 % und Dicke 800.
 
 ## 8. Tests
 

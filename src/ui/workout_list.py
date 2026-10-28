@@ -7,7 +7,14 @@ from core import repository as repo
 from core.export import export_csv, export_filename
 from core.models import Workout, WorkoutType
 from core.run import run_summary
-from core.training import day_label, month_label, volume_label, workout_title
+from core.training import (
+    count_in_month,
+    day_label,
+    month_label,
+    short_month,
+    volume_label,
+    workout_title,
+)
 from ui import theme
 from ui.app import App
 from ui.weight import weight_page
@@ -16,11 +23,7 @@ TABS = ["Training", "Gewicht"]
 
 
 def workout_list_view(app: App) -> ft.View:
-    """Start screen: two pages to swipe between, Training and Gewicht.
-
-    The pages sit in the content layer of theme.view, so the glow behind them stays put
-    and only the glass cards slide.
-    """
+    """Start screen: two pages to swipe between, Training and Gewicht."""
     today = date.today()
     pages = [_page(_training_page(app, today)), _page(weight_page(app))]
     fab_holder = ft.Container(_fab(app, app.home_tab))
@@ -90,7 +93,7 @@ def _page(controls: list[ft.Control]) -> ft.Container:
 
 
 def _tab(name: str, active: bool, index: int, on_select) -> ft.Container:
-    """Tab label: bright with a violet line when active, grey otherwise. Tap to switch."""
+    """Tab label: bright with a blue line when active, grey otherwise. Tap to switch."""
 
     async def select(_: ft.Event) -> None:
         await on_select(index)
@@ -100,10 +103,9 @@ def _tab(name: str, active: bool, index: int, on_select) -> ft.Container:
             [
                 theme.label(name, color=theme.TEXT if active else theme.TEXT_MUTED),
                 ft.Container(
-                    height=3,
+                    height=2,
                     width=28,
-                    border_radius=2,
-                    bgcolor=theme.VIOLET if active else ft.Colors.TRANSPARENT,
+                    bgcolor=theme.BLUE if active else ft.Colors.TRANSPARENT,
                 ),
             ],
             spacing=6,
@@ -121,8 +123,11 @@ def _fab(app: App, tab: int) -> ft.Control:
 
 
 def _training_page(app: App, today: date) -> list[ft.Control]:
-    content: list[ft.Control] = [theme.headline("Work", "outs")]
     workouts = repo.list_workouts(app.conn)
+    ring = theme.count_ring(
+        count_in_month([w.date for w in workouts], today), f"im {short_month(today)}"
+    )
+    content: list[ft.Control] = [theme.headline("Workouts", ring=ring)]
     if not workouts:
         content.append(theme.muted("Noch keine Workouts. Tippe auf +, um zu starten."))
 
@@ -141,17 +146,25 @@ def _training_page(app: App, today: date) -> list[ft.Control]:
 
 def _workout_card(app: App, workout: Workout, running: bool) -> ft.Control:
     day = day_label(workout.date, date.today())
-    return theme.glass_card(
-        ft.Column(
+    return theme.section(
+        ft.Row(
             [
-                theme.label(
-                    f"{day} · läuft" if running else day,
-                    color=theme.VIOLET_LIGHT if running else theme.TEXT_MUTED,
+                ft.Column(
+                    [
+                        theme.label(
+                            f"{day} · läuft" if running else day,
+                            color=theme.BLUE if running else theme.DIM,
+                        ),
+                        theme.card_name(
+                            workout_title(workout), color=theme.BLUE if running else theme.TEXT
+                        ),
+                        theme.meta(_summary(app, workout)),
+                    ],
+                    spacing=6,
+                    expand=True,
                 ),
-                theme.card_name(workout_title(workout)),
-                theme.muted(_summary(app, workout)),
-            ],
-            spacing=4,
+                theme.arrow(),
+            ]
         ),
         on_click=lambda _: app.go(f"/workout/{workout.id}"),
         highlight=running,

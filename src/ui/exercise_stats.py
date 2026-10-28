@@ -15,13 +15,13 @@ def exercise_stats_view(app: App, exercise: Exercise) -> ft.View:
     controls: list[ft.Control] = [theme.title_headline(exercise.name)]
     if pr is not None:
         controls.append(
-            theme.glass_card(
+            theme.section(
                 ft.Row(
                     [
-                        ft.Icon(ft.Icons.EMOJI_EVENTS, color=theme.VIOLET_LIGHT, size=32),
+                        ft.Icon(ft.Icons.EMOJI_EVENTS, color=theme.BLUE, size=32),
                         ft.Column(
                             [
-                                theme.label("PR", color=theme.VIOLET_LIGHT),
+                                theme.label("PR", color=theme.BLUE),
                                 theme.name(format_set(pr.workout_set), size=26),
                                 theme.muted(day_label(pr.date, date.today()), size=15),
                             ],
@@ -34,7 +34,7 @@ def exercise_stats_view(app: App, exercise: Exercise) -> ft.View:
             )
         )
     controls.append(
-        theme.glass_card(
+        theme.section(
             ft.Column(
                 [
                     theme.label("Schwerstes Gewicht pro Training"),

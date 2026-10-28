@@ -127,6 +127,16 @@ def month_label(day: date, today: date) -> str:
     return name if day.year == today.year else f"{name} {day.year}"
 
 
+def short_month(day: date) -> str:
+    """Three-letter German month, e.g. "Okt"."""
+    return _MONTHS[day.month - 1]
+
+
+def count_in_month(days: list[date], today: date) -> int:
+    """How many of these days fall in today's month, e.g. workouts this month."""
+    return sum(1 for d in days if (d.year, d.month) == (today.year, today.month))
+
+
 def hint_message(hint: WeightHint, today: date) -> str:
     """The next-time reminder as a sentence, e.g. "Mehr Gewicht hast du dir gestern vorgenommen"."""
     amount = "Mehr" if hint.direction == Hint.UP else "Weniger"

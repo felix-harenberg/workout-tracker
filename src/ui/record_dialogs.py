@@ -26,7 +26,11 @@ def _overlay(
     buttons: list[ft.Control],
     warn: bool = False,
 ) -> ft.AlertDialog:
-    """Centered glass card over the dimmed set screen; violet glow, or plain for a warning."""
+    """Centered black card over the dimmed set screen; blue frame, or grey for a warning.
+
+    The set is big in the wide sans, the line below it in the curly serif, like a quote
+    on the blog.
+    """
 
     def centered(text: str, size: int, color: str, font: str | None = None, **style) -> ft.Text:
         return ft.Text(
@@ -37,36 +41,26 @@ def _overlay(
             style=ft.TextStyle(font_family=font, **style),
         )
 
-    glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, theme.VIOLET))
     card = ft.Container(
         padding=ft.Padding(24, 30, 24, 24),
-        border_radius=26,
-        bgcolor=ft.Colors.with_opacity(0.85, "#140C1E"),
-        border=ft.Border.all(
-            1,
-            ft.Colors.with_opacity(0.25, ft.Colors.WHITE)
-            if warn
-            else ft.Colors.with_opacity(0.55, theme.VIOLET),
-        ),
-        shadow=None
-        if warn
-        else ft.BoxShadow(blur_radius=40, color=ft.Colors.with_opacity(0.35, theme.VIOLET)),
-        blur=24,
+        bgcolor=theme.BG,
+        border=ft.Border.all(1, theme.LINE if warn else theme.BLUE),
         content=ft.Column(
             [
                 centered(
                     kicker.upper(),
-                    14,
-                    theme.TEXT_MUTED if warn else theme.VIOLET_LIGHT,
-                    theme.STRONG_FONT,
-                    letter_spacing=3,
+                    13,
+                    theme.TEXT_MUTED if warn else theme.BLUE,
+                    theme.MONO_FONT,
+                    letter_spacing=2,
                 ),
-                ft.Container(height=6),
-                centered(big, 60, theme.TEXT, theme.TITLE_FONT, height=1.15, shadow=glow),
-                centered(exercise_name, 18, theme.TEXT_MUTED, theme.MEDIUM_FONT),
-                centered(detail, 15, theme.TEXT_MUTED),
+                ft.Container(height=8),
+                centered(big, 40, theme.TEXT, theme.NAME_FONT, height=1.1),
+                ft.Container(height=4),
+                centered(exercise_name.upper(), 14, theme.TEXT_MUTED, theme.MONO_FONT),
+                centered(detail, 13, theme.DIM, theme.MONO_FONT),
                 ft.Container(height=14),
-                centered(line, 20, theme.TEXT, theme.STRONG_FONT, height=1.35),
+                centered(line, 28, theme.TEXT, theme.TITLE_FONT, height=1.15),
                 ft.Container(height=14),
                 ft.Row(buttons, spacing=10),
             ],
@@ -87,23 +81,19 @@ def _overlay(
 
 
 def _button(text: str, on_click: Callable, main: bool) -> ft.Container:
-    """Equal-width action: violet for the main one, outlined for the other."""
+    """Equal-width action: blue block for the main one, outlined for the other."""
     return ft.Container(
         content=ft.Text(
             text.upper(),
-            size=15,
-            color=ft.Colors.WHITE if main else theme.TEXT,
+            size=14,
+            color=theme.TEXT,
             text_align=ft.TextAlign.CENTER,
-            style=ft.TextStyle(font_family=theme.STRONG_FONT, letter_spacing=1),
+            style=ft.TextStyle(font_family=theme.MONO_MEDIUM_FONT, letter_spacing=1),
         ),
         expand=True,
         padding=ft.Padding(0, 15, 0, 15),
-        border_radius=14,
-        bgcolor=theme.VIOLET if main else None,
-        border=None if main else ft.Border.all(1, ft.Colors.with_opacity(0.3, ft.Colors.WHITE)),
-        shadow=ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.5, theme.VIOLET))
-        if main
-        else None,
+        bgcolor=theme.BLUE if main else None,
+        border=None if main else ft.Border.all(1, theme.TEXT_MUTED),
         on_click=on_click,
         ink=True,
     )

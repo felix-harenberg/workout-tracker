@@ -20,7 +20,7 @@ def new_workout_view(app: App) -> ft.View:
     name_field.on_submit = lambda _: start(name_field.value or "")
 
     controls: list[ft.Control] = [
-        theme.headline("Neues ", "Workout", size=52),
+        theme.headline("Neues Workout"),
         name_field,
         theme.primary_button("Starten", lambda _: start(name_field.value or "")),
     ]
@@ -35,18 +35,18 @@ def new_workout_view(app: App) -> ft.View:
         last = last.lower() if last in ("Heute", "Gestern") else last
         exercises = f"{t.exercise_count} {'Übung' if t.exercise_count == 1 else 'Übungen'}"
         controls.append(
-            theme.glass_card(
+            theme.section(
                 ft.Row(
                     [
                         ft.Column(
                             [
-                                theme.card_name(t.name, size=26),
+                                theme.card_name(t.name),
                                 theme.muted(f"zuletzt {last}  ·  {exercises}"),
                             ],
                             spacing=2,
                             expand=True,
                         ),
-                        ft.Icon(ft.Icons.REPLAY, color=theme.VIOLET_LIGHT, size=28),
+                        ft.Icon(ft.Icons.REPLAY, color=theme.BLUE, size=28),
                     ]
                 ),
                 on_click=lambda _, name=t.name: start(name),

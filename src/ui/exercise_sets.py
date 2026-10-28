@@ -36,7 +36,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     # The reminder from last time; it is used up by the first set today.
     if hint and hint.workout_id != workout.id and not current:
         info.append(
-            theme.glass_card(
+            theme.section(
                 ft.Row(
                     [
                         theme.hint_glyph(hint.direction, size=22),
@@ -59,8 +59,8 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             ft.Text(
                 f"🏆 PR  {format_set(pr.workout_set)}",
                 size=16,
-                color=theme.VIOLET_LIGHT,
-                style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
+                color=theme.BLUE,
+                style=ft.TextStyle(font_family=theme.MONO_FONT),
             )
         )
 
@@ -72,7 +72,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     if current or last_sets:
         heading = f"Letztes Mal · {day_label(last[0].date, date.today())}" if last else "Heute"
         info.append(
-            theme.glass_card(
+            theme.section(
                 ft.Column(
                     [
                         theme.label(heading),
@@ -171,35 +171,37 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
     def stepper(text: str, field: ft.TextField, change) -> ft.Container:
         return ft.Container(
-            content=ft.Text(text, size=16, color=theme.TEXT, text_align=ft.TextAlign.CENTER),
+            content=ft.Text(
+                text,
+                size=15,
+                color=theme.TEXT,
+                text_align=ft.TextAlign.CENTER,
+                style=ft.TextStyle(font_family=theme.MONO_FONT),
+            ),
             expand=True,
             height=40,
             alignment=ft.Alignment.CENTER,
-            border_radius=12,
-            bgcolor=ft.Colors.with_opacity(0.07, ft.Colors.WHITE),
-            border=ft.Border.all(1, theme.GLASS_BORDER),
+            border=ft.Border.all(1, theme.LINE),
             on_click=lambda _: step(field, change),
             ink=True,
         )
 
     save_button = ft.Container(
-        content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=ft.Colors.WHITE, size=34),
+        content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=theme.TEXT, size=34),
         width=68,
         height=64,
-        border_radius=16,
-        bgcolor=theme.VIOLET,
-        shadow=ft.BoxShadow(blur_radius=24, color=ft.Colors.with_opacity(0.6, theme.VIOLET)),
+        bgcolor=theme.BLUE,
         alignment=ft.Alignment.CENTER,
         tooltip="Satz speichern",
         on_click=add,
         ink=True,
     )
 
-    # Fixed at the bottom, within thumb reach: the one place with real glass blur.
-    panel = theme.glass_panel(
+    # Fixed at the bottom, within thumb reach.
+    panel = theme.panel(
         ft.Column(
             [
-                theme.label(f"Satz {len(current) + 1}", color=theme.VIOLET_LIGHT),
+                theme.label(f"Satz {len(current) + 1}", color=theme.BLUE),
                 ft.Row([weight_field, reps_field, save_button], spacing=10),
                 ft.Row(
                     [
@@ -284,7 +286,7 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
             width=width,
             size=size,
             color=color,
-            style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
+            style=ft.TextStyle(font_family=theme.MONO_FONT),
             expand=width is None,
             **kw,
         )
@@ -324,7 +326,7 @@ def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet])
                 ]
             ),
             padding=ft.Padding(0, 10, 0, 10),
-            border=ft.Border(top=ft.BorderSide(1, ft.Colors.with_opacity(0.08, ft.Colors.WHITE))),
+            border=ft.Border(top=ft.BorderSide(1, theme.LINE)),
             opacity=1 if done else 0.35,
             on_click=(lambda _, s=current[i]: app.page.show_dialog(_edit_set_dialog(app, s)))
             if done
@@ -348,8 +350,7 @@ def _hint_button(direction: Hint, text: str, active: bool, on_toggle) -> ft.Cont
             tight=True,
         ),
         padding=ft.Padding(12, 8, 14, 8),
-        border_radius=12,
-        border=ft.Border.all(1, color if active else theme.GLASS_BORDER),
+        border=ft.Border.all(1, color if active else theme.LINE),
         bgcolor=ft.Colors.with_opacity(0.18, color) if active else None,
         on_click=lambda _: on_toggle(direction),
         ink=True,

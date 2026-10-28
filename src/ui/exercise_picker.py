@@ -49,10 +49,10 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
                     f"+ „{query}“ neu anlegen",
                     on_click=add_new,
                     trailing=ft.Container(),
-                    color=theme.VIOLET_LIGHT,
+                    color=theme.BLUE,
                 )
             )
-        return theme.glass_list(shown) if shown else None
+        return theme.line_list(shown) if shown else None
 
     def filter_list(_: ft.Event) -> None:
         results.content = build((search.value or "").strip())
@@ -69,7 +69,7 @@ def exercise_picker_view(app: App, workout: Workout) -> ft.View:
 
     return theme.view(
         route,
-        [theme.headline("Übung ", "wählen", size=52), search, results],
+        [theme.headline("Übung wählen"), search, results],
         bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
     )

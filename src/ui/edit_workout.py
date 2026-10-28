@@ -63,7 +63,7 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
     return theme.view(
         f"/workout/{workout.id}/edit",
         [
-            theme.headline("", "Bearbeiten", size=52),
+            theme.headline("Bearbeiten"),
             name_field,
             ft.Row([theme.label("Datum"), date_button], spacing=16),
             *(run_fields.controls if run_fields else []),

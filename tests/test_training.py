@@ -4,6 +4,7 @@ import pytest
 
 from core.models import Workout, WorkoutSet
 from core.training import (
+    count_in_month,
     date_from_picker,
     day_label,
     format_date,
@@ -15,6 +16,7 @@ from core.training import (
     month_label,
     parse_reps,
     parse_weight,
+    short_month,
     step_reps,
     step_weight,
     suggest_next_set,
@@ -232,3 +234,14 @@ def test_step_weight(text: str, delta: float, result: str) -> None:
 )
 def test_step_reps(text: str, delta: int, result: str) -> None:
     assert step_reps(text, delta) == result
+
+
+def test_short_month() -> None:
+    assert short_month(date(2026, 3, 1)) == "Mär"
+    assert short_month(date(2026, 10, 28)) == "Okt"
+
+
+def test_count_in_month() -> None:
+    days = [date(2026, 10, 1), date(2026, 10, 28), date(2026, 9, 30), date(2025, 10, 5)]
+    assert count_in_month(days, today=date(2026, 10, 28)) == 2
+    assert count_in_month([], today=date(2026, 10, 28)) == 0

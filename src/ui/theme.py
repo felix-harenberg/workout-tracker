@@ -1,51 +1,57 @@
-"""Visual design: dark, neon violet, glass.
+"""Visual design: black, white, one blue. Same look as the blog felix-harenberg.github.io.
 
-Tokens and rules come from docs/design/design.md on the ideas/design branch. Glass follows
-the rule tested on the phone: anything that scrolls gets the suggested glass (gradient fill
-and border, no blur); real blur only on fixed panels, at most one or two per screen.
+Tokens come from the blog's assets/css/site.css. No glass, no glow, no round corners:
+thin lines separate things, blue marks only what matters (today, records, buttons, arrows).
+Screen titles are the curly italic serif; workout and exercise names the wide bold sans;
+dates, sets and labels the mono font.
 """
 
 from collections.abc import Callable
 
 import flet as ft
 
-BG = "#07060A"
-TEXT = "#F3EEFC"
-TEXT_MUTED = ft.Colors.with_opacity(0.55, TEXT)
-VIOLET = "#B026FF"
-VIOLET_LIGHT = "#D27BFF"
-VIOLET_DEEP = "#5A1BFF"
-GLASS_BORDER = ft.Colors.with_opacity(0.18, ft.Colors.WHITE)
+BG = "#141414"
+TEXT = "#F4F4F1"
+TEXT_MUTED = "#B9B9B6"  # running text, secondary lines
+DIM = "#6F6F6C"  # small labels
+LINE = "#333333"  # hairlines between rows
+BLUE = "#1F5FFF"
 UP_COLOR = "#3DDC84"  # ▲ more weight next time
 DOWN_COLOR = "#FF5A6E"  # ▼ less weight next time
 
 FONTS = {
-    "Anton": "fonts/Anton-Regular.ttf",
-    "Inter": "fonts/Inter-Regular.ttf",
-    "Inter SemiBold": "fonts/Inter-SemiBold.ttf",
-    "Inter ExtraBold": "fonts/Inter-ExtraBold.ttf",
+    "Instrument Serif": "fonts/InstrumentSerif-Italic.ttf",
+    "Archivo Expanded": "fonts/ArchivoExpanded-ExtraBold.ttf",
+    "Archivo Expanded Bold": "fonts/ArchivoExpanded-Bold.ttf",
+    "Inter Tight": "fonts/InterTight-Regular.ttf",
+    "Inter Tight SemiBold": "fonts/InterTight-SemiBold.ttf",
+    "JetBrains Mono": "fonts/JetBrainsMono-Regular.ttf",
+    "JetBrains Mono Medium": "fonts/JetBrainsMono-Medium.ttf",
 }
-TITLE_FONT = "Anton"
-STRONG_FONT = "Inter ExtraBold"  # names and numbers
-MEDIUM_FONT = "Inter SemiBold"
-SIDE_PADDING = 20  # space between screen edge and cards
+TITLE_FONT = "Instrument Serif"  # screen titles: "Workouts", "Statistik"
+NAME_FONT = "Archivo Expanded"  # workout and exercise names, big numbers
+STRONG_FONT = "Archivo Expanded Bold"  # names in lists, values
+MEDIUM_FONT = "Inter Tight SemiBold"
+MONO_FONT = "JetBrains Mono"  # labels, dates, sets
+MONO_MEDIUM_FONT = "JetBrains Mono Medium"  # buttons
+SIDE_PADDING = 20  # space between screen edge and content
 
 
 def apply(page: ft.Page) -> None:
     page.fonts = FONTS
     page.theme_mode = ft.ThemeMode.DARK
     page.dark_theme = page.theme = ft.Theme(
-        font_family="Inter",
+        font_family="Inter Tight",
         scaffold_bgcolor=BG,
         color_scheme=ft.ColorScheme(
-            primary=VIOLET,
-            on_primary=ft.Colors.WHITE,
-            secondary=VIOLET_LIGHT,
+            primary=BLUE,
+            on_primary=TEXT,
+            secondary=BLUE,
             surface=BG,
             on_surface=TEXT,
             on_surface_variant=TEXT_MUTED,
-            outline=GLASS_BORDER,
-            outline_variant=ft.Colors.with_opacity(0.08, ft.Colors.WHITE),
+            outline=LINE,
+            outline_variant=LINE,
         ),
     )
     page.bgcolor = BG
@@ -54,20 +60,6 @@ def apply(page: ft.Page) -> None:
 async def lock_portrait(page: ft.Page) -> None:
     if page.platform in (ft.PagePlatform.ANDROID, ft.PagePlatform.IOS):
         await page.set_allowed_device_orientations([ft.DeviceOrientation.PORTRAIT_UP])
-
-
-def _glow(center: ft.Alignment, radius: float, color: str, opacity: float) -> ft.Container:
-    return ft.Container(
-        left=0,
-        top=0,
-        right=0,
-        bottom=0,
-        gradient=ft.RadialGradient(
-            center=center,
-            radius=radius,
-            colors=[ft.Colors.with_opacity(opacity, color), ft.Colors.with_opacity(0, color)],
-        ),
-    )
 
 
 def view(
@@ -79,24 +71,21 @@ def view(
     edge_to_edge: bool = False,
     **kwargs,
 ) -> ft.View:
-    """A full-screen page: glow spots top right and bottom left, then the bar and the content.
+    """A full-screen page on plain black: the bar, then the content.
 
     With `edge_to_edge`, the content uses the full screen width and brings its own side
     padding. Swipe pages need that: they must slide out over the screen edge instead of
     being cut off 20 px inside it.
 
-    The glow sits in its own layers behind everything, including the bar, so there is no
-    edge below the bar (a Flet AppBar paints its own background, and a gradient in
-    `View.decoration` did not render on the phone). Content scrolls without a scrollbar,
-    which would otherwise cut into the cards. The floating button (`fab`) sits on top,
-    bottom right, with room left below the content so it never covers the last card.
+    Content scrolls without a scrollbar. The floating button (`fab`) sits on top, bottom
+    right, with room left below the content so it never covers the last row.
     """
     if fab is not None and scroll:  # pages that scroll themselves leave their own room
         controls = [*controls, ft.Container(height=88)]
     body = ft.Column(
         controls,
         spacing=12,
-        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # cards use the full width
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,  # rows use the full width
         scroll=ft.ScrollMode.HIDDEN if scroll else None,
         expand=True,
     )
@@ -120,11 +109,7 @@ def view(
             )
         ),
     )
-    layers: list[ft.Control] = [
-        _glow(ft.Alignment(1.0, -1.0), 1.3, VIOLET, 0.45),
-        _glow(ft.Alignment(-1.0, 1.0), 1.2, VIOLET_DEEP, 0.30),
-        content,
-    ]
+    layers: list[ft.Control] = [content]
     if fab is not None:
         layers.append(ft.Container(fab, right=20, bottom=32))
     return ft.View(
@@ -137,14 +122,12 @@ def view(
 
 
 def icon_button(icon: str, on_click: Callable, tooltip: str) -> ft.Container:
-    """Round glass button for the top bar (back, edit, delete, ...)."""
+    """Square outlined button for the top bar (back, edit, delete, ...)."""
     return ft.Container(
         content=ft.Icon(icon, size=20, color=TEXT),
         width=44,
         height=44,
-        border_radius=22,
-        bgcolor=ft.Colors.with_opacity(0.06, ft.Colors.WHITE),
-        border=ft.Border.all(1, GLASS_BORDER),
+        border=ft.Border.all(1, LINE),
         alignment=ft.Alignment.CENTER,
         tooltip=tooltip,
         on_click=on_click,
@@ -157,7 +140,7 @@ def top_bar(
     actions: list[ft.Control] | None = None,
     left: ft.Control | None = None,
 ) -> ft.Row:
-    """Back arrow (or `left`, e.g. tabs) on the left, actions on the right. Inside the glow."""
+    """Back arrow (or `left`, e.g. tabs) on the left, actions on the right."""
     if left is None:
         left = icon_button(ft.Icons.ARROW_BACK, on_back, "Zurück") if on_back else ft.Container()
     return ft.Row(
@@ -170,65 +153,110 @@ def top_bar(
     )
 
 
-def headline(text: str, accent: str = "", overline: str = "", size: int = 60) -> ft.Control:
-    """Big Anton title in capitals on one line; `accent` follows directly and glows violet.
-
-    headline("Work", "outs") gives WORKOUTS with OUTS in violet. Long titles wrap.
-    """
-    glow = ft.BoxShadow(blur_radius=18, color=ft.Colors.with_opacity(0.8, VIOLET))
-    base = ft.TextStyle(
-        font_family=TITLE_FONT, size=size, height=1.05, color=TEXT, letter_spacing=0.5
-    )
-    title = ft.Text(
-        spans=[
-            ft.TextSpan(text.upper(), style=base),
-            ft.TextSpan(
-                accent.upper(),
-                style=ft.TextStyle(
-                    font_family=TITLE_FONT,
-                    size=size,
-                    height=1.05,
-                    color=VIOLET_LIGHT,
-                    letter_spacing=0.5,
-                    shadow=glow,
+def count_ring(number: int, caption: str) -> ft.Container:
+    """Blue ring with a big number, like the post count on the blog's start page."""
+    return ft.Container(
+        content=ft.Column(
+            [
+                ft.Text(
+                    str(number),
+                    size=30 if number < 100 else 22,
+                    color=BLUE,
+                    style=ft.TextStyle(font_family=NAME_FONT, height=1),
                 ),
-            ),
-        ]
+                ft.Text(
+                    caption.upper(),
+                    size=8,
+                    color=BLUE,
+                    style=ft.TextStyle(font_family=MONO_FONT, letter_spacing=0.5),
+                ),
+            ],
+            spacing=2,
+            tight=True,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        ),
+        width=76,
+        height=76,
+        shape=ft.BoxShape.CIRCLE,
+        border=ft.Border.all(3, BLUE),
+        alignment=ft.Alignment.CENTER,
     )
-    # The scroll view clips at its top edge, and Anton's umlaut dots reach above the line box.
-    # Room above the title keeps the dots of Ü and Ä inside the scrolled content.
-    column = ft.Column([label(overline), title] if overline else [title], spacing=2)
-    return ft.Container(column, padding=ft.Padding(0, 14, 0, 4))
+
+
+def headline(
+    text: str, overline: str = "", size: int = 64, ring: ft.Control | None = None
+) -> ft.Control:
+    """Screen title in the curly italic serif, with a hairline below, like the blog hero.
+
+    `ring` (see count_ring) sits on the right of the title.
+    """
+    title = ft.Text(
+        text,
+        size=size,
+        color=TEXT,
+        style=ft.TextStyle(font_family=TITLE_FONT, height=1.0),
+    )
+    head: ft.Control = title
+    if ring is not None:
+        # expand only inside the row: in a scrolling column it would break the layout
+        head = ft.Row(
+            [ft.Container(title, expand=True), ring],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+    column = ft.Column([label(overline), head] if overline else [head], spacing=4)
+    return ft.Container(
+        column,
+        padding=ft.Padding(0, 10, 0, 14),
+        border=ft.Border(bottom=ft.BorderSide(1, LINE)),
+    )
 
 
 def title_headline(title: str, overline: str = "") -> ft.Control:
-    """A workout or exercise name as a headline; the last word glows violet."""
-    *rest, last = title.split() or [""]
-    return headline(" ".join(rest) + " " if rest else "", last, overline=overline, size=52)
-
-
-def label(text: str, color: str = TEXT_MUTED) -> ft.Text:
-    """Small capitals with wide spacing, e.g. above a title or a number."""
-    return ft.Text(
-        text.upper(),
-        size=13,
-        color=color,
-        style=ft.TextStyle(font_family=MEDIUM_FONT, letter_spacing=2),
+    """A workout or exercise name as the page title: wide bold sans in capitals."""
+    column = ft.Column(
+        [*([label(overline)] if overline else []), card_name(title, size=32)], spacing=6
+    )
+    return ft.Container(
+        column,
+        padding=ft.Padding(0, 14, 0, 16),
+        border=ft.Border(bottom=ft.BorderSide(1, LINE)),
     )
 
 
-def name(text: str, size: int = 24, color: str = TEXT) -> ft.Text:
-    """Name in bold, for list rows."""
-    return ft.Text(text, size=size, color=color, style=ft.TextStyle(font_family=STRONG_FONT))
+def label(text: str, color: str = DIM) -> ft.Text:
+    """Small mono capitals, e.g. above a title, a date or a table column."""
+    return ft.Text(
+        text.upper(),
+        size=12,
+        color=color,
+        style=ft.TextStyle(font_family=MONO_FONT, letter_spacing=0.8),
+    )
 
 
-def card_name(text: str, size: int = 30) -> ft.Text:
-    """Workout or exercise name on a card: Anton in capitals, like the title."""
+def meta(text: str, color: str = TEXT_MUTED) -> ft.Text:
+    """Secondary line under a name in mono capitals, e.g. "6 Übungen · 25 Sätze"."""
+    return ft.Text(
+        text.upper(),
+        size=12,
+        color=color,
+        style=ft.TextStyle(font_family=MONO_FONT, letter_spacing=0.4),
+    )
+
+
+def name(text: str, size: int = 18, color: str = TEXT) -> ft.Text:
+    """Name or value in the wide bold sans, for list rows."""
+    return ft.Text(
+        text.upper(), size=size, color=color, style=ft.TextStyle(font_family=STRONG_FONT)
+    )
+
+
+def card_name(text: str, size: int = 20, color: str = TEXT) -> ft.Text:
+    """Workout or exercise name: wide extra bold sans in capitals."""
     return ft.Text(
         text.upper(),
         size=size,
-        color=TEXT,
-        style=ft.TextStyle(font_family=TITLE_FONT, letter_spacing=0.5, height=1.1),
+        color=color,
+        style=ft.TextStyle(font_family=NAME_FONT, height=1.05),
     )
 
 
@@ -236,76 +264,72 @@ def muted(text: str, size: int = 17) -> ft.Text:
     return ft.Text(text, size=size, color=TEXT_MUTED)
 
 
+def arrow(color: str = BLUE) -> ft.Text:
+    """The blog's → at the end of a tappable row."""
+    return ft.Text("→", size=22, color=color)
+
+
 def chip(text: str, highlight: bool = False) -> ft.Container:
-    """Round pill for a set, e.g. "82.5 × 8"; the PR gets a violet border and text."""
+    """Square outlined box for a set, e.g. "82.5 × 8"; the PR is blue."""
     return ft.Container(
         content=ft.Text(
             text,
-            size=16,
-            color=VIOLET_LIGHT if highlight else TEXT,
-            style=ft.TextStyle(font_family=MEDIUM_FONT),
+            size=15,
+            color=BLUE if highlight else TEXT,
+            style=ft.TextStyle(font_family=MONO_FONT),
         ),
-        padding=ft.Padding(14, 7, 14, 7),
-        border_radius=999,
-        bgcolor=ft.Colors.with_opacity(0.07, ft.Colors.WHITE),
-        border=ft.Border.all(
-            1, VIOLET if highlight else ft.Colors.with_opacity(0.12, ft.Colors.WHITE)
-        ),
+        padding=ft.Padding(10, 6, 10, 6),
+        border=ft.Border.all(1, BLUE if highlight else LINE),
     )
 
 
 def chips(texts: list[str], highlighted: int | None = None) -> ft.Row:
-    """Set chips; the one at index `highlighted` (e.g. the PR) glows violet."""
+    """Set chips; the one at index `highlighted` (e.g. the PR) is blue."""
     return ft.Row(
         [chip(t, highlight=i == highlighted) for i, t in enumerate(texts)],
         wrap=True,
-        spacing=8,
-        run_spacing=8,
+        spacing=6,
+        run_spacing=6,
     )
 
 
-def glass_card(
+def section(
     content: ft.Control,
     on_click: Callable | None = None,
     highlight: bool = False,
     padding: int | ft.Padding = 16,
     border_color: str | None = None,
 ) -> ft.Container:
-    """Suggested glass without blur, safe in scrolling lists. `highlight`: violet border + glow."""
+    """A block with a hairline on top, like a post row on the blog. No box around it.
+
+    Only the vertical part of `padding` is used: content lines up with the title.
+    `highlight` or `border_color` makes the top line thicker and colored.
+    """
+    if isinstance(padding, int):
+        padding = ft.Padding(0, padding, 0, padding)
+    else:
+        padding = ft.Padding(0, padding.top, 0, padding.bottom)
+    color = border_color or (BLUE if highlight else LINE)
     return ft.Container(
         content=content,
         padding=padding,
-        border_radius=20,
-        border=ft.Border.all(
-            1,
-            border_color or (ft.Colors.with_opacity(0.6, VIOLET) if highlight else GLASS_BORDER),
-        ),
-        gradient=ft.LinearGradient(
-            begin=ft.Alignment.TOP_LEFT,
-            end=ft.Alignment.BOTTOM_RIGHT,
-            colors=[
-                ft.Colors.with_opacity(0.11, ft.Colors.WHITE),
-                ft.Colors.with_opacity(0.03, ft.Colors.WHITE),
-            ],
-        ),
-        shadow=ft.BoxShadow(blur_radius=22, color=ft.Colors.with_opacity(0.25, VIOLET))
-        if highlight
-        else None,
+        border=ft.Border(top=ft.BorderSide(2 if color != LINE else 1, color)),
         on_click=on_click,
         ink=on_click is not None,
     )
 
 
-def glass_list(rows: list[ft.Control]) -> ft.Container:
-    """One glass card holding rows separated by thin lines, like the picker in the design."""
+def line_list(rows: list[ft.Control]) -> ft.Container:
+    """Rows separated by hairlines, with a line above the first and below the last."""
     separated: list[ft.Control] = []
     for i, row in enumerate(rows):
         if i:
-            separated.append(
-                ft.Divider(height=1, color=ft.Colors.with_opacity(0.07, ft.Colors.WHITE))
-            )
+            separated.append(ft.Divider(height=1, thickness=1, color=LINE))
         separated.append(row)
-    return glass_card(ft.Column(separated, spacing=0), padding=ft.Padding(0, 4, 0, 4))
+    return ft.Container(
+        ft.Column(separated, spacing=0),
+        border=ft.Border(top=ft.BorderSide(1, LINE), bottom=ft.BorderSide(1, LINE)),
+    )
 
 
 def list_row(
@@ -315,102 +339,95 @@ def list_row(
     trailing: ft.Control | None = None,
     color: str = TEXT,
 ) -> ft.Container:
-    """A row in a glass_list: name, small grey line below, chevron on the right."""
+    """A row in a line_list: name, small mono line below, blue arrow on the right."""
     if isinstance(subtitle, str):
-        subtitle = muted(subtitle, size=15)
-    texts: list[ft.Control] = [name(title, size=19, color=color)]
+        subtitle = meta(subtitle)
+    texts: list[ft.Control] = [name(title, size=16, color=color)]
     if subtitle is not None:
         texts.append(subtitle)
     if trailing is None and on_click is not None:
-        trailing = ft.Icon(ft.Icons.CHEVRON_RIGHT, color=TEXT_MUTED)
+        trailing = arrow()
     return ft.Container(
         content=ft.Row(
-            [ft.Column(texts, spacing=2, expand=True), *([trailing] if trailing else [])]
+            [ft.Column(texts, spacing=4, expand=True), *([trailing] if trailing else [])]
         ),
-        padding=ft.Padding(16, 14, 14, 14),
+        padding=ft.Padding(0, 14, 0, 14),
         on_click=on_click,
         ink=on_click is not None,
     )
 
 
-def glass_panel(content: ft.Control) -> ft.Container:
-    """Real glass with blur. Only for fixed panels that do not scroll."""
+def panel(content: ft.Control) -> ft.Container:
+    """Fixed panel at the bottom of a screen: black with a line on top."""
     return ft.Container(
         content=content,
-        padding=16,
-        border_radius=22,
-        border=ft.Border.all(1, GLASS_BORDER),
-        bgcolor=ft.Colors.with_opacity(0.08, ft.Colors.WHITE),
-        blur=18,
+        padding=ft.Padding(0, 14, 0, 4),
+        bgcolor=BG,
+        border=ft.Border(top=ft.BorderSide(1, LINE)),
+    )
+
+
+def _button_text(text: str, color: str, size: int = 15) -> ft.Text:
+    return ft.Text(
+        text.upper(),
+        size=size,
+        color=color,
+        style=ft.TextStyle(font_family=MONO_MEDIUM_FONT, letter_spacing=1),
     )
 
 
 def primary_button(text: str, on_click: Callable, icon: str | None = None) -> ft.Container:
-    """Violet button with a glow, full width and tall, easy to hit with the thumb."""
+    """Blue block, full width and tall, easy to hit with the thumb."""
     content: list[ft.Control] = []
     if icon:
-        content.append(ft.Icon(icon, color=ft.Colors.WHITE, size=20))
-    content.append(
-        ft.Text(
-            text.upper(),
-            color=ft.Colors.WHITE,
-            size=17,
-            style=ft.TextStyle(font_family=STRONG_FONT, letter_spacing=2),
-        )
-    )
+        content.append(ft.Icon(icon, color=TEXT, size=20))
+    content.append(_button_text(text, TEXT, size=16))
     return ft.Container(
         content=ft.Row(content, alignment=ft.MainAxisAlignment.CENTER, spacing=8),
-        bgcolor=VIOLET,
-        border_radius=18,
-        height=60,
-        shadow=ft.BoxShadow(blur_radius=28, color=ft.Colors.with_opacity(0.6, VIOLET)),
+        bgcolor=BLUE,
+        height=58,
         on_click=on_click,
         ink=True,
     )
 
 
 def text_field(**kwargs) -> ft.TextField:
-    """Input on a faint glass fill with a violet focus border."""
+    """Input with a thin square border that turns blue on focus."""
     kwargs.setdefault("text_style", ft.TextStyle(size=18, font_family=MEDIUM_FONT))
     return ft.TextField(
-        filled=True,
-        fill_color=ft.Colors.with_opacity(0.06, ft.Colors.WHITE),
-        border_radius=18,
-        border_color=GLASS_BORDER,
-        focused_border_color=VIOLET,
-        cursor_color=VIOLET_LIGHT,
+        border_radius=0,
+        border_color=LINE,
+        focused_border_color=BLUE,
+        cursor_color=BLUE,
         **kwargs,
     )
 
 
 def fab(on_click: Callable, tooltip: str, text: str | None = None) -> ft.Container:
-    """Round violet + with a glow; with `text` a wide pill, e.g. "+ ÜBUNG"."""
-    glow = ft.BoxShadow(blur_radius=28, color=ft.Colors.with_opacity(0.7, VIOLET))
+    """Blue square with +; with `text` a wide block, e.g. "+ ÜBUNG"."""
     if text is None:
         return ft.Container(
-            content=ft.Icon(ft.Icons.ADD, color=ft.Colors.WHITE, size=34),
-            width=64,
-            height=64,
-            border_radius=32,
-            bgcolor=VIOLET,
-            shadow=glow,
+            content=ft.Icon(ft.Icons.ADD, color=TEXT, size=32),
+            width=60,
+            height=60,
+            bgcolor=BLUE,
             alignment=ft.Alignment.CENTER,
             tooltip=tooltip,
             on_click=on_click,
             ink=True,
         )
     return ft.Container(
-        content=ft.Text(
-            f"+ {text.upper()}",
-            size=17,
-            color=ft.Colors.WHITE,
-            style=ft.TextStyle(font_family=STRONG_FONT, letter_spacing=1),
+        content=ft.Row(
+            [
+                ft.Text("+", size=24, color=TEXT, style=ft.TextStyle(font_family=NAME_FONT)),
+                _button_text(text, TEXT),
+            ],
+            spacing=10,
+            tight=True,
         ),
-        height=64,
-        padding=ft.Padding(26, 0, 26, 0),
-        border_radius=32,
-        bgcolor=VIOLET,
-        shadow=glow,
+        height=60,
+        padding=ft.Padding(22, 0, 24, 0),
+        bgcolor=BLUE,
         alignment=ft.Alignment.CENTER,
         tooltip=tooltip,
         on_click=on_click,
@@ -428,24 +445,15 @@ def hint_glyph(direction: str, size: int = 16) -> ft.Text:
 
 
 def secondary_button(text: str, on_click: Callable, icon: str | None = None) -> ft.Container:
-    """Small violet-outlined pill for side actions, e.g. "Alles übernehmen"."""
+    """Small blue-outlined box for side actions, e.g. "Alles übernehmen"."""
     content: list[ft.Control] = []
     if icon:
-        content.append(ft.Icon(icon, color=VIOLET_LIGHT, size=18))
-    content.append(
-        ft.Text(
-            text.upper(),
-            size=14,
-            color=VIOLET_LIGHT,
-            style=ft.TextStyle(font_family=STRONG_FONT, letter_spacing=1),
-        )
-    )
+        content.append(ft.Icon(icon, color=BLUE, size=18))
+    content.append(_button_text(text, BLUE, size=13))
     return ft.Container(
         content=ft.Row(content, spacing=6, tight=True),
-        padding=ft.Padding(14, 9, 16, 9),
-        border_radius=999,
-        border=ft.Border.all(1, ft.Colors.with_opacity(0.6, VIOLET)),
-        bgcolor=ft.Colors.with_opacity(0.10, VIOLET),
+        padding=ft.Padding(12, 8, 14, 8),
+        border=ft.Border.all(1, BLUE),
         on_click=on_click,
         ink=True,
     )

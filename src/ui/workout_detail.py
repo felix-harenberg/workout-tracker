@@ -75,10 +75,10 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
         exercise = repo.get_exercise(app.conn, exercise_id)
         assert exercise is not None
         controls.append(
-            theme.glass_card(
+            theme.section(
                 ft.Column(
                     [
-                        theme.card_name(exercise.name, size=26),
+                        theme.card_name(exercise.name),
                         theme.chips(
                             [format_set_compact(s) for s in sets],
                             highlighted=_pr_index(app, exercise_id, sets),
@@ -111,12 +111,12 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
     for p in pending:
         controls.append(
             ft.Container(
-                theme.glass_card(
+                theme.section(
                     ft.Row(
                         [
                             ft.Column(
                                 [
-                                    theme.card_name(p.exercise.name, size=26),
+                                    theme.card_name(p.exercise.name),
                                     theme.muted(
                                         "  ·  ".join(format_set_compact(s) for s in p.last_sets)
                                     ),
@@ -124,7 +124,7 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
                                 spacing=4,
                                 expand=True,
                             ),
-                            ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=theme.VIOLET_LIGHT, size=32),
+                            ft.Icon(ft.Icons.PLAY_ARROW_ROUNDED, color=theme.BLUE, size=32),
                         ]
                     ),
                     on_click=lambda _, eid=p.exercise.id: app.go(f"{route}/exercise/{eid}"),
@@ -144,7 +144,7 @@ def _run_controls(app: App, workout: Workout) -> list[ft.Control]:
         ("Pace", format_pace(pace_s_per_km(run.distance_km, run.duration_s))),
     ]
     return [
-        theme.glass_card(
+        theme.section(
             ft.Column(
                 [
                     ft.Row(

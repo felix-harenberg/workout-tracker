@@ -16,7 +16,7 @@ from ui.charts import date_line_chart
 
 def weight_page(app: App) -> list[ft.Control]:
     """Controls of the "Gewicht" page: current weight, distance to goal, chart, history."""
-    controls: list[ft.Control] = [theme.headline("", "Gewicht")]
+    controls: list[ft.Control] = [theme.headline("Gewicht")]
     latest = bw.latest_weight(app.conn)
     if latest is None:
         controls.append(theme.muted("Noch kein Gewicht eingetragen. Tippe auf + GEWICHT."))
@@ -25,7 +25,7 @@ def weight_page(app: App) -> list[ft.Control]:
     goal = bw.get_goal(app.conn)
     day, kg = latest
     controls.append(
-        theme.glass_card(
+        theme.section(
             ft.Column(
                 [
                     theme.label(f"Körpergewicht · {day_label(day, date.today())}"),
@@ -35,7 +35,7 @@ def weight_page(app: App) -> list[ft.Control]:
                                 format_weight(kg),
                                 size=64,
                                 color=theme.TEXT,
-                                style=ft.TextStyle(font_family=theme.TITLE_FONT, height=1.1),
+                                style=ft.TextStyle(font_family=theme.NAME_FONT, height=1.1),
                             ),
                             ft.Text("kg", size=22, color=theme.TEXT_MUTED),
                         ],
@@ -45,7 +45,7 @@ def weight_page(app: App) -> list[ft.Control]:
                     ft.Text(
                         bw.goal_label(kg, goal),
                         size=17,
-                        color=theme.VIOLET_LIGHT if goal is not None else theme.TEXT_MUTED,
+                        color=theme.BLUE if goal is not None else theme.TEXT_MUTED,
                         style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
                     ),
                 ],
@@ -67,7 +67,7 @@ def weight_page(app: App) -> list[ft.Control]:
     )
     points = bw.list_weights(app.conn, since=bw.period_start(app.weight_period, date.today()))
     controls.append(
-        theme.glass_card(
+        theme.section(
             date_line_chart(points, lambda v: f"{format_weight(v)} kg", goal=goal, color=theme.TEXT)
             if len(points) >= 1
             else theme.muted("Keine Einträge in diesem Zeitraum.")
@@ -77,7 +77,7 @@ def weight_page(app: App) -> list[ft.Control]:
     history = list(reversed(bw.list_weights(app.conn)))[:6]
     controls.append(ft.Container(theme.label("Verlauf"), padding=ft.Padding(4, 12, 0, 0)))
     controls.append(
-        theme.glass_list(
+        theme.line_list(
             [
                 theme.list_row(
                     f"{format_weight(entry_kg)} kg",
@@ -97,13 +97,12 @@ def _period_pill(period: str, active: bool, on_pick) -> ft.Container:
         content=ft.Text(
             period,
             size=15,
-            color=ft.Colors.WHITE if active else theme.TEXT_MUTED,
-            style=ft.TextStyle(font_family=theme.MEDIUM_FONT),
+            color=theme.TEXT if active else theme.TEXT_MUTED,
+            style=ft.TextStyle(font_family=theme.MONO_FONT),
         ),
-        padding=ft.Padding(16, 8, 16, 8),
-        border_radius=999,
-        bgcolor=theme.VIOLET if active else ft.Colors.with_opacity(0.07, ft.Colors.WHITE),
-        border=None if active else ft.Border.all(1, theme.GLASS_BORDER),
+        padding=ft.Padding(14, 8, 14, 8),
+        bgcolor=theme.BLUE if active else None,
+        border=ft.Border.all(1, theme.BLUE if active else theme.LINE),
         on_click=lambda _: on_pick(period),
         ink=True,
     )
@@ -160,7 +159,7 @@ def weigh_view(app: App) -> ft.View:
         hint_text="kg",
         keyboard_type=ft.KeyboardType.NUMBER,
         text_align=ft.TextAlign.CENTER,
-        text_style=ft.TextStyle(font_family=theme.TITLE_FONT, size=56),
+        text_style=ft.TextStyle(font_family=theme.NAME_FONT, size=56),
         suffix=ft.Text("kg", size=20, color=theme.TEXT_MUTED),
     )
 
@@ -171,13 +170,17 @@ def weigh_view(app: App) -> ft.View:
     def step_button(delta: float) -> ft.Container:
         text = f"+{format_weight(delta)}" if delta > 0 else f"−{format_weight(-delta)}"
         return ft.Container(
-            content=ft.Text(text, size=17, color=theme.TEXT, text_align=ft.TextAlign.CENTER),
+            content=ft.Text(
+                text,
+                size=16,
+                color=theme.TEXT,
+                text_align=ft.TextAlign.CENTER,
+                style=ft.TextStyle(font_family=theme.MONO_FONT),
+            ),
             expand=True,
             height=48,
             alignment=ft.Alignment.CENTER,
-            border_radius=14,
-            bgcolor=ft.Colors.with_opacity(0.07, ft.Colors.WHITE),
-            border=ft.Border.all(1, theme.GLASS_BORDER),
+            border=ft.Border.all(1, theme.LINE),
             on_click=lambda _: step(delta),
             ink=True,
         )
@@ -195,8 +198,8 @@ def weigh_view(app: App) -> ft.View:
         app.back()
 
     controls: list[ft.Control] = [
-        theme.headline("", "Wiegen", overline=day_label(today, today)),
-        theme.glass_card(
+        theme.headline("Wiegen", overline=day_label(today, today)),
+        theme.section(
             ft.Column(
                 [
                     field,
@@ -216,13 +219,13 @@ def weigh_view(app: App) -> ft.View:
         controls.append(theme.muted(note, size=15))
 
     controls.append(
-        theme.glass_list(
+        theme.line_list(
             [
                 theme.list_row(
                     "Ziel",
                     f"{format_weight(goal)} kg" if goal is not None else "Noch kein Ziel",
                     on_click=lambda _: _goal_dialog(app),
-                    trailing=ft.Text("ändern ›", size=15, color=theme.VIOLET_LIGHT),
+                    trailing=ft.Text("ändern ›", size=15, color=theme.BLUE),
                 )
             ]
         )

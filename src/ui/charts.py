@@ -8,7 +8,7 @@ import flet as ft
 import flet_charts as fc
 
 from core.scale import axis_range, nice_step
-from ui.theme import TEXT_MUTED, VIOLET_LIGHT
+from ui.theme import BLUE, TEXT_MUTED
 
 CHART_HEIGHT = 220
 
@@ -54,7 +54,7 @@ def date_line_chart(
 ) -> ft.Control:
     """Line chart over time; x is days since the first point so gaps show as gaps.
 
-    With `goal`, a dashed violet line marks it; the axis includes it, so it never sits
+    With `goal`, a dashed blue line marks it; the axis includes it, so it never sits
     on the edge of the chart.
     """
     if not points:
@@ -92,7 +92,7 @@ def date_line_chart(
                     fc.LineChartDataPoint(x=0, y=goal, show_tooltip=False),
                     fc.LineChartDataPoint(x=last_x, y=goal, show_tooltip=False),
                 ],
-                color=VIOLET_LIGHT,
+                color=BLUE,
                 stroke_width=2,
                 dash_pattern=[8, 6],
                 point=False,
@@ -147,7 +147,7 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
                         to_y=value,
                         width=14,
                         color=ft.Colors.PRIMARY,
-                        border_radius=3,
+                        border_radius=0,
                         tooltip=fc.BarChartRodTooltip(text=tooltip, text_style=TOOLTIP_TEXT),
                     )
                 ],

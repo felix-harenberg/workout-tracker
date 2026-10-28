@@ -21,6 +21,13 @@ def stats_view(app: App) -> ft.View:
         for w in weeks
     ]
 
+    # The ring shows the newest week's sets, like the post count on the blog.
+    ring = (
+        theme.count_ring(weeks[-1].sets, f"Sätze KW {weeks[-1].week_start.isocalendar().week}")
+        if weeks
+        else None
+    )
+
     # Strength as simple lines (first -> best), like the progress draft; tap for the chart.
     rows: list[ft.Control] = []
     for exercise in repo.list_exercises(app.conn):
@@ -41,14 +48,14 @@ def stats_view(app: App) -> ft.View:
     return theme.view(
         "/stats",
         [
-            theme.headline("", "Statistik"),
-            theme.glass_card(
+            theme.headline("Statistik", ring=ring),
+            theme.section(
                 ft.Column([theme.label("Sätze pro Woche"), week_bar_chart(week_bars)], spacing=16)
             ),
             ft.Container(
                 theme.label("Kraft · erster → bester Wert"), padding=ft.Padding(4, 12, 0, 0)
             ),
-            theme.glass_list(rows) if rows else theme.muted("Noch keine Übungen."),
+            theme.line_list(rows) if rows else theme.muted("Noch keine Übungen."),
         ],
         bar=theme.top_bar(app.back),
         scroll=ft.ScrollMode.AUTO,
