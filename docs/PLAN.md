@@ -118,10 +118,10 @@ Am 26.10.2026 dazugenommen (#18, Entwurf `docs/design/fortschritt.html` auf `ide
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 
-- [ ] README fertig: Screenshots, Features, Installation per APK, Build aus dem Quellcode
-- [ ] GitHub Actions baut die APK automatisch beim Release-Tag
-- [ ] Abschnitt "Was ich gelernt habe" bzw. Architekturentscheide im README
-- [ ] Lizenz (MIT)
+- [x] README fertig: Screenshots, Features, Installation per APK, Build aus dem Quellcode
+- [x] GitHub Actions baut die APK automatisch beim Release-Tag
+- [x] Abschnitt "Was ich gelernt habe" bzw. Architekturentscheide im README
+- [x] Lizenz (MIT)
 - [ ] Release 1.0, Projekt im CV und auf LinkedIn eintragen
 - [ ] Blogpost über das Projekt
 
