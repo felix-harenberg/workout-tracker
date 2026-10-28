@@ -114,7 +114,7 @@ Am 26.10.2026 dazugenommen (#18, Entwurf `docs/design/fortschritt.html` auf `ide
 - [x] Wiegen-Screen: vorbefüllt mit dem letzten Wert, ±0.1 / ±0.5 kg, Zielgewicht ändern
 - [x] Körpergewicht im CSV-Export
 - [x] Release v0.5
-- [ ] Nachtrag 28.10.2026 (v0.5.1): "Workout übernehmen" (alle Übungen vom letzten Mal mit ihren Sätzen) und "Übung übernehmen" (nur die fehlenden Sätze einer Übung), Logik in `core/` mit Tests
+- [x] Nachtrag 28.10.2026 (v0.5.1): "Workout übernehmen" (alle Übungen vom letzten Mal mit ihren Sätzen) und "Übung übernehmen" (nur die fehlenden Sätze einer Übung), Logik in `core/` mit Tests
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 

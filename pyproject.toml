@@ -1,6 +1,6 @@
 [project]
 name = "workout-tracker"
-version = "0.5.0"
+version = "0.5.1"
 description = "Offline Android app to log strength training."
 readme = "README.md"
 requires-python = ">=3.12"
