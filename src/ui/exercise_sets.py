@@ -247,7 +247,12 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 def _set_table(app: App, current: list[WorkoutSet], last_sets: list[WorkoutSet]) -> ft.Column:
     """Satz | Vorher | kg | Wdh. Done sets are bright and editable (✎); the ones still to come
     show last time's values faded, like prefilled values in the design."""
-    widths = {"set": 34, "kg": 64, "reps": 46, "edit": 24}
+    widths = {
+        "set": 52,
+        "kg": 64,
+        "reps": 46,
+        "edit": 24,
+    }  # "SATZ" with wide letter spacing needs ~50 px
 
     def cell(text: str, width: int | None, size: int = 18, color: str = theme.TEXT, **kw):
         return ft.Text(

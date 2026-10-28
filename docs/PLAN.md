@@ -113,7 +113,7 @@ Am 26.10.2026 dazugenommen (#18, Entwurf `docs/design/fortschritt.html` auf `ide
 - [x] Gewichts-Seite: aktuelles Gewicht, "noch x kg bis Ziel", Graph mit violetter Ziel-Linie (nie am Rand), Zeitraum 1 M · 3 M · 1 J · Alles (Zeiträume mit mehr Daten nach einer Woche nochmal prüfen)
 - [x] Wiegen-Screen: vorbefüllt mit dem letzten Wert, ±0.1 / ±0.5 kg, Zielgewicht ändern
 - [x] Körpergewicht im CSV-Export
-- [ ] Release v0.5
+- [x] Release v0.5
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 
