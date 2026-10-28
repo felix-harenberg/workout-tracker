@@ -15,14 +15,12 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-b026ff" alt="MIT License"></a>
 </p>
 
-<!-- SCREENSHOTS: add docs/screenshots/{workouts,sets,weight,stats}.png and uncomment.
 <p align="center">
   <img src="docs/screenshots/workouts.png" width="200" alt="Workout list">
-  <img src="docs/screenshots/sets.png" width="200" alt="Logging sets">
+  <img src="docs/screenshots/workout.png" width="200" alt="A workout with its sets">
   <img src="docs/screenshots/weight.png" width="200" alt="Bodyweight with goal line">
   <img src="docs/screenshots/stats.png" width="200" alt="Stats">
 </p>
--->
 
 ---
 

@@ -126,14 +126,16 @@ def _training_page(app: App, today: date) -> list[ft.Control]:
     if not workouts:
         content.append(theme.muted("Noch keine Workouts. Tippe auf +, um zu starten."))
 
+    # The newest workout of today is the one that is running (a workout dated in the
+    # future can sit above it in the list).
+    running_id = next((w.id for w in workouts if w.date == today), None)
     current_month = None
     for w in workouts:
         month = month_label(w.date, today)
         if month != current_month:
             content.append(ft.Container(theme.label(month), padding=ft.Padding(4, 12, 0, 0)))
             current_month = month
-        # Only the newest workout of today is the one that is running.
-        content.append(_workout_card(app, w, running=w is workouts[0] and w.date == today))
+        content.append(_workout_card(app, w, running=w.id == running_id))
     return content
 
 
