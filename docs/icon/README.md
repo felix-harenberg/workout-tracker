@@ -22,4 +22,4 @@ EDGE="/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 
 ## Size
 
-The biceps size is the `scale(...)` in the `transform` of the path, and the square sits 10 units (at icon scale) around it. Icon: biceps `.5`, square side 75 (Android crops icons to a circle or rounded square). Splash: everything scaled down to a square side of 68 (Android 12+ shows the splash inside a circle of about 2/3 of the image; the square's corners must stay inside it). Keep both stroke widths equal on screen.
+The biceps size is the `scale(...)` in the `transform` of the path, and the square sits 10 units (at icon scale) around it. Icon: biceps `.5`, square side 75 (Android crops icons to a circle or rounded square). Splash: everything scaled down to a square side of 68 (Android 12+ shows the splash inside a circle of about 2/3 of the image; the square's corners must stay inside it). Keep both stroke widths equal on screen. On top of that, a group around square and biceps scales the whole logo to 80 % (`<g transform="... scale(.8) ...">`): at full size the launcher on Felix's phone cut off the square's corners (2026-10-28).
