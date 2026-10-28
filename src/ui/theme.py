@@ -187,7 +187,9 @@ def count_ring(number: int, caption: str) -> ft.Container:
 def headline(
     text: str, overline: str = "", size: int = 64, ring: ft.Control | None = None
 ) -> ft.Control:
-    """Screen title in the curly italic serif, with a hairline below, like the blog hero.
+    """Screen title in the curly italic serif, like the blog hero.
+
+    No line below: the first section's top line does that job, so there are never two.
 
     `ring` (see count_ring) sits on the right of the title.
     """
@@ -207,8 +209,7 @@ def headline(
     column = ft.Column([label(overline), head] if overline else [head], spacing=4)
     return ft.Container(
         column,
-        padding=ft.Padding(0, 10, 0, 14),
-        border=ft.Border(bottom=ft.BorderSide(1, LINE)),
+        padding=ft.Padding(0, 10, 0, 6),
     )
 
 
@@ -219,8 +220,7 @@ def title_headline(title: str, overline: str = "") -> ft.Control:
     )
     return ft.Container(
         column,
-        padding=ft.Padding(0, 14, 0, 16),
-        border=ft.Border(bottom=ft.BorderSide(1, LINE)),
+        padding=ft.Padding(0, 14, 0, 8),
     )
 
 
