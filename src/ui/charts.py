@@ -8,7 +8,7 @@ import flet as ft
 import flet_charts as fc
 
 from core.scale import axis_range, nice_step
-from ui.theme import BG, BLUE, MONO_FONT, TEXT, TEXT_MUTED
+from ui.theme import BG, BLUE, DIM, MONO_FONT, TEXT, TEXT_MUTED
 
 CHART_HEIGHT = 220
 
@@ -135,9 +135,10 @@ def date_line_chart(
 def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
     """Bar chart with one bar per week: (week_start, value, tooltip).
 
-    Tap a bar and its tooltip stays; tap it again (or next to the bars) and it goes away.
-    The chart's own touch handling is off for that: with `interactive=False`, a rod's
-    `selected` keeps its tooltip on screen, and the tap event switches it.
+    Tap a bar and its details stay in a box above the chart, with the bar highlighted;
+    tap it again (or next to the bars) and they go away. The chart's own tooltip only
+    shows while the finger is down, and with `interactive=False` flet_charts sends no
+    taps at all, so the pinned tooltip is our own box and the chart only reports taps.
     """
     if not bars:
         return ft.Text("Noch keine Daten.", color=ft.Colors.GREY)
@@ -147,26 +148,36 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
     max_y = (math.floor(max_value / step) + 1) * step
     label_every = max(len(bars) // 4, 1)
     rods = [
-        fc.BarChartRod(
-            to_y=value,
-            width=14,
-            color=BLUE,
-            border_radius=0,
-            tooltip=fc.BarChartRodTooltip(text=tooltip, text_style=TOOLTIP_TEXT),
-        )
-        for _, value, tooltip in bars
+        fc.BarChartRod(to_y=value, width=14, color=BLUE, border_radius=0, show_tooltip=False)
+        for _, value, _ in bars
     ]
+    info_text = ft.Text("", style=TOOLTIP_TEXT)
+    info = ft.Container(info_text, padding=ft.Padding(12, 6, 12, 6))
+    selected: int | None = None
 
-    def toggle_tooltip(e: fc.BarChartEvent) -> None:
+    def show(index: int | None) -> None:
+        nonlocal selected
+        selected = index
+        for i, rod in enumerate(rods):
+            rod.color = BLUE if index in (None, i) else ft.Colors.with_opacity(0.3, BLUE)
+        if index is None:
+            info_text.value = "Tippe auf einen Balken"
+            info_text.color = DIM
+            info.bgcolor, info.border = None, None
+        else:
+            info_text.value = bars[index][2].replace("\n", " · ")
+            info_text.color = TEXT
+            info.bgcolor, info.border = TOOLTIP_BG, ft.Border.all(1, BLUE)
+
+    def on_tap(e: fc.BarChartEvent) -> None:
         if e.type != fc.ChartEventType.TAP_UP:
             return
-        for i, rod in enumerate(rods):
-            rod.selected = i == e.group_index and not rod.selected
-        chart.update()
+        show(None if e.group_index is None or e.group_index == selected else e.group_index)
+        box.update()
 
     chart = fc.BarChart(
         groups=[fc.BarChartGroup(x=i, rods=[rod]) for i, rod in enumerate(rods)],
-        on_event=toggle_tooltip,
+        on_event=on_tap,
         max_y=max_y,
         left_axis=_value_axis(0, max_y, step, lambda v: f"{v:g}"),
         bottom_axis=fc.ChartAxis(
@@ -183,8 +194,10 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
         horizontal_grid_lines=fc.ChartGridLines(
             interval=step, color=ft.Colors.OUTLINE_VARIANT, width=0.5
         ),
-        tooltip=fc.BarChartTooltip(bgcolor=TOOLTIP_BG, border_side=TOOLTIP_BORDER, border_radius=0),
-        interactive=False,
+        interactive=True,  # needed for taps to arrive at all
         height=CHART_HEIGHT,
     )
-    return chart
+    show(None)
+    # Fixed height above the chart, so the chart does not jump when the box appears.
+    box = ft.Column([ft.Container(ft.Row([info]), height=40), chart], spacing=8)
+    return box
