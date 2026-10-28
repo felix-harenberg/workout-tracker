@@ -33,7 +33,7 @@ def edit_workout_view(app: App, workout: Workout) -> ft.View:
     date_picker = ft.DatePicker(
         value=selected_date,
         first_date=date(2020, 1, 1),
-        last_date=date(2100, 12, 31),
+        last_date=max(date.today(), workout.date),  # no logging into the future
         on_change=on_date_picked,
     )
     date_button.on_click = lambda _: app.page.show_dialog(date_picker)

@@ -181,3 +181,14 @@ def test_copy_missing_sets_when_nothing_is_missing(conn: sqlite3.Connection) -> 
     today = log(conn, "Chestday", date(2026, 10, 28), ("Bench", 8, 82.5))
     bench = repo.get_or_create_exercise(conn, "Bench")
     assert templates.copy_missing_sets(conn, today, bench.id) == 0
+
+
+def test_templates_ignore_workouts_dated_in_the_future(conn: sqlite3.Connection) -> None:
+    """A future workout can't be "last time"; the template list follows the same rule as
+    pending_exercises, so picking a template never leads to an empty workout."""
+    log(conn, "Deadlift Focus", date(2026, 10, 30), ("Deadlift", 5, 130))
+    log(conn, "Bench Focus", date(2026, 10, 21), ("Bench", 8, 80))
+
+    result = templates.workout_templates(conn, today=date(2026, 10, 28))
+
+    assert [t.name for t in result] == ["Bench Focus"]

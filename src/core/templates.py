@@ -27,16 +27,20 @@ def _key(name: str) -> str:
     return name.strip().casefold()
 
 
-def workout_templates(conn: sqlite3.Connection) -> list[WorkoutTemplate]:
+def workout_templates(conn: sqlite3.Connection, today: date | None = None) -> list[WorkoutTemplate]:
     """The latest logged strength workout per name, newest first.
 
-    Names match ignoring case and surrounding spaces. Unnamed workouts and
-    workouts without sets are skipped.
+    Names match ignoring case and surrounding spaces. Unnamed workouts, workouts without
+    sets and workouts dated after `today` are skipped: a future workout can't be "last
+    time", and pending_exercises would find nothing for it.
     """
+    today = today or date.today()
     result: dict[str, WorkoutTemplate] = {}
     for workout in repo.list_workouts(conn):
         key = _key(workout.name)
         if not key or key in result or workout.type != WorkoutType.STRENGTH:
+            continue
+        if workout.date > today:
             continue
         sets = repo.list_sets(conn, workout.id)
         if not sets:
