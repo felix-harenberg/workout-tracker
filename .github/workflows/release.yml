@@ -3,6 +3,8 @@ name: Release
 # Push a tag like v1.0.0 and this builds the APK and publishes the GitHub release with it.
 # Release notes come from docs/releases/<tag>.md if it exists (first line "# Title"),
 # otherwise GitHub generates them from the commits.
+# A tag with a hyphen (e.g. v0.6.0-design.1) becomes a pre-release, so the "latest release"
+# link in the README keeps pointing to the last regular version.
 on:
   push:
     tags: ["v*"]
@@ -34,10 +36,12 @@ jobs:
           apk="workout-tracker-$TAG.apk"
           mv apk/*.apk "$apk"
           notes="docs/releases/$TAG.md"
+          pre=""
+          case "$TAG" in *-*) pre="--prerelease" ;; esac
           if [ -f "$notes" ]; then
             title="$(head -n 1 "$notes" | sed 's/^# *//')"
             tail -n +2 "$notes" > "$RUNNER_TEMP/notes.md"
-            gh release create "$TAG" "$apk" --title "$title" --notes-file "$RUNNER_TEMP/notes.md"
+            gh release create "$TAG" "$apk" $pre --title "$title" --notes-file "$RUNNER_TEMP/notes.md"
           else
-            gh release create "$TAG" "$apk" --title "$TAG" --generate-notes
+            gh release create "$TAG" "$apk" $pre --title "$TAG" --generate-notes
           fi
