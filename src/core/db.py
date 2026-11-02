@@ -59,6 +59,10 @@ MIGRATIONS: list[str] = [
         value TEXT NOT NULL
     );
     """,
+    # v0.6: notes on how to do an exercise ("Sitz auf Stufe 4"), shown every time
+    """
+    ALTER TABLE exercise ADD COLUMN notes TEXT NOT NULL DEFAULT '';
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

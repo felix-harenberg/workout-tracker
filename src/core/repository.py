@@ -35,6 +35,17 @@ def list_exercises(conn: sqlite3.Connection) -> list[Exercise]:
     return [Exercise(*row) for row in rows]
 
 
+def get_exercise_notes(conn: sqlite3.Connection, exercise_id: int) -> str:
+    """Notes on how to do the exercise; they belong to the exercise, not to one workout."""
+    row = conn.execute("SELECT notes FROM exercise WHERE id = ?", (exercise_id,)).fetchone()
+    return row[0] if row else ""
+
+
+def set_exercise_notes(conn: sqlite3.Connection, exercise_id: int, notes: str) -> None:
+    with conn:
+        conn.execute("UPDATE exercise SET notes = ? WHERE id = ?", (notes.strip(), exercise_id))
+
+
 # --- Workouts ---
 
 _WORKOUT_COLUMNS = "id, name, date, notes, type"

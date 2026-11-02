@@ -14,6 +14,7 @@ CSV_COLUMNS = [
     "workout_notes",
     "workout_type",
     "exercise",
+    "exercise_notes",
     "set_number",
     "reps",
     "weight_kg",
@@ -31,7 +32,7 @@ def export_csv(conn: sqlite3.Connection) -> str:
     rows = conn.execute(
         """
         SELECT w.id, w.date, w.name, w.notes, w.type,
-               e.name, s.set_number, s.reps, s.weight_kg,
+               e.name, e.notes, s.set_number, s.reps, s.weight_kg,
                r.distance_km, r.duration_s
         FROM workout w
         LEFT JOIN workout_set s ON s.workout_id = w.id
