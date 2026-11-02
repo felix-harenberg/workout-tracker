@@ -1,6 +1,7 @@
 """Routing: builds the view stack from the current route so Android's back button works."""
 
 import sqlite3
+from collections.abc import Callable
 
 import flet as ft
 
@@ -17,6 +18,10 @@ class App:
         self.weight_period = "3M"
         # While linking a superset: (workout id, exercises tapped so far, in order).
         self.superset_pick: tuple[int, list[int]] | None = None
+        # In a superset: the exercise whose screen opens "Satz hinzufügen" right away.
+        self.add_set_for: int | None = None
+        # Runs once after the next render, e.g. a dialog that needs the new screen in place.
+        self.after_render: Callable[[], object] | None = None
 
     def start(self) -> None:
         self.page.on_route_change = lambda _: self.render()
@@ -77,6 +82,9 @@ class App:
         self.page.views.clear()
         self.page.views.extend(views)
         self.page.update()
+        if self.after_render:
+            run, self.after_render = self.after_render, None
+            run()
 
     def back(self, _: ft.Event | None = None) -> None:
         """Go to the screen below; used by the back arrow and Android's back gesture."""

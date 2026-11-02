@@ -46,7 +46,7 @@ tests/               pytest, testet nur core/
 - **Austauschbar.** Würde Flet morgen sterben, könntest du `core/` mit einer anderen UI weiterverwenden. Auch für die spätere ML-Auswertung mit pandas brauchst du nur `core/` und die Datenbank.
 - **Klare Verantwortung.** Ein Bug in einer Berechnung? Dann suchst du in `core/`. Etwas sieht komisch aus? Dann in `ui/`.
 
-**Ein Beispiel:** Die Eingabe "82,5" im Gewichtsfeld wird nicht im Screen umgewandelt, sondern in [`parse_weight`](../src/core/training.py#L8). Der Screen ruft nur die Funktion auf und zeigt bei einem Fehler eine Meldung an ([exercise_sets.py](../src/ui/exercise_sets.py#L413)).
+**Ein Beispiel:** Die Eingabe "82,5" im Gewichtsfeld wird nicht im Screen umgewandelt, sondern in [`parse_weight`](../src/core/training.py#L8). Der Screen ruft nur die Funktion auf und zeigt bei einem Fehler eine Meldung an ([exercise_sets.py](../src/ui/exercise_sets.py#L460)).
 
 ## 3. Die Daten: Modelle und Tabellen
 
@@ -64,8 +64,10 @@ Vier `@dataclass(frozen=True)`-Klassen. `frozen` heisst: Ein Objekt kann man nac
 | `workout` | id, name, date, notes, type | Datum als Text `2026-10-26` (ISO), sortiert sich dadurch richtig |
 | `workout_set` | workout_id, exercise_id, set_number, reps, weight_kg | `CHECK (reps > 0)`: die Datenbank selbst lehnt Unsinn ab |
 | `run` | workout_id, distance_km, duration_s | nur noch für alte Läufe |
+| `workout_superset` | workout_id, exercise_id, group_no, position | Supersets hängen am Workout, nicht an der Übung: Curls können einmal im Superset sein und einmal allein. `group_no` 0, 1 wird als A, B angezeigt |
+| `workout_superset_info` | workout_id, group_no, name, notes | Name und Notiz eines Supersets; die Zeile verschwindet mit der Gruppe |
 
-**Fremdschlüssel:** `workout_set.workout_id REFERENCES workout(id) ON DELETE CASCADE`. Löschst du ein Workout, löscht SQLite seine Sätze automatisch mit. Aber nur, weil [`connect`](../src/core/db.py#L54) `PRAGMA foreign_keys = ON` setzt. SQLite hat das aus historischen Gründen standardmässig aus.
+**Fremdschlüssel:** `workout_set.workout_id REFERENCES workout(id) ON DELETE CASCADE`. Löschst du ein Workout, löscht SQLite seine Sätze automatisch mit. Aber nur, weil [`connect`](../src/core/db.py#L93) `PRAGMA foreign_keys = ON` setzt. SQLite hat das aus historischen Gründen standardmässig aus.
 
 **Eine Falle, in die wir getreten sind:** `COLLATE NOCASE` kennt nur ASCII. "BANKDRÜCKEN" und "bankdrücken" wären für SQLite verschieden. Deshalb vergleicht [`get_or_create_exercise`](../src/core/repository.py#L11) die Namen in Python mit `casefold()`. Der Kommentar dort erklärt das.
 
@@ -79,7 +81,7 @@ Das ist der Teil, auf den du im Gespräch am meisten stolz sein kannst.
 
 - `MIGRATIONS` ist eine Liste von SQL-Skripten. Eintrag 0 legt die Tabellen an, Eintrag 1 fügt die Läufe hinzu.
 - SQLite hat ein eingebautes Zahlenfeld `PRAGMA user_version`. Darin steht, wie viele Migrationen schon gelaufen sind.
-- [`_migrate`](../src/core/db.py#L59) liest die Zahl und führt nur die fehlenden Skripte aus. Neue Datenbank: alle. Datenbank von v0.1: nur Eintrag 1. Aktuelle Datenbank: keins.
+- [`_migrate`](../src/core/db.py#L103) liest die Zahl und führt nur die fehlenden Skripte aus. Neue Datenbank: alle. Datenbank von v0.1: nur Eintrag 1. Aktuelle Datenbank: keins.
 - Jedes Skript läuft in `BEGIN ... COMMIT`. Bricht etwas ab, bleibt die Datenbank im alten Zustand statt halb umgebaut.
 
 **Die goldene Regel** (steht als Kommentar über der Liste): Ein veröffentlichtes Skript ändert man **nie**. Auf deinem Handy ist es schon gelaufen und würde nicht nochmal laufen. Änderungen kommen immer als neuer Eintrag ans Ende.
@@ -102,42 +104,43 @@ with conn:
     conn.execute("DELETE ...")
     conn.execute("UPDATE ...")
 ```
-Alles im Block wird gemeinsam gespeichert (commit) oder bei einem Fehler gemeinsam verworfen (rollback). Beispiel: [`delete_set`](../src/core/repository.py#L166) löscht einen Satz **und** nummeriert die folgenden neu. Beides oder nichts.
+Alles im Block wird gemeinsam gespeichert (commit) oder bei einem Fehler gemeinsam verworfen (rollback). Beispiel: [`delete_set`](../src/core/repository.py#L184) löscht einen Satz **und** nummeriert die folgenden neu. Beides oder nichts.
 
-**3. Zeilen in Datenklassen umwandeln:** SQL liefert Tupel wie `(1, "Push", "2026-10-26", "", "strength")`. [`_workout_from_row`](../src/core/repository.py#L104) macht daraus ein `Workout` mit echtem `date`-Objekt. Der Rest der App sieht nie rohe Tupel.
+**3. Zeilen in Datenklassen umwandeln:** SQL liefert Tupel wie `(1, "Push", "2026-10-26", "", "strength")`. [`_workout_from_row`](../src/core/repository.py#L115) macht daraus ein `Workout` mit echtem `date`-Objekt. Der Rest der App sieht nie rohe Tupel.
 
-**Ein gutes Beispiel für eine schlaue Abfrage:** [`last_sets_for_exercise`](../src/core/repository.py#L221) findet "das letzte Workout vor diesem, in dem diese Übung vorkam". Mit Unterabfrage (`id IN (SELECT ...)`) und einer Regel für zwei Workouts am selben Tag (die frühere ID gilt als früher).
+**Ein gutes Beispiel für eine schlaue Abfrage:** [`last_sets_for_exercise`](../src/core/repository.py#L239) findet "das letzte Workout vor diesem, in dem diese Übung vorkam". Mit Unterabfrage (`id IN (SELECT ...)`) und einer Regel für zwei Workouts am selben Tag (die frühere ID gilt als früher).
 
 ## 6. Die Logik, die du im Gym spürst
 
 | Funktion | Was sie tut |
 | --- | --- |
-| [`suggest_next_set`](../src/core/training.py#L72) | Vorschlag für den nächsten Satz: gleiche Satznummer wie letztes Mal, sonst der vorige Satz von heute |
-| [`pending_exercises`](../src/core/templates.py#L53) | "Vom letzten Mal": Übungen des letzten gleichnamigen Workouts, die heute noch fehlen |
-| [`exercise_pr`](../src/core/stats.py#L32) | Schwerster Satz; bei gleichem Gewicht gewinnt der mit mehr Wiederholungen. Trick: `max(..., key=lambda: (gewicht, wdh))` vergleicht Tupel von links nach rechts |
-| [`weekly_volume`](../src/core/stats.py#L61) | Sätze pro Kalenderwoche, inklusive Wochen ohne Training (sonst würden Pausen im Diagramm fehlen) |
-| [`date_from_picker`](../src/core/training.py#L48) | Ein echter Bug-Fix, siehe Abschnitt 10 |
+| [`suggest_next_set`](../src/core/training.py#L77) | Vorschlag für den nächsten Satz: gleiche Satznummer wie letztes Mal, sonst der vorige Satz von heute |
+| [`pending_exercises`](../src/core/templates.py#L75) | "Vom letzten Mal": Übungen des letzten gleichnamigen Workouts, die heute noch fehlen |
+| [`exercise_pr`](../src/core/stats.py#L33) | Schwerster Satz; bei gleichem Gewicht gewinnt der mit mehr Wiederholungen. Trick: `max(..., key=lambda: (gewicht, wdh))` vergleicht Tupel von links nach rechts |
+| [`weekly_volume`](../src/core/stats.py#L62) | Sätze pro Kalenderwoche, inklusive Wochen ohne Training (sonst würden Pausen im Diagramm fehlen) |
+| [`date_from_picker`](../src/core/training.py#L53) | Ein echter Bug-Fix, siehe Abschnitt 10 |
+| [`next_in_superset`](../src/core/supersets.py#L158) | Nach einem Satz im Superset: die nächste Übung der Gruppe, im Kreis. Übungen, die schon so viele Sätze haben wie letztes Mal, werden übersprungen |
 | [`axis_range`](../src/core/scale.py#L20) | Runde Achsenschritte für Diagramme, siehe Abschnitt 10 |
 
 Lies dir zu jeder Funktion auch ihre Tests an, zum Beispiel in [test_training.py](../tests/test_training.py). Tests sind die beste Dokumentation: Sie zeigen, was rein- und was rauskommt.
 
 ## 7. Die UI: Screens und Navigation
 
-### Router ([app.py](../src/ui/app.py#L10))
+### Router ([app.py](../src/ui/app.py#L11))
 
 Jeder Screen hat eine Adresse (Route), wie eine Webseite: `/`, `/workout/12`, `/workout/12/exercise/3`, `/stats`.
 
-[`render`](../src/ui/app.py#L27) baut aus der Route einen **Stapel** von Screens. Für `/workout/12/exercise/3` liegen drei Screens übereinander: Liste, Workout 12, Übung 3. Drückt man auf Android "Zurück" oder auf den Pfeil oben links, wird der oberste entfernt ([`back`](../src/ui/app.py#L73)), und man landet automatisch auf dem richtigen Screen darunter.
+[`render`](../src/ui/app.py#L37) baut aus der Route einen **Stapel** von Screens. Für `/workout/12/exercise/3` liegen drei Screens übereinander: Liste, Workout 12, Übung 3. Drückt man auf Android "Zurück" oder auf den Pfeil oben links, wird der oberste entfernt ([`back`](../src/ui/app.py#L89)), und man landet automatisch auf dem richtigen Screen darunter.
 
 Das `match parts:` ist Pythons **Structural Pattern Matching** (seit 3.10): `case ["workout", workout_id, *rest]` passt auf jede Liste, die mit `"workout"` beginnt, und speichert den Rest in Variablen.
 
 ### Screens
 
-Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`workout_detail_view`](../src/ui/workout_detail.py#L14). Sie holt Daten aus `core/`, baut daraus Controls und hängt Klick-Funktionen an.
+Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`workout_detail_view`](../src/ui/workout_detail.py#L21). Sie holt Daten aus `core/`, baut daraus Controls und hängt Klick-Funktionen an.
 
-**Nach einer Änderung wird alles neu gebaut:** Speicherst du einen Satz, ruft der Screen `app.render()` auf ([exercise_sets.py](../src/ui/exercise_sets.py#L78)), und der ganze Stapel wird aus der Datenbank neu aufgebaut. Das ist einfacher und fehlerfreier, als einzelne Texte zu aktualisieren, und bei dieser Datenmenge schnell genug.
+**Nach einer Änderung wird alles neu gebaut:** Speicherst du einen Satz, ruft der Screen `app.render()` auf ([exercise_sets.py](../src/ui/exercise_sets.py#L91)), und der ganze Stapel wird aus der Datenbank neu aufgebaut. Das ist einfacher und fehlerfreier, als einzelne Texte zu aktualisieren, und bei dieser Datenmenge schnell genug.
 
-**Threads:** Flet führt Klick-Funktionen in Hintergrund-Threads aus. SQLite erlaubt eine Verbindung normalerweise nur im Thread, der sie geöffnet hat. Deshalb `check_same_thread=False` in [`connect`](../src/core/db.py#L53). Das ist sicher, weil die App immer nur eine Sache gleichzeitig macht.
+**Threads:** Flet führt Klick-Funktionen in Hintergrund-Threads aus. SQLite erlaubt eine Verbindung normalerweise nur im Thread, der sie geöffnet hat. Deshalb `check_same_thread=False` in [`connect`](../src/core/db.py#L93). Das ist sicher, weil die App immer nur eine Sache gleichzeitig macht.
 
 ### Design ([theme.py](../src/ui/theme.py))
 
@@ -145,7 +148,7 @@ Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.section(...)` au
 
 **Der Blog-Look (Branch `design/blog`):** Die App sieht aus wie dein Blog: Schwarz, Weiss und ein Blau, keine Rundungen, kein Glas. Statt Karten trennen dünne Linien die Zeilen, wie die Postliste im Blog. Drei Schriften haben je eine Aufgabe: die kursive Serif für Screen-Titel ([`headline`](../src/ui/theme.py#L187)), die breite fette Sans für Namen von Workouts und Übungen, die Mono-Schrift für Daten, Sätze und Labels. Der blaue Ring mit Zahl ([`count_ring`](../src/ui/theme.py#L157)) kommt von der Post-Anzahl auf der Blog-Startseite.
 
-**Eigene Dialoge:** Android zeigt Dialoge sonst im Standard-Look (weisse Box, Text-Knöpfe). [`dialog`](../src/ui/theme.py#L483) baut stattdessen einen schwarzen Kasten mit farbigem Strich oben: rot fürs Löschen, sonst blau. Alle Dialoge (Löschen, Satz hinzufügen und bearbeiten, Notiz, Gewicht, Ziel) nutzen ihn, deshalb sehen sie gleich aus.
+**Eigene Dialoge:** Android zeigt Dialoge sonst im Standard-Look (weisse Box, Text-Knöpfe). [`dialog`](../src/ui/theme.py#L486) baut stattdessen einen schwarzen Kasten mit farbigem Strich oben: rot fürs Löschen, sonst blau. Alle Dialoge (Löschen, Satz hinzufügen und bearbeiten, Notiz, Gewicht, Ziel) nutzen ihn, deshalb sehen sie gleich aus.
 
 **Warum feste Schriftdateien:** Archivo, JetBrains Mono und Inter Tight gibt es bei Google Fonts nur als *variable* Schrift (eine Datei, Breite und Dicke stufenlos). Flet kann daraus nicht zuverlässig eine bestimmte Breite wählen. Deshalb liegen in `assets/fonts` feste Ausschnitte, z.B. Archivo mit Breite 125 % und Dicke 800.
 
@@ -182,7 +185,7 @@ Zwei Workflows in [.github/workflows/](../.github/workflows/):
 
 Das ist Material für "What I learned" im README:
 
-1. **Datum einen Tag zu früh.** Der Datumswähler schickt "Mitternacht Ortszeit" als UTC-Zeit: 22.10. 00:00 in Zürich = 21.10. 22:00 UTC. `.date()` gab den 21. Lösung: auf den nächsten Tag runden ([`date_from_picker`](../src/core/training.py#L48)). Lehre: **Zeitzonen sind überall**, auch wenn man "nur ein Datum" will.
+1. **Datum einen Tag zu früh.** Der Datumswähler schickt "Mitternacht Ortszeit" als UTC-Zeit: 22.10. 00:00 in Zürich = 21.10. 22:00 UTC. `.date()` gab den 21. Lösung: auf den nächsten Tag runden ([`date_from_picker`](../src/core/training.py#L53)). Lehre: **Zeitzonen sind überall**, auch wenn man "nur ein Datum" will.
 2. **Fehlende Achsenbeschriftung.** Die Diagramm-Bibliothek fragt Beschriftungen nur an ihren eigenen Rasterpunkten ab. Labels bei krummen Werten wie 96 kg wurden still verschluckt. Lösung: Achse auf runde Schritte legen ([scale.py](../src/core/scale.py)). Lehre: **Doku der Bibliothek lesen**, wenn etwas nur manchmal klappt.
 3. **Altes Logo beim Start.** Flet sucht den Splash unter `splash_android.png`, `splash.png` oder `icon.png`, nicht unter `icon_android.png`. Gefunden durch Lesen des Flet-Quellcodes in `.venv`.
 4. **Hintergrund-Leuchten fehlte.** Ein Verlauf in `View.decoration` wurde auf dem Handy nicht gezeichnet, Verläufe auf Containern schon. Lösung: das Leuchten als eigene Ebene hinter den Inhalt legen.

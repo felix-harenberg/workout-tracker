@@ -5,7 +5,7 @@ import flet as ft
 
 from core import repository as repo
 from core import stats, supersets
-from core.models import Exercise, Hint, Workout, WorkoutSet
+from core.models import Exercise, Hint, Superset, Workout, WorkoutSet
 from core.records import check_new_set
 from core.templates import copy_missing_sets
 from core.training import (
@@ -33,6 +33,9 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     last_sets = last[1] if last else []
 
     info: list[ft.Control] = [theme.title_headline(exercise.name, overline=workout_title(workout))]
+    group = supersets.superset_of(app.conn, workout.id, exercise.id)
+    if group:
+        info.append(_superset_tabs(app, workout, group, exercise.id))
     hint = repo.get_hint(app.conn, exercise.id)
     # The reminder from last time; it is used up by the first set today.
     if hint and hint.workout_id != workout.id and not current:
@@ -75,9 +78,17 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
         def save() -> None:
             repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
-            app.render()
+            # In a superset, the next exercise comes up with its dialog already open,
+            # unless the record screen is shown first.
+            target = supersets.next_in_superset(app.conn, workout, exercise.id)
             if check.is_record:
-                show_record(app, exercise.name, weight_kg, reps, check)
+                app.after_render = lambda: show_record(app, exercise.name, weight_kg, reps, check)
+            elif target is not None:
+                app.add_set_for = target
+            if target is not None and target != exercise.id:
+                app.go(f"/workout/{workout.id}/exercise/{target}")
+            else:
+                app.render()
 
         if check.suspicious:
 
@@ -103,6 +114,9 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
 
     # Prefilled like the old input panel: last time's set or the one just logged.
     suggestion = suggest_next_set(last_sets, current)
+    if app.add_set_for == exercise.id:
+        app.add_set_for = None
+        app.after_render = lambda: open_add(suggestion)
     add_row = ft.Container(
         ft.Row(
             [
@@ -286,6 +300,38 @@ def _set_table(
         )
         rows.append(row)
     return ft.Column(rows, spacing=0)
+
+
+def _superset_tabs(app: App, workout: Workout, group: Superset, current_id: int) -> ft.Control:
+    """Name and notes of the superset, then one tab per exercise (A1 CURLS · A2 ...);
+    the current one is blue, a tap on another switches to it."""
+    tabs: list[ft.Control] = []
+    for exercise_id in group.exercise_ids:
+        exercise = repo.get_exercise(app.conn, exercise_id)
+        assert exercise is not None
+        here = exercise_id == current_id
+        tabs.append(
+            ft.Container(
+                ft.Text(
+                    f"{group.label(exercise_id)} {exercise.name}".upper(),
+                    size=12,
+                    color=theme.TEXT if here else theme.TEXT_MUTED,
+                    style=ft.TextStyle(font_family=theme.MONO_MEDIUM_FONT, letter_spacing=0.8),
+                ),
+                padding=ft.Padding(10, 7, 10, 7),
+                bgcolor=theme.BLUE if here else None,
+                border=ft.Border.all(1, theme.BLUE if here else theme.LINE),
+                on_click=None
+                if here
+                else lambda _, e=exercise_id: app.go(f"/workout/{workout.id}/exercise/{e}"),
+                ink=not here,
+            )
+        )
+    content: list[ft.Control] = [theme.label(group.title, theme.BLUE)]
+    if group.notes:
+        content.append(ft.Text(group.notes, size=15, color=theme.TEXT_MUTED))
+    content.append(ft.Row(tabs, wrap=True, spacing=6, run_spacing=6))
+    return ft.Column(content, spacing=8)
 
 
 def _hint_button(direction: Hint, text: str, active: bool, on_toggle) -> ft.Container:
