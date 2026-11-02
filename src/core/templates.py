@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from core import repository as repo
+from core import supersets
 from core.models import Exercise, Workout, WorkoutSet, WorkoutType
 from core.training import group_sets_by_exercise
 
@@ -54,16 +55,12 @@ def workout_templates(conn: sqlite3.Connection, today: date | None = None) -> li
     return list(result.values())
 
 
-def pending_exercises(conn: sqlite3.Connection, workout: Workout) -> list[PendingExercise]:
-    """Exercises of the previous workout with the same name that are not logged yet.
-
-    In the order they were done last time, each with last time's sets.
-    """
+def _previous_workout(conn: sqlite3.Connection, workout: Workout) -> Workout | None:
+    """The latest earlier workout with the same name that has sets."""
     key = _key(workout.name)
     if not key:
-        return []
-
-    previous = next(
+        return None
+    return next(
         (
             w
             for w in repo.list_workouts(conn)  # newest first
@@ -73,6 +70,14 @@ def pending_exercises(conn: sqlite3.Connection, workout: Workout) -> list[Pendin
         ),
         None,
     )
+
+
+def pending_exercises(conn: sqlite3.Connection, workout: Workout) -> list[PendingExercise]:
+    """Exercises of the previous workout with the same name that are not logged yet.
+
+    In the order they were done last time, each with last time's sets.
+    """
+    previous = _previous_workout(conn, workout)
     if previous is None:
         return []
 
@@ -113,3 +118,12 @@ def copy_missing_sets(conn: sqlite3.Connection, workout: Workout, exercise_id: i
     for s in missing:
         repo.add_set(conn, workout.id, exercise_id, reps=s.reps, weight_kg=s.weight_kg)
     return len(missing)
+
+
+def copy_supersets_from_last(conn: sqlite3.Connection, workout: Workout) -> None:
+    """A new workout takes the supersets of the previous one with the same name, like it
+    offers that workout's exercises. Does nothing if the workout has groups already."""
+    previous = _previous_workout(conn, workout)
+    if previous is None or supersets.list_supersets(conn, workout.id):
+        return
+    supersets.copy_groups(conn, previous.id, workout.id)

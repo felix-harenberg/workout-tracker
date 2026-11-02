@@ -63,6 +63,18 @@ MIGRATIONS: list[str] = [
     """
     ALTER TABLE exercise ADD COLUMN notes TEXT NOT NULL DEFAULT '';
     """,
+    # v0.6: supersets, groups of exercises done in turns. They belong to the workout, so
+    # an exercise can be in a superset one day and alone the next. group_no 0, 1, ... is
+    # shown as A, B, ...; position 0, 1, ... as A1, A2, ...
+    """
+    CREATE TABLE workout_superset (
+        workout_id INTEGER NOT NULL REFERENCES workout(id) ON DELETE CASCADE,
+        exercise_id INTEGER NOT NULL REFERENCES exercise(id),
+        group_no INTEGER NOT NULL CHECK (group_no >= 0),
+        position INTEGER NOT NULL CHECK (position >= 0),
+        PRIMARY KEY (workout_id, exercise_id)
+    );
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

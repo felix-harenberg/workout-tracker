@@ -54,6 +54,17 @@ class Run:
 
 
 @dataclass(frozen=True)
+class Superset:
+    """Exercises of one workout done in turns: A1 → A2 → A3 → A1 ..."""
+
+    letter: str
+    exercise_ids: tuple[int, ...]
+
+    def label(self, exercise_id: int) -> str:
+        return f"{self.letter}{self.exercise_ids.index(exercise_id) + 1}"
+
+
+@dataclass(frozen=True)
 class WeightHint:
     direction: Hint
     workout_id: int | None  # where it was set; None if that workout was deleted
