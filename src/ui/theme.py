@@ -394,8 +394,11 @@ def text_field(**kwargs) -> ft.TextField:
     )
 
 
-def fab(on_click: Callable, tooltip: str, text: str | None = None) -> ft.Container:
-    """Blue square with +; with `text` a wide block, e.g. "+ ÜBUNG"."""
+def fab(
+    on_click: Callable, tooltip: str, text: str | None = None, glyph: str = "+"
+) -> ft.Container:
+    """Blue square with +; with `text` a wide block, e.g. "+ ÜBUNG" or with another
+    `glyph` "⇄ VERBINDEN"."""
     if text is None:
         return ft.Container(
             content=ft.Icon(ft.Icons.ADD, color=TEXT, size=32),
@@ -410,7 +413,7 @@ def fab(on_click: Callable, tooltip: str, text: str | None = None) -> ft.Contain
     return ft.Container(
         content=ft.Row(
             [
-                ft.Text("+", size=24, color=TEXT, style=ft.TextStyle(font_family=NAME_FONT)),
+                ft.Text(glyph, size=24, color=TEXT, style=ft.TextStyle(font_family=NAME_FONT)),
                 _button_text(text, TEXT),
             ],
             spacing=10,

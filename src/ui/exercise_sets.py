@@ -4,7 +4,7 @@ from datetime import date
 import flet as ft
 
 from core import repository as repo
-from core import stats
+from core import stats, supersets
 from core.models import Exercise, Hint, Workout, WorkoutSet
 from core.records import check_new_set
 from core.templates import copy_missing_sets
@@ -163,6 +163,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
     def delete_exercise(_: ft.Event) -> None:
         app.page.pop_dialog()
         repo.delete_exercise_from_workout(app.conn, workout.id, exercise.id)
+        supersets.remove_exercise(app.conn, workout.id, exercise.id)
         app.go(f"/workout/{workout.id}")
 
     confirm_delete = theme.dialog(

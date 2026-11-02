@@ -15,6 +15,8 @@ class App:
         # Start screen: 0 = Training, 1 = Gewicht; and the period shown on the weight page.
         self.home_tab = 0
         self.weight_period = "3M"
+        # While linking a superset: (workout id, exercises tapped so far, in order).
+        self.superset_pick: tuple[int, list[int]] | None = None
 
     def start(self) -> None:
         self.page.on_route_change = lambda _: self.render()
@@ -78,6 +80,7 @@ class App:
 
     def back(self, _: ft.Event | None = None) -> None:
         """Go to the screen below; used by the back arrow and Android's back gesture."""
+        self.superset_pick = None  # leaving the workout cancels linking
         if len(self.page.views) > 1:
             self.page.views.pop()
             self.go(self.page.views[-1].route)

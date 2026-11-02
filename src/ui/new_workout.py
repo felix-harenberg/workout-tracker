@@ -3,7 +3,7 @@ from datetime import date
 import flet as ft
 
 from core import repository as repo
-from core.templates import workout_templates
+from core.templates import copy_supersets_from_last, workout_templates
 from core.training import day_label
 from ui import theme
 from ui.app import App
@@ -15,6 +15,7 @@ def new_workout_view(app: App) -> ft.View:
 
     def start(name: str) -> None:
         workout = repo.create_workout(app.conn, name.strip(), date.today())
+        copy_supersets_from_last(app.conn, workout)
         app.go(f"/workout/{workout.id}")
 
     name_field.on_submit = lambda _: start(name_field.value or "")
