@@ -197,9 +197,12 @@ def _strength_controls(app: App, workout: Workout) -> list[ft.Control]:
         placed.update(members)
         if len(members) < 2:
             return [cards[e] for e in members]
+        assert group is not None
         return [
             ft.Container(
-                ft.Column([cards[e] for e in members], spacing=0),
+                ft.Column(
+                    [_superset_header(app, workout, group), *(cards[e] for e in members)], spacing=0
+                ),
                 border=ft.Border(left=ft.BorderSide(2, theme.BLUE)),
                 padding=ft.Padding(12, 0, 0, 0),
             )
@@ -276,12 +279,49 @@ def _pick_marker(number: int | None) -> ft.Control:
     )
 
 
+def _superset_header(app: App, workout: Workout, group: Superset) -> ft.Control:
+    """Top of a superset block: "A · ARME" and its notes; a tap opens the dialog."""
+    content: list[ft.Control] = [
+        ft.Row(
+            [
+                theme.label(group.title, theme.BLUE),
+                ft.Icon(ft.Icons.EDIT_OUTLINED, size=16, color=theme.TEXT_MUTED),
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+        )
+    ]
+    if group.notes:
+        content.append(ft.Text(group.notes, size=15, color=theme.TEXT_MUTED))
+    return ft.Container(
+        ft.Column(content, spacing=6),
+        padding=ft.Padding(0, 4, 0, 12),
+        on_click=lambda _: app.page.show_dialog(_superset_dialog(app, workout, group)),
+        ink=True,
+    )
+
+
 def _superset_dialog(app: App, workout: Workout, group: Superset) -> ft.AlertDialog:
     names = []
     for exercise_id in group.exercise_ids:
         exercise = repo.get_exercise(app.conn, exercise_id)
         assert exercise is not None
         names.append(f"{group.label(exercise_id)} {exercise.name}")
+    name_field = theme.text_field(label="Name", hint_text="z.B. Arme", value=group.name)
+    notes_field = theme.text_field(
+        label="Notiz",
+        hint_text="z.B. ohne Pause, 90 s nach der Runde",
+        value=group.notes,
+        multiline=True,
+        min_lines=2,
+        max_lines=6,
+    )
+
+    def save(_: ft.Event) -> None:
+        supersets.set_info(
+            app.conn, workout.id, group.letter, name_field.value or "", notes_field.value or ""
+        )
+        app.page.pop_dialog()
+        app.render()
 
     def split(_: ft.Event) -> None:
         supersets.unlink(app.conn, workout.id, group.letter)
@@ -291,18 +331,17 @@ def _superset_dialog(app: App, workout: Workout, group: Superset) -> ft.AlertDia
     return theme.dialog(
         f"Superset {group.letter}",
         "Superset",
+        [theme.chips(names), name_field, notes_field],
         [
-            theme.muted("Im Wechsel: nach jedem Satz kommt die nächste Übung."),
-            theme.chips(names),
-        ],
-        [
+            ft.Row([theme.dialog_button("Speichern", save, "main")]),
             ft.Row(
                 [
-                    theme.dialog_button("Schliessen", lambda _: app.page.pop_dialog()),
-                    theme.dialog_button("Trennen", split, "main"),
+                    theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
+                    # Splitting also drops the name and notes; the sets stay.
+                    theme.dialog_button("Trennen", split, "danger_outline"),
                 ],
                 spacing=10,
-            )
+            ),
         ],
     )
 

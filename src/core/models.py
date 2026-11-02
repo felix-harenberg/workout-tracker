@@ -59,6 +59,12 @@ class Superset:
 
     letter: str
     exercise_ids: tuple[int, ...]
+    name: str = ""
+    notes: str = ""
+
+    @property
+    def title(self) -> str:
+        return f"{self.letter} · {self.name}" if self.name else f"Superset {self.letter}"
 
     def label(self, exercise_id: int) -> str:
         return f"{self.letter}{self.exercise_ids.index(exercise_id) + 1}"

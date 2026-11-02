@@ -75,6 +75,16 @@ MIGRATIONS: list[str] = [
         PRIMARY KEY (workout_id, exercise_id)
     );
     """,
+    # v0.6: a name and notes per superset; a row only exists while the group does
+    """
+    CREATE TABLE workout_superset_info (
+        workout_id INTEGER NOT NULL REFERENCES workout(id) ON DELETE CASCADE,
+        group_no INTEGER NOT NULL,
+        name TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        PRIMARY KEY (workout_id, group_no)
+    );
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

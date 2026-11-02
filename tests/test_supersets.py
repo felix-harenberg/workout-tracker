@@ -217,3 +217,75 @@ def test_v5_database_gets_superset_table(tmp_path: Path) -> None:
     conn = connect(db_path)
     assert ss.list_supersets(conn, 1) == []
     conn.close()
+
+
+# --- Name and notes ---
+
+
+def test_title_with_and_without_name() -> None:
+    assert Superset("A", (1, 2)).title == "Superset A"
+    assert Superset("B", (1, 2), name="Arme").title == "B · Arme"
+
+
+def test_name_and_notes_are_saved_per_group(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Arms", date(2026, 11, 2))
+    a, b, c, d = exercises(conn, "Curls", "Trizeps", "Bench", "Rows")
+    ss.link(conn, workout.id, [a, b])
+    ss.link(conn, workout.id, [c, d])
+
+    ss.set_info(conn, workout.id, "B", "  Push Pull ", " ohne Pause\n")
+
+    first, second = ss.list_supersets(conn, workout.id)
+    assert (first.name, first.notes) == ("", "")
+    assert (second.name, second.notes) == ("Push Pull", "ohne Pause")
+
+
+def test_splitting_deletes_name_and_notes(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Arms", date(2026, 11, 2))
+    a, b, c, d = exercises(conn, "Curls", "Trizeps", "Bench", "Rows")
+    ss.link(conn, workout.id, [a, b])
+    ss.set_info(conn, workout.id, "A", "Arme", "90 s Pause nach der Runde")
+
+    ss.unlink(conn, workout.id, "A")
+    ss.link(conn, workout.id, [c, d])  # gets letter A again, but not the old name
+
+    assert ss.list_supersets(conn, workout.id) == [Superset("A", (c, d))]
+
+
+def test_name_moves_with_its_group_when_letters_change(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Arms", date(2026, 11, 2))
+    a, b, c, d = exercises(conn, "Curls", "Trizeps", "Bench", "Rows")
+    ss.link(conn, workout.id, [a, b])
+    ss.link(conn, workout.id, [c, d])
+    ss.set_info(conn, workout.id, "B", "Push Pull", "")
+
+    ss.remove_exercise(conn, workout.id, a)  # A is gone, B becomes A
+
+    assert ss.list_supersets(conn, workout.id) == [Superset("A", (c, d), name="Push Pull")]
+
+
+def test_group_of_one_left_loses_its_name(conn: sqlite3.Connection) -> None:
+    workout = repo.create_workout(conn, "Arms", date(2026, 11, 2))
+    a, b, c = exercises(conn, "Curls", "Trizeps", "Bench")
+    ss.link(conn, workout.id, [a, b])
+    ss.set_info(conn, workout.id, "A", "Arme", "")
+
+    ss.remove_exercise(conn, workout.id, a)
+    ss.link(conn, workout.id, [b, c])
+
+    assert ss.list_supersets(conn, workout.id) == [Superset("A", (b, c))]
+
+
+def test_new_workout_takes_name_and_notes_along(conn: sqlite3.Connection) -> None:
+    a, b = exercises(conn, "Curls", "Trizeps")
+    last = repo.create_workout(conn, "Arms", date(2026, 10, 30))
+    repo.add_set(conn, last.id, a, reps=10, weight_kg=12)
+    ss.link(conn, last.id, [a, b])
+    ss.set_info(conn, last.id, "A", "Arme", "ohne Pause")
+
+    today = repo.create_workout(conn, "Arms", date(2026, 11, 2))
+    copy_supersets_from_last(conn, today)
+
+    assert ss.list_supersets(conn, today.id) == [
+        Superset("A", (a, b), name="Arme", notes="ohne Pause")
+    ]

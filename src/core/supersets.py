@@ -17,7 +17,28 @@ def list_supersets(conn: sqlite3.Connection, workout_id: int) -> list[Superset]:
     groups: dict[int, list[int]] = {}
     for group_no, exercise_id in rows:
         groups.setdefault(group_no, []).append(exercise_id)
-    return [Superset(ascii_uppercase[no], tuple(ids)) for no, ids in groups.items()]
+    info = {
+        group_no: (name, notes)
+        for group_no, name, notes in conn.execute(
+            "SELECT group_no, name, notes FROM workout_superset_info WHERE workout_id = ?",
+            (workout_id,),
+        )
+    }
+    return [
+        Superset(ascii_uppercase[no], tuple(ids), *info.get(no, ("", "")))
+        for no, ids in groups.items()
+    ]
+
+
+def set_info(conn: sqlite3.Connection, workout_id: int, letter: str, name: str, notes: str) -> None:
+    """Name and notes of a group, e.g. "Arme" and "ohne Pause zwischen den Übungen"."""
+    with conn:
+        conn.execute(
+            "INSERT INTO workout_superset_info (workout_id, group_no, name, notes)"
+            " VALUES (?, ?, ?, ?) ON CONFLICT (workout_id, group_no)"
+            " DO UPDATE SET name = excluded.name, notes = excluded.notes",
+            (workout_id, ascii_uppercase.index(letter), name.strip(), notes.strip()),
+        )
 
 
 def superset_of(conn: sqlite3.Connection, workout_id: int, exercise_id: int) -> Superset | None:
@@ -73,11 +94,15 @@ def remove_exercise(conn: sqlite3.Connection, workout_id: int, exercise_id: int)
 def copy_groups(conn: sqlite3.Connection, source_id: int, target_id: int) -> None:
     for superset in list_supersets(conn, source_id):
         link(conn, target_id, list(superset.exercise_ids))
+        if superset.name or superset.notes:
+            letter = list_supersets(conn, target_id)[-1].letter  # a new group comes last
+            set_info(conn, target_id, letter, superset.name, superset.notes)
 
 
 def _tidy(conn: sqlite3.Connection, workout_id: int) -> None:
     """Drop groups of one, then number groups and positions 0, 1, 2 ... without gaps,
-    so the letters stay A, B, C even after a group in the middle is gone."""
+    so the letters stay A, B, C even after a group in the middle is gone. Name and notes
+    go with their group, or away with it."""
     conn.execute(
         "DELETE FROM workout_superset WHERE workout_id = :w AND group_no IN"
         " (SELECT group_no FROM workout_superset WHERE workout_id = :w"
@@ -90,6 +115,17 @@ def _tidy(conn: sqlite3.Connection, workout_id: int) -> None:
         (workout_id,),
     ).fetchall()
     numbers = {old: new for new, old in enumerate(dict.fromkeys(g for _, g in rows))}
+    conn.execute(
+        "DELETE FROM workout_superset_info WHERE workout_id = ? AND group_no NOT IN"
+        f" ({', '.join('?' * len(numbers))})",
+        (workout_id, *numbers),
+    )
+    # Ascending, every group moves down into a number that is free by then.
+    for old, new in numbers.items():
+        conn.execute(
+            "UPDATE workout_superset_info SET group_no = ? WHERE workout_id = ? AND group_no = ?",
+            (new, workout_id, old),
+        )
     position: dict[int, int] = {}
     for exercise_id, group_no in rows:
         new = numbers[group_no]
