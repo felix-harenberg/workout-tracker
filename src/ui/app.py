@@ -12,8 +12,6 @@ class App:
         self.page = page
         self.conn = conn
         self.share = ft.Share()
-        # Set right before re-rendering after a saved set, so the next set gets the keyboard.
-        self.focus_next_set = False
         # Start screen: 0 = Training, 1 = Gewicht; and the period shown on the weight page.
         self.home_tab = 0
         self.weight_period = "3M"

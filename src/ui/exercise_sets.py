@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from datetime import date
 
 import flet as ft
@@ -69,34 +70,69 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
         copy_missing_sets(app.conn, workout, exercise.id)
         app.render()
 
-    if current or last_sets:
-        heading = f"Letztes Mal · {day_label(last[0].date, date.today())}" if last else "Heute"
-        info.append(
-            theme.section(
-                ft.Column(
-                    [
-                        theme.label(heading),
-                        _set_table(app, exercise.name, current, last_sets),
-                        *(
-                            [
-                                ft.Container(
-                                    theme.secondary_button(
-                                        "Sätze übernehmen", take_missing, ft.Icons.DONE_ALL
-                                    ),
-                                    padding=ft.Padding(0, 8, 0, 4),
-                                )
-                            ]
-                            if len(last_sets) > len(current)
-                            else []
-                        ),
-                    ],
-                    spacing=8,
-                ),
-                padding=ft.Padding(16, 14, 16, 10),
+    def add(weight_kg: float | None, reps: int) -> None:
+        check = check_new_set(app.conn, exercise.id, weight_kg)
+
+        def save() -> None:
+            repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
+            app.render()
+            if check.is_record:
+                show_record(app, exercise.name, weight_kg, reps, check)
+
+        if check.suspicious:
+
+            async def correct() -> None:
+                open_add((weight_kg, reps))
+
+            show_suspicious(app, exercise.name, weight_kg, reps, check, correct, save)
+        else:
+            save()
+
+    def open_add(values: tuple[float | None, int] | None) -> None:
+        weight_kg, reps = values if values else (None, None)
+        app.page.show_dialog(
+            _set_dialog(
+                app,
+                f"Satz {len(current) + 1} · {exercise.name}",
+                "Satz hinzufügen",
+                weight_kg,
+                reps,
+                add,
             )
         )
+
+    # Prefilled like the old input panel: last time's set or the one just logged.
+    suggestion = suggest_next_set(last_sets, current)
+    add_row = ft.Container(
+        ft.Row(
+            [
+                ft.Icon(ft.Icons.ADD, color=theme.BLUE, size=22),
+                theme.label(f"Satz {len(current) + 1}", color=theme.BLUE),
+            ],
+            spacing=10,
+        ),
+        padding=ft.Padding(0, 14, 0, 14),
+        border=ft.Border(top=ft.BorderSide(1, theme.LINE)),
+        on_click=lambda _: open_add(suggestion),
+        ink=True,
+    )
+
+    if current or last_sets:
+        heading = f"Letztes Mal · {day_label(last[0].date, date.today())}" if last else "Heute"
+        table: list[ft.Control] = [
+            theme.label(heading),
+            ft.Column([_set_table(app, exercise.name, current, last_sets), add_row], spacing=0),
+        ]
     else:
-        info.append(theme.muted("Zum ersten Mal dabei."))
+        table = [theme.muted("Zum ersten Mal dabei."), add_row]
+    if len(last_sets) > len(current):
+        table.append(
+            ft.Container(
+                theme.secondary_button("Sätze übernehmen", take_missing, ft.Icons.DONE_ALL),
+                padding=ft.Padding(0, 8, 0, 4),
+            )
+        )
+    info.append(theme.section(ft.Column(table, spacing=8), padding=ft.Padding(16, 14, 16, 10)))
 
     if current:
         active = hint.direction if hint and hint.workout_id == workout.id else None
@@ -122,78 +158,7 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
             )
         )
 
-    suggestion = suggest_next_set(last_sets, current)
-    weight_value, reps_value = suggestion if suggestion else (None, None)
-    weight_field = _number_field(
-        "kg",
-        format_weight(weight_value) if weight_value is not None else "",
-        hint="leer = BW",
-        # Only right after saving a set: keep the keyboard up, the next set starts at the weight.
-        # Other re-renders (e.g. tapping ▲/▼) must not pop up the keyboard.
-        autofocus=app.focus_next_set,
-    )
-    _select_all_now(weight_field)
-    app.focus_next_set = False
-    reps_field = _number_field("Wdh.", str(reps_value) if reps_value is not None else "")
-
-    async def focus_reps(_: ft.Event) -> None:
-        await reps_field.focus()
-
-    def add(_: ft.Event) -> None:
-        values = _read_inputs(app, weight_field, reps_field)
-        if values is None:
-            return
-        weight_kg, reps = values
-        check = check_new_set(app.conn, exercise.id, weight_kg)
-
-        def save() -> None:
-            repo.add_set(app.conn, workout.id, exercise.id, reps=reps, weight_kg=weight_kg)
-            app.focus_next_set = True
-            app.render()
-            if check.is_record:
-                show_record(app, exercise.name, weight_kg, reps, check)
-
-        if check.suspicious:
-
-            async def correct() -> None:
-                await weight_field.focus()
-
-            show_suspicious(app, exercise.name, weight_kg, reps, check, correct, save)
-        else:
-            save()
-
-    weight_field.on_submit = focus_reps
-    reps_field.on_submit = add
-
-    save_button = ft.Container(
-        content=ft.Icon(ft.Icons.CHECK_ROUNDED, color=theme.TEXT, size=34),
-        width=68,
-        height=64,
-        bgcolor=theme.BLUE,
-        alignment=ft.Alignment.CENTER,
-        tooltip="Satz speichern",
-        on_click=add,
-        ink=True,
-    )
-
-    # Fixed at the bottom, within thumb reach.
-    panel = theme.panel(
-        ft.Column(
-            [
-                theme.label(f"Satz {len(current) + 1}", color=theme.BLUE),
-                ft.Row([weight_field, reps_field, save_button], spacing=10),
-                ft.Row(
-                    [
-                        _weight_steppers(weight_field),
-                        _reps_steppers(reps_field),
-                        ft.Container(width=68),
-                    ],
-                    spacing=10,
-                ),
-            ],
-            spacing=10,
-        )
-    )
+    info.append(_notes_section(app, exercise))
 
     def delete_exercise(_: ft.Event) -> None:
         app.page.pop_dialog()
@@ -235,7 +200,6 @@ def exercise_sets_view(app: App, workout: Workout, exercise: Exercise) -> ft.Vie
                 expand=True,
                 horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
             ),
-            panel,
         ],
         bar=theme.top_bar(
             app.back,
@@ -421,33 +385,43 @@ def _reps_steppers(field: ft.TextField) -> ft.Row:
     )
 
 
-def _edit_set_dialog(app: App, exercise_name: str, workout_set: WorkoutSet) -> ft.AlertDialog:
-    """Change or delete a logged set; same fields and ± buttons as the input panel."""
+def _set_dialog(
+    app: App,
+    kicker: str,
+    title: str,
+    weight_kg: float | None,
+    reps: int | None,
+    on_save: Callable[[float | None, int], None],
+    extra: list[ft.Control] | None = None,
+) -> ft.AlertDialog:
+    """kg and Wdh. with ± buttons, for adding and editing a set. The weight is selected, so
+    typing replaces it; ✓ on the keyboard jumps to Wdh., and from there saves."""
     weight_field = _number_field(
         "kg",
-        format_weight(workout_set.weight_kg) if workout_set.weight_kg is not None else "",
+        format_weight(weight_kg) if weight_kg is not None else "",
         hint="leer = BW",
+        autofocus=True,
     )
-    reps_field = _number_field("Wdh.", str(workout_set.reps))
+    reps_field = _number_field("Wdh.", str(reps) if reps is not None else "")
     weight_field.expand = reps_field.expand = False  # here they sit in columns, not a row
+    _select_all_now(weight_field)
+
+    async def focus_reps(_: ft.Event) -> None:
+        await reps_field.focus()
 
     def save(_: ft.Event) -> None:
         values = _read_inputs(app, weight_field, reps_field)
         if values is None:
             return
-        weight_kg, reps = values
-        repo.update_set(app.conn, workout_set.id, reps=reps, weight_kg=weight_kg)
         app.page.pop_dialog()
-        app.render()
+        on_save(*values)
 
-    def delete(_: ft.Event) -> None:
-        repo.delete_set(app.conn, workout_set.id)
-        app.page.pop_dialog()
-        app.render()
+    weight_field.on_submit = focus_reps
+    reps_field.on_submit = save
 
     return theme.dialog(
-        f"Satz {workout_set.set_number} · {exercise_name}",
-        "Satz bearbeiten",
+        kicker,
+        title,
         [
             ft.Row(
                 [
@@ -461,14 +435,83 @@ def _edit_set_dialog(app: App, exercise_name: str, workout_set: WorkoutSet) -> f
         [
             ft.Row([theme.dialog_button("Speichern", save, "main")]),
             ft.Row(
-                [
-                    theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()),
-                    theme.dialog_button("Satz löschen", delete, "danger_outline"),
-                ],
+                [theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog()), *(extra or [])],
                 spacing=10,
             ),
         ],
     )
+
+
+def _edit_set_dialog(app: App, exercise_name: str, workout_set: WorkoutSet) -> ft.AlertDialog:
+    """Change or delete a logged set."""
+
+    def save(weight_kg: float | None, reps: int) -> None:
+        repo.update_set(app.conn, workout_set.id, reps=reps, weight_kg=weight_kg)
+        app.render()
+
+    def delete(_: ft.Event) -> None:
+        repo.delete_set(app.conn, workout_set.id)
+        app.page.pop_dialog()
+        app.render()
+
+    return _set_dialog(
+        app,
+        f"Satz {workout_set.set_number} · {exercise_name}",
+        "Satz bearbeiten",
+        workout_set.weight_kg,
+        workout_set.reps,
+        save,
+        [theme.dialog_button("Satz löschen", delete, "danger_outline")],
+    )
+
+
+def _notes_section(app: App, exercise: Exercise) -> ft.Control:
+    """How to do the exercise ("Sitz auf Stufe 4"). It belongs to the exercise, so it shows
+    up again in every workout with it. Empty, it is a single "+ Notiz" line."""
+    notes = repo.get_exercise_notes(app.conn, exercise.id)
+    field = theme.text_field(
+        value=notes,
+        hint_text="z.B. Sitz auf Stufe 4, enger Griff",
+        multiline=True,
+        min_lines=3,
+        max_lines=8,
+        autofocus=True,
+    )
+
+    def save(_: ft.Event) -> None:
+        repo.set_exercise_notes(app.conn, exercise.id, field.value or "")
+        app.page.pop_dialog()
+        app.render()
+
+    edit = theme.dialog(
+        exercise.name,
+        "Notiz",
+        [field],
+        [
+            ft.Row([theme.dialog_button("Speichern", save, "main")]),
+            ft.Row([theme.dialog_button("Abbrechen", lambda _: app.page.pop_dialog())]),
+        ],
+    )
+    if notes:
+        content = ft.Column(
+            [
+                ft.Row(
+                    [
+                        theme.label("Notiz"),
+                        ft.Icon(ft.Icons.EDIT_OUTLINED, size=18, color=theme.TEXT_MUTED),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                ),
+                ft.Text(notes, size=16, color=theme.TEXT),
+            ],
+            spacing=8,
+        )
+    else:
+        content = ft.Row(
+            [ft.Icon(ft.Icons.ADD, color=theme.TEXT_MUTED, size=20), theme.label("Notiz")],
+            spacing=10,
+        )
+    return theme.section(content, on_click=lambda _: app.page.show_dialog(edit))
 
 
 def _select_all_now(field: ft.TextField) -> None:

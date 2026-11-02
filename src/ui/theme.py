@@ -358,16 +358,6 @@ def list_row(
     )
 
 
-def panel(content: ft.Control) -> ft.Container:
-    """Fixed panel at the bottom of a screen: black with a line on top."""
-    return ft.Container(
-        content=content,
-        padding=ft.Padding(0, 14, 0, 4),
-        bgcolor=BG,
-        border=ft.Border(top=ft.BorderSide(1, LINE)),
-    )
-
-
 def _button_text(text: str, color: str, size: int = 15) -> ft.Text:
     return ft.Text(
         text.upper(),

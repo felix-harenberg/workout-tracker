@@ -46,7 +46,7 @@ tests/               pytest, testet nur core/
 - **Austauschbar.** Würde Flet morgen sterben, könntest du `core/` mit einer anderen UI weiterverwenden. Auch für die spätere ML-Auswertung mit pandas brauchst du nur `core/` und die Datenbank.
 - **Klare Verantwortung.** Ein Bug in einer Berechnung? Dann suchst du in `core/`. Etwas sieht komisch aus? Dann in `ui/`.
 
-**Ein Beispiel:** Die Eingabe "82,5" im Gewichtsfeld wird nicht im Screen umgewandelt, sondern in [`parse_weight`](../src/core/training.py#L8). Der Screen ruft nur die Funktion auf und zeigt bei einem Fehler eine Meldung an ([exercise_sets.py](../src/ui/exercise_sets.py#L178)).
+**Ein Beispiel:** Die Eingabe "82,5" im Gewichtsfeld wird nicht im Screen umgewandelt, sondern in [`parse_weight`](../src/core/training.py#L8). Der Screen ruft nur die Funktion auf und zeigt bei einem Fehler eine Meldung an ([exercise_sets.py](../src/ui/exercise_sets.py#L413)).
 
 ## 3. Die Daten: Modelle und Tabellen
 
@@ -60,7 +60,7 @@ Vier `@dataclass(frozen=True)`-Klassen. `frozen` heisst: Ein Objekt kann man nac
 
 | Tabelle | Inhalt | Besonderheit |
 | --- | --- | --- |
-| `exercise` | id, name | `UNIQUE COLLATE NOCASE`: "Bench" und "bench" sind dieselbe Übung |
+| `exercise` | id, name, notes | `UNIQUE COLLATE NOCASE`: "Bench" und "bench" sind dieselbe Übung. `notes` (seit Migration 5) hängt an der Übung, nicht am Workout, und steht deshalb jedes Mal wieder da |
 | `workout` | id, name, date, notes, type | Datum als Text `2026-10-26` (ISO), sortiert sich dadurch richtig |
 | `workout_set` | workout_id, exercise_id, set_number, reps, weight_kg | `CHECK (reps > 0)`: die Datenbank selbst lehnt Unsinn ab |
 | `run` | workout_id, distance_km, duration_s | nur noch für alte Läufe |
@@ -135,7 +135,7 @@ Das `match parts:` ist Pythons **Structural Pattern Matching** (seit 3.10): `cas
 
 Jeder Screen ist eine Funktion, die ein `ft.View` zurückgibt, zum Beispiel [`workout_detail_view`](../src/ui/workout_detail.py#L14). Sie holt Daten aus `core/`, baut daraus Controls und hängt Klick-Funktionen an.
 
-**Nach einer Änderung wird alles neu gebaut:** Speicherst du einen Satz, ruft der Screen `app.render()` auf ([exercise_sets.py](../src/ui/exercise_sets.py#L94)), und der ganze Stapel wird aus der Datenbank neu aufgebaut. Das ist einfacher und fehlerfreier, als einzelne Texte zu aktualisieren, und bei dieser Datenmenge schnell genug.
+**Nach einer Änderung wird alles neu gebaut:** Speicherst du einen Satz, ruft der Screen `app.render()` auf ([exercise_sets.py](../src/ui/exercise_sets.py#L78)), und der ganze Stapel wird aus der Datenbank neu aufgebaut. Das ist einfacher und fehlerfreier, als einzelne Texte zu aktualisieren, und bei dieser Datenmenge schnell genug.
 
 **Threads:** Flet führt Klick-Funktionen in Hintergrund-Threads aus. SQLite erlaubt eine Verbindung normalerweise nur im Thread, der sie geöffnet hat. Deshalb `check_same_thread=False` in [`connect`](../src/core/db.py#L53). Das ist sicher, weil die App immer nur eine Sache gleichzeitig macht.
 
@@ -145,7 +145,7 @@ Alle Farben und Bausteine an einer Stelle. Screens rufen `theme.section(...)` au
 
 **Der Blog-Look (Branch `design/blog`):** Die App sieht aus wie dein Blog: Schwarz, Weiss und ein Blau, keine Rundungen, kein Glas. Statt Karten trennen dünne Linien die Zeilen, wie die Postliste im Blog. Drei Schriften haben je eine Aufgabe: die kursive Serif für Screen-Titel ([`headline`](../src/ui/theme.py#L187)), die breite fette Sans für Namen von Workouts und Übungen, die Mono-Schrift für Daten, Sätze und Labels. Der blaue Ring mit Zahl ([`count_ring`](../src/ui/theme.py#L157)) kommt von der Post-Anzahl auf der Blog-Startseite.
 
-**Eigene Dialoge:** Android zeigt Dialoge sonst im Standard-Look (weisse Box, Text-Knöpfe). [`dialog`](../src/ui/theme.py#L493) baut stattdessen einen schwarzen Kasten mit farbigem Strich oben: rot fürs Löschen, sonst blau. Alle Dialoge (Löschen, Satz bearbeiten, Gewicht, Ziel) nutzen ihn, deshalb sehen sie gleich aus.
+**Eigene Dialoge:** Android zeigt Dialoge sonst im Standard-Look (weisse Box, Text-Knöpfe). [`dialog`](../src/ui/theme.py#L483) baut stattdessen einen schwarzen Kasten mit farbigem Strich oben: rot fürs Löschen, sonst blau. Alle Dialoge (Löschen, Satz hinzufügen und bearbeiten, Notiz, Gewicht, Ziel) nutzen ihn, deshalb sehen sie gleich aus.
 
 **Warum feste Schriftdateien:** Archivo, JetBrains Mono und Inter Tight gibt es bei Google Fonts nur als *variable* Schrift (eine Datei, Breite und Dicke stufenlos). Flet kann daraus nicht zuverlässig eine bestimmte Breite wählen. Deshalb liegen in `assets/fonts` feste Ausschnitte, z.B. Archivo mit Breite 125 % und Dicke 800.
 
@@ -200,6 +200,6 @@ Kannst du die beantworten, ohne nachzuschauen? Wenn nicht, ist der passende Absc
 6. Was macht `with conn:`? Nenne ein Beispiel, wo es wichtig ist. (5)
 7. Wie entscheidet die App, was im kg-Feld vorausgefüllt ist? (6)
 8. Was passiert technisch, wenn du auf Android "Zurück" drückst? (7)
-9. Warum ist echte Unschärfe nur im Eingabe-Panel? (7)
+9. Warum sehen die Dialoge nicht wie der Android-Standard aus? (7)
 10. Warum kann man ein Update installieren, ohne die App zu löschen? (9)
 11. Erzähl einen Bug, den du gefunden und gelöst hast. (10)
