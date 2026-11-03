@@ -139,12 +139,13 @@ def _tidy(conn: sqlite3.Connection, workout_id: int) -> None:
 
 def next_member(
     order: list[int], current: int, done: dict[int, int], targets: dict[int, int | None]
-) -> int | None:
+) -> int:
     """The exercise after `current` in the group, going round.
 
     An exercise is finished when it has as many sets as last time (`targets`); finished
-    ones are skipped. Without a last time (target None) an exercise is never finished.
-    If only `current` is left, it is the next one; if all are finished, None.
+    ones are skipped while another one still has sets to go. Without a last time (target
+    None) an exercise is never finished. If only `current` is left, it is the next one.
+    Once all are finished it simply goes round, so extra sets still alternate.
     """
     start = order.index(current)
     for step in range(1, len(order) + 1):
@@ -152,12 +153,11 @@ def next_member(
         target = targets.get(candidate)
         if target is None or done.get(candidate, 0) < target:
             return candidate
-    return None
+    return order[(start + 1) % len(order)]
 
 
 def next_in_superset(conn: sqlite3.Connection, workout: Workout, exercise_id: int) -> int | None:
-    """Where to go after a set of `exercise_id` was saved; None if it is in no superset
-    or the superset is done."""
+    """Where to go after a set of `exercise_id` was saved; None if it is in no superset."""
     superset = superset_of(conn, workout.id, exercise_id)
     if superset is None:
         return None

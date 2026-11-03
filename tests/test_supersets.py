@@ -127,14 +127,15 @@ def test_groups_belong_to_the_workout(conn: sqlite3.Connection) -> None:
         (1, {1: 3, 2: 2, 3: 2}, {1: 3, 2: 2, 3: 3}, 3),
         # Everybody else is done: stay on the current one
         (1, {1: 3, 2: 2}, {1: 4, 2: 2}, 1),
-        # All done
-        (2, {1: 3, 2: 3}, {1: 3, 2: 3}, None),
+        # All done, e.g. last time's sets were taken over: still alternate
+        (2, {1: 3, 2: 3}, {1: 3, 2: 3}, 1),
+        (1, {1: 4, 2: 3, 3: 3}, {1: 3, 2: 3, 3: 3}, 2),
         # First time (no target): never done, keep going round
         (2, {1: 5, 2: 5}, {1: None, 2: None}, 1),
     ],
 )
 def test_next_member(
-    current: int, done: dict[int, int], targets: dict[int, int | None], expected: int | None
+    current: int, done: dict[int, int], targets: dict[int, int | None], expected: int
 ) -> None:
     assert ss.next_member([1, 2, 3][: len(targets)], current, done, targets) == expected
 
