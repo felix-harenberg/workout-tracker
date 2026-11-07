@@ -164,3 +164,21 @@ def test_v7_database_gets_run_tables(tmp_path: Path) -> None:
     conn = connect(db_path)
     assert rv.week_km(conn, MONDAY) == 0
     conn.close()
+
+
+def test_week_across_new_year(conn: sqlite3.Connection) -> None:
+    """Mo 28.12.2026 to Su 3.1.2027 is one week (ISO week 53); the next one is week 1."""
+    rv.set_goal(conn, date(2026, 12, 28), 30)
+    rv.add_run(conn, date(2026, 12, 31), 10)
+    rv.add_run(conn, date(2027, 1, 2), 8)
+    rv.add_run(conn, date(2027, 1, 5), 5)
+
+    assert rv.week_start(date(2027, 1, 3)) == date(2026, 12, 28)
+    assert date(2026, 12, 28).isocalendar().week == 53
+    assert date(2027, 1, 4).isocalendar().week == 1
+    assert rv.week_km(conn, date(2027, 1, 1)) == 18
+    assert rv.suggest_goal(conn, date(2027, 1, 4)) == 33
+    assert rv.history(conn, today=date(2027, 1, 6)) == [
+        rv.WeekKm(date(2026, 12, 28), 18, 30),
+        rv.WeekKm(date(2027, 1, 4), 5, None),
+    ]
