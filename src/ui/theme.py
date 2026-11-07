@@ -453,6 +453,30 @@ def secondary_button(text: str, on_click: Callable, icon: str | None = None) -> 
     )
 
 
+def stepper(text: str, field: ft.TextField, change: Callable) -> ft.Container:
+    """Square ± button that changes `field` with `change` (e.g. step_weight)."""
+
+    def step(_: ft.Event) -> None:
+        field.value = change(field.value)
+        field.update()
+
+    return ft.Container(
+        content=ft.Text(
+            text,
+            size=15,
+            color=TEXT,
+            text_align=ft.TextAlign.CENTER,
+            style=ft.TextStyle(font_family=MONO_FONT),
+        ),
+        expand=True,
+        height=40,
+        alignment=ft.Alignment.CENTER,
+        border=ft.Border.all(1, LINE),
+        on_click=step,
+        ink=True,
+    )
+
+
 def dialog_button(text: str, on_click: Callable, kind: str = "plain") -> ft.Container:
     """Equal-width dialog action. kind: "main" (blue block), "plain" (outlined),
     "danger" (red block), "danger_outline" (red outline, for delete next to Speichern)."""

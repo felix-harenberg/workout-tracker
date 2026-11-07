@@ -122,7 +122,7 @@ Am 07.11.2026 dazugenommen: Felix baut sein Laufvolumen auf, Start bei 20 km pro
 
 - [x] `core/`: Läufe (Datum, km) und ein Ziel pro Woche speichern (Migration 8), Kilometer pro Woche, Vorschlag fürs nächste Ziel, mit Tests
 - [x] Läufe im CSV-Export (eigene Datei wie das Körpergewicht)
-- [ ] Startseite: dritte Seite "Laufen" mit Wochenring (km / Ziel), Ziel setzen, Läufe der Woche, Wochen-Diagramm mit Ziel-Linie, "+ Lauf"
+- [x] Startseite: dritte Seite "Laufen" mit Wochenring (km / Ziel), Ziel setzen, Läufe der Woche, Wochen-Diagramm mit Ziel-Linie, "+ Lauf"
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 

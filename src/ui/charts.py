@@ -132,8 +132,12 @@ def date_line_chart(
     return ft.Container(chart, padding=ft.Padding(0, 0, 16, 0))
 
 
-def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
+def week_bar_chart(
+    bars: list[tuple[date, float, str]], goals: list[float | None] | None = None
+) -> ft.Control:
     """Bar chart with one bar per week: (week_start, value, tooltip).
+
+    With `goals` (one per bar, None for no goal), each goal shows as a faint bar behind.
 
     Tap a bar and its details stay in a box above the chart, with the bar highlighted;
     tap it again (or next to the bars) and they go away. The chart's own tooltip only
@@ -143,13 +147,23 @@ def week_bar_chart(bars: list[tuple[date, float, str]]) -> ft.Control:
     if not bars:
         return ft.Text("Noch keine Daten.", color=ft.Colors.GREY)
 
-    max_value = max(value for _, value, _ in bars) or 1
+    goals = goals or [None] * len(bars)
+    max_value = max([value for _, value, _ in bars] + [g for g in goals if g]) or 1
     step = max(nice_step(max_value), 1)  # counts: no half steps
     max_y = (math.floor(max_value / step) + 1) * step
     label_every = max(len(bars) // 4, 1)
     rods = [
-        fc.BarChartRod(to_y=value, width=14, color=BLUE, border_radius=0, show_tooltip=False)
-        for _, value, _ in bars
+        fc.BarChartRod(
+            to_y=value,
+            width=14,
+            color=BLUE,
+            border_radius=0,
+            show_tooltip=False,
+            bg_from_y=0 if goal else None,
+            bg_to_y=goal,
+            bgcolor=ft.Colors.with_opacity(0.18, TEXT) if goal else None,
+        )
+        for (_, value, _), goal in zip(bars, goals, strict=True)
     ]
     info_text = ft.Text("", style=TOOLTIP_TEXT)
     info = ft.Container(info_text, padding=ft.Padding(12, 6, 12, 6))

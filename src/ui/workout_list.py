@@ -18,15 +18,16 @@ from core.training import (
 )
 from ui import theme
 from ui.app import App
+from ui.running import run_dialog, running_page
 from ui.weight import weight_page
 
-TABS = ["Training", "Gewicht"]
+TABS = ["Training", "Gewicht", "Laufen"]
 
 
 def workout_list_view(app: App) -> ft.View:
-    """Start screen: two pages to swipe between, Training and Gewicht."""
+    """Start screen: three pages to swipe between, Training, Gewicht and Laufen."""
     today = date.today()
-    pages = [_page(_training_page(app, today)), _page(weight_page(app))]
+    pages = [_page(_training_page(app, today)), _page(weight_page(app)), _page(running_page(app))]
     fab_holder = ft.Container(_fab(app, app.home_tab))
     tab_row = ft.Row(spacing=TAB_SPACING, top=TAB_TOP)
     # One blue line that slides to the active tab, in step with the page.
@@ -141,6 +142,8 @@ def _tab(name: str, active: bool, index: int, on_select) -> ft.Container:
 def _fab(app: App, tab: int) -> ft.Control:
     if tab == 1:
         return theme.fab(lambda _: app.go("/weight/new"), "Gewicht eintragen", "Gewicht")
+    if tab == 2:
+        return theme.fab(lambda _: run_dialog(app), "Lauf eintragen", "Lauf")
     return theme.fab(lambda _: app.go("/workout/new"), "Neues Workout")
 
 

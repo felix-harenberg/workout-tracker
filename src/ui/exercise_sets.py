@@ -386,35 +386,11 @@ def _read_inputs(
     return weight_kg, reps
 
 
-def _stepper(text: str, field: ft.TextField, change) -> ft.Container:
-    """Square ± button that changes `field` with `change` (e.g. step_weight)."""
-
-    def step(_: ft.Event) -> None:
-        field.value = change(field.value)
-        field.update()
-
-    return ft.Container(
-        content=ft.Text(
-            text,
-            size=15,
-            color=theme.TEXT,
-            text_align=ft.TextAlign.CENTER,
-            style=ft.TextStyle(font_family=theme.MONO_FONT),
-        ),
-        expand=True,
-        height=40,
-        alignment=ft.Alignment.CENTER,
-        border=ft.Border.all(1, theme.LINE),
-        on_click=step,
-        ink=True,
-    )
-
-
 def _weight_steppers(field: ft.TextField) -> ft.Row:
     return ft.Row(
         [
-            _stepper("−2.5", field, lambda v: step_weight(v, -2.5)),
-            _stepper("+2.5", field, lambda v: step_weight(v, 2.5)),
+            theme.stepper("−2.5", field, lambda v: step_weight(v, -2.5)),
+            theme.stepper("+2.5", field, lambda v: step_weight(v, 2.5)),
         ],
         expand=True,
         spacing=6,
@@ -424,8 +400,8 @@ def _weight_steppers(field: ft.TextField) -> ft.Row:
 def _reps_steppers(field: ft.TextField) -> ft.Row:
     return ft.Row(
         [
-            _stepper("−1", field, lambda v: step_reps(v, -1)),
-            _stepper("+1", field, lambda v: step_reps(v, 1)),
+            theme.stepper("−1", field, lambda v: step_reps(v, -1)),
+            theme.stepper("+1", field, lambda v: step_reps(v, 1)),
         ],
         expand=True,
         spacing=6,

@@ -64,6 +64,8 @@ Vier `@dataclass(frozen=True)`-Klassen. `frozen` heisst: Ein Objekt kann man nac
 | `workout` | id, name, date, notes, type | Datum als Text `2026-10-26` (ISO), sortiert sich dadurch richtig |
 | `workout_set` | workout_id, exercise_id, set_number, reps, weight_kg | `CHECK (reps > 0)`: die Datenbank selbst lehnt Unsinn ab |
 | `run` | workout_id, distance_km, duration_s | nur noch für alte Läufe |
+| `run_entry` | id, date, distance_km | Laufvolumen seit Migration 8: nur Kilometer, Pace bleibt bei Uhr und Strava |
+| `run_goal` | week_start, km | Wochenziel, gespeichert unter dem Montag der Woche |
 | `workout_superset` | workout_id, exercise_id, group_no, position | Supersets hängen am Workout, nicht an der Übung: Curls können einmal im Superset sein und einmal allein. `group_no` 0, 1 wird als A, B angezeigt |
 | `workout_superset_info` | workout_id, group_no, name, notes | Name und Notiz eines Supersets; die Zeile verschwindet mit der Gruppe |
 
