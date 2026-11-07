@@ -17,7 +17,7 @@ Eine Android-App in Python, mit der du dein Krafttraining loggst, offline auf de
 - Keine Trainingspläne, Timer oder Social-Features
 - Kein Play Store (Installation per APK aus GitHub Releases)
 - Kein Hyrox (gestrichen am 24.10.2026: Rennen laufen über Roxfit, Gym und Laufen sind wichtiger)
-- Kein Lauf-Tracking (gestrichen am 26.10.2026: Uhr und Strava machen das schon; in v0.2 erfasste Läufe bleiben lesbar und im CSV-Export)
+- Kein Lauf-Tracking (gestrichen am 26.10.2026: Uhr und Strava machen das schon; in v0.2 erfasste Läufe bleiben lesbar und im CSV-Export). Ausnahme seit 07.11.2026: nur Kilometer pro Lauf mit einem Wochenziel (Phase 5d); Pace, Dauer und Intervalle bleiben bei Uhr und Strava
 
 Kommt dir während dem Bauen eine neue Feature-Idee, landet sie als GitHub Issue mit Label `later`. Nicht im Code.
 
@@ -115,6 +115,14 @@ Am 26.10.2026 dazugenommen (#18, Entwurf `docs/design/fortschritt.html` auf `ide
 - [x] Körpergewicht im CSV-Export
 - [x] Release v0.5
 - [x] Nachtrag 28.10.2026 (v0.5.1): "Workout übernehmen" (alle Übungen vom letzten Mal mit ihren Sätzen) und "Übung übernehmen" (nur die fehlenden Sätze einer Übung), Logik in `core/` mit Tests
+
+### Phase 5d: Laufvolumen
+
+Am 07.11.2026 dazugenommen: Felix baut sein Laufvolumen auf, Start bei 20 km pro Woche, dann etwa +10 % pro Woche. Nur Kilometer, kein Pace, keine Dauer. Das Ziel setzt er jede Woche selbst, die App schlägt +10 % vor. Gebaut auf `design/blog`.
+
+- [x] `core/`: Läufe (Datum, km) und ein Ziel pro Woche speichern (Migration 8), Kilometer pro Woche, Vorschlag fürs nächste Ziel, mit Tests
+- [x] Läufe im CSV-Export (eigene Datei wie das Körpergewicht)
+- [ ] Startseite: dritte Seite "Laufen" mit Wochenring (km / Ziel), Ziel setzen, Läufe der Woche, Wochen-Diagramm mit Ziel-Linie, "+ Lauf"
 
 ### Phase 6: Öffentlicher Release 1.0 (Woche 12 bis 13)
 

@@ -85,6 +85,21 @@ MIGRATIONS: list[str] = [
         PRIMARY KEY (workout_id, group_no)
     );
     """,
+    # v0.6: running volume, only the kilometres (pace stays with the watch and Strava),
+    # and a goal per week, keyed by its Monday
+    """
+    CREATE TABLE run_entry (
+        id INTEGER PRIMARY KEY,
+        date TEXT NOT NULL,
+        distance_km REAL NOT NULL CHECK (distance_km > 0)
+    );
+    CREATE INDEX idx_run_entry_date ON run_entry(date);
+
+    CREATE TABLE run_goal (
+        week_start TEXT PRIMARY KEY,
+        km REAL NOT NULL CHECK (km > 0)
+    );
+    """,
 ]
 
 SCHEMA_VERSION = len(MIGRATIONS)

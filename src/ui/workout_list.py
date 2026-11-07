@@ -4,6 +4,7 @@ import flet as ft
 
 from core import bodyweight as bw
 from core import repository as repo
+from core import run_volume as rv
 from core.export import export_csv, export_filename
 from core.models import Workout, WorkoutType
 from core.run import run_summary
@@ -73,6 +74,11 @@ def workout_list_view(app: App) -> ft.View:
                 bw.export_bodyweight_csv(app.conn).encode("utf-8"),
                 mime_type="text/csv",
                 name=f"bodyweight-{today.isoformat()}.csv",
+            ),
+            ft.ShareFile.from_bytes(
+                rv.export_runs_csv(app.conn).encode("utf-8"),
+                mime_type="text/csv",
+                name=f"runs-{today.isoformat()}.csv",
             ),
         ]
         await app.share.share_files(files, subject="Workout Tracker Backup")
