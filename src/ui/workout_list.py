@@ -27,10 +27,25 @@ def workout_list_view(app: App) -> ft.View:
     today = date.today()
     pages = [_page(_training_page(app, today)), _page(weight_page(app))]
     fab_holder = ft.Container(_fab(app, app.home_tab))
-    tab_row = ft.Row(spacing=18)
+    tab_row = ft.Row(spacing=TAB_SPACING, top=TAB_TOP)
+    # One blue line that slides to the active tab, in step with the page.
+    underline = ft.Container(
+        height=2,
+        width=28,
+        bgcolor=theme.BLUE,
+        left=_tab_x(app.home_tab),
+        bottom=0,
+        animate_position=ft.Animation(280, ft.AnimationCurve.EASE_OUT),
+    )
+    tabs = ft.Stack(
+        [tab_row, underline],
+        width=_tab_x(len(TABS)) - TAB_SPACING,
+        height=TAB_TOP + 16 + 6 + 2,
+    )
 
     def show_tabs() -> None:
         tab_row.controls = [_tab(name, i == app.home_tab, i, go_to) for i, name in enumerate(TABS)]
+        underline.left = _tab_x(app.home_tab)
 
     async def go_to(index: int) -> None:
         await page_view.go_to_page(
@@ -41,7 +56,7 @@ def workout_list_view(app: App) -> ft.View:
         app.home_tab = int(e.data)
         show_tabs()
         fab_holder.content = _fab(app, app.home_tab)
-        tab_row.update()
+        tabs.update()
         fab_holder.update()
 
     page_view = ft.PageView(pages, selected_index=app.home_tab, expand=True, on_change=on_change)
@@ -71,7 +86,7 @@ def workout_list_view(app: App) -> ft.View:
                 theme.icon_button(ft.Icons.INSIGHTS, lambda _: app.go("/stats"), "Statistik"),
                 theme.icon_button(ft.Icons.SHARE, export, "Als CSV exportieren"),
             ],
-            left=tab_row,
+            left=tabs,
         ),
         fab=fab_holder,
         edge_to_edge=True,
@@ -92,26 +107,27 @@ def _page(controls: list[ft.Control]) -> ft.Container:
     )
 
 
+TAB_SPACING = 18
+TAB_TOP = 10
+# theme.label is JetBrains Mono 12 with 0.8 letter spacing: every letter is 0.6 em + 0.8 px
+# wide, so where each tab starts can be computed instead of measured.
+TAB_CHAR_WIDTH = 12 * 0.6 + 0.8
+
+
+def _tab_x(index: int) -> float:
+    """Left edge of tab `index` (or the end of the row for index len(TABS))."""
+    return sum(len(name) * TAB_CHAR_WIDTH + TAB_SPACING for name in TABS[:index])
+
+
 def _tab(name: str, active: bool, index: int, on_select) -> ft.Container:
-    """Tab label: bright with a blue line when active, grey otherwise. Tap to switch."""
+    """Tab label: bright when active, grey otherwise. Tap to switch."""
 
     async def select(_: ft.Event) -> None:
         await on_select(index)
 
     return ft.Container(
-        content=ft.Column(
-            [
-                theme.label(name, color=theme.TEXT if active else theme.TEXT_MUTED),
-                ft.Container(
-                    height=2,
-                    width=28,
-                    bgcolor=theme.BLUE if active else ft.Colors.TRANSPARENT,
-                ),
-            ],
-            spacing=6,
-            tight=True,
-        ),
-        padding=ft.Padding(0, 10, 0, 0),
+        content=theme.label(name, color=theme.TEXT if active else theme.TEXT_MUTED),
+        padding=ft.Padding(0, 0, 0, 14),  # room for the sliding line below
         on_click=select,
     )
 
