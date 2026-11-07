@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import flet as ft
 
 from core import run_volume as rv
-from core.training import day_label
+from core.training import date_from_picker, day_label
 from ui import theme
 from ui.app import App
 from ui.charts import week_bar_chart
@@ -156,18 +156,45 @@ def run_dialog(app: App, run: rv.RunEntry | None = None) -> None:
     today = date.today()
     field, steps = _km_field(rv.format_km(run.distance_km) if run else "")
     chosen = run.date if run else today
-    # Runs are logged on the day or soon after; an older run keeps its own date as a pill.
+    # Runs are logged on the day or soon after; any other date comes from the calendar
+    # and stays as a pill, like the date of an older run.
     days = [today, today - timedelta(days=1), today - timedelta(days=2)]
     if chosen not in days:
         days.append(chosen)
     pills = ft.Row(spacing=6, wrap=True, run_spacing=6)
 
+    def on_date_picked(e: ft.Event) -> None:
+        if e.control.value is None:
+            return
+        day = date_from_picker(e.control.value)
+        if day not in days:
+            days.append(day)
+        pick(day)
+
+    calendar = ft.DatePicker(
+        value=chosen,
+        first_date=date(2020, 1, 1),
+        last_date=today,  # no runs in the future
+        on_change=on_date_picked,
+    )
+
     def show_pills() -> None:
         pills.controls = [_day_pill(d, d == chosen, today, pick) for d in days]
+        pills.controls.append(
+            ft.Container(
+                ft.Icon(ft.Icons.CALENDAR_MONTH, size=18, color=theme.TEXT_MUTED),
+                padding=ft.Padding(10, 6, 10, 6),
+                border=ft.Border.all(1, theme.LINE),
+                tooltip="Anderes Datum",
+                on_click=lambda _: app.page.show_dialog(calendar),
+                ink=True,
+            )
+        )
 
     def pick(day: date) -> None:
         nonlocal chosen
         chosen = day
+        calendar.value = day
         show_pills()
         pills.update()
 
